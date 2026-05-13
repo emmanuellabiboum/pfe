@@ -76,3 +76,5 @@ desktop.ini
 
 # PostgreSQL
 *.dump
+
+node_modules/
