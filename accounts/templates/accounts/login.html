@@ -1,0 +1,174 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #fdfcff;
+        }
+
+        .left-panel {
+            background-color: #082281;
+            background-image: radial-gradient(circle at 20% 30%, rgba(0, 64, 128, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 51, 102, 0.6) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .form-control {
+            background-color: #f1f3f9 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 14px !important;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(200, 50, 255, 0.2) !important;
+        }
+
+        .btn-login {
+            background-color: #c832ff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-weight: 700;
+            width: 100%;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-login:hover {
+            opacity: 0.85;
+            color: white;
+        }
+
+        .alert-danger {
+            border-radius: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0" style="min-height:100vh">
+            <div
+                class="col-md-6 col-lg-7 d-none d-md-flex flex-column align-items-center justify-content-center p-5 text-white left-panel">
+                <div style="max-width:500px">
+                    <div class="mb-4 rounded-pill" style="height:4px; width:64px; background-color:#c832ff;"></div>
+                    <h1 class="display-3 fw-bold mb-4" style="letter-spacing:-1px;">
+                        Big Data &<br>Marketing Prédictif
+                    </h1>
+                    <p class="lead mb-5" style="opacity:0.75">
+                        Cette plateforme de prédiction du churn client utilise des algorithmes avancés
+                        pour identifier les clients à risque de résiliation, permettant à Tunisie Telecom
+                        d'agir proactivement pour améliorer la rétention et la satisfaction client.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <i class="bi bi-graph-up-arrow fs-3 mb-3 d-block" style="opacity:0.75"></i>
+                                <h3 class="fw-bold mb-0">+95%</h3>
+                                <p class="text-uppercase fw-bold mb-0" style="font-size:10px; opacity:0.5">Prédictions
+                                    correctes</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stat-card">
+                                <i class="bi bi-shield-lock fs-3 mb-3 d-block" style="opacity:0.75"></i>
+                                <h3 class="fw-bold mb-0">Sécurisé</h3>
+                                <p class="text-uppercase fw-bold mb-0" style="font-size:10px; opacity:0.5">Données
+                                    Protégées</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-5 d-flex flex-column align-items-center justify-content-center p-4 p-lg-5">
+                <div class="w-100" style="max-width:400px">
+                    <div class="mb-5 text-center text-md-start">
+                        <h2 class="fw-bold mb-4" style="color:#001e8c; letter-spacing:-1.5px;">
+                            Tunisie <span style="color:#c832ff">Telecom</span>
+                        </h2>
+                        <h4 class="fw-bold text-dark">Bienvenue,</h4>
+                        <p class="text-muted">veuillez confirmer votre identité s'il vous plaît.</p>
+                    </div>
+
+                    <div class="p-1 rounded-4 border border-light shadow-sm" style="background-color:#f1f3f9">
+                        <div class="bg-white p-4 p-md-5 rounded-4">
+
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-danger py-2">{{ message }}</div>
+                            {% endfor %}
+                            {% endif %}
+
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label class="small fw-bold text-uppercase text-muted mb-2"
+                                        style="letter-spacing:1px">
+                                        Nom d'utilisateur
+                                    </label>
+                                    <input type="text" name="username" class="form-control" placeholder="nom@tt.tn"
+                                        required>
+                                </div>
+                                <div class="mb-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <label class="small fw-bold text-uppercase text-muted"
+                                            style="letter-spacing:1px">
+                                            Mot de passe
+                                        </label>
+                                        <a href="{% url 'accounts:reset_password' %}"
+                                            class="small fw-bold text-decoration-none" style="color:#001e8c">
+                                            Oublié ?
+                                        </a>
+                                    </div>
+                                    <input type="password" name="password" class="form-control" placeholder="•••••"
+                                        required>
+                                </div>
+                                <button type="submit" class="btn-login">Se connecter</button>
+                            </form>
+
+                            <div class="text-center mt-3">
+                                <span class="text-muted small">Pas encore de compte ? </span>
+                                <a href="{% url 'accounts:inscription' %}" class="small fw-bold text-decoration-none"
+                                    style="color:#c832ff">
+                                    S'inscrire
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 text-center" style="font-size:10px">
+                        <p class="text-muted mb-1">© 2026 Tunisie Telecom — Système de détection du churn</p>
+                        <p class="text-muted mb-0">PFE Informatique</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

@@ -1,0 +1,331 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    {% include 'accounts/navbar.html' %}
+    <div class="container-fluid py-4">
+        <div class="container-fluid py-4">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">⚙️ Administration</h2>
+                    <p class="text-muted mb-0">Gestion des comptes et maintenance de la base de données</p>
+                </div>
+                <a href="{% url 'dashboard:accueil' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
+                </a>
+            </div>
+
+            <!-- Alertes -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <!-- Colonne Gauche: Statistiques et Vidage -->
+                <div class="col-lg-5">
+                    <!-- Carte Statistiques -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-database me-2"></i>Statistiques des Tables</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="stat-card p-3 bg-light rounded">
+                                        <div class="text-muted small">Clients</div>
+                                        <div class="h4 mb-0">{{ stats.clients }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-card p-3 bg-light rounded">
+                                        <div class="text-muted small">Notifications</div>
+                                        <div class="h4 mb-0">{{ stats.notifications }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-card p-3 bg-light rounded">
+                                        <div class="text-muted small">Analyses</div>
+                                        <div class="h4 mb-0">{{ stats.analyses }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-card p-3 bg-light rounded">
+                                        <div class="text-muted small">Recommandations</div>
+                                        <div class="h4 mb-0">{{ stats.recommandations }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="stat-card p-3 bg-light rounded">
+                                        <div class="text-muted small">Utilisateurs</div>
+                                        <div class="h4 mb-0">{{ stats.users }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Carte Vidage de Tables -->
+                    <div class="card shadow-sm border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Vidage des Tables</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">
+                                <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                                Attention: Cette action est irréversible!
+                            </p>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('clients')">
+                                    <i class="fas fa-users me-2"></i>Vider Clients
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('notifications')">
+                                    <i class="fas fa-bell me-2"></i>Vider Notifications
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('recommandations')">
+                                    <i class="fas fa-lightbulb me-2"></i>Vider Recommandations
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('analyses')">
+                                    <i class="fas fa-chart-line me-2"></i>Vider Analyses
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('evenements_cdr')">
+                                    <i class="fas fa-phone me-2"></i>Vider Événements CDR
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('interactions')">
+                                    <i class="fas fa-mouse-pointer me-2"></i>Vider Interactions
+                                </button>
+                                <hr>
+                                <button class="btn btn-danger" onclick="viderTable('all')">
+                                    <i class="fas fa-trash me-2"></i>Vider TOUTES les tables
+                                </button>
+                                {% if request.user.is_superuser %}
+                                <button class="btn btn-dark" onclick="resetDatabase()">
+                                    <i class="fas fa-power-off me-2"></i>RÉINITIALISATION COMPLÈTE
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Colonne Droite: Gestion des Utilisateurs -->
+                {% if can_manage_users %}
+                <div class="col-lg-7">
+                    <div class="card shadow-sm">
+                        <div
+                            class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>Gestion des Comptes</h5>
+                            <span class="badge bg-white text-success">{{ user_count }} utilisateurs</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Email</th>
+                                            <th>Nom</th>
+                                            <th>Rôle</th>
+                                            <th>Agence</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.email }}</td>
+                                            <td>{{ user.nom|default:"-" }}</td>
+                                            <td>
+                                                {% if user.role == 'admin' %}
+                                                <span class="badge bg-primary">Admin Ville</span>
+                                                {% elif user.role == 'super_admin' %}
+                                                <span class="badge bg-dark">Super Admin</span>
+                                                {% elif user.role == 'chef_agence' %}
+                                                <span class="badge bg-info">Chef Agence</span>
+                                                {% elif user.role == 'agent_marketing' %}
+                                                <span class="badge bg-warning text-dark">Agent Marketing</span>
+                                                {% elif user.role == 'agent_commercial' %}
+                                                <span class="badge bg-secondary">Agent Commercial</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">{{ user.get_role_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ user.agence.nom|default:"-" }}</td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                <span class="badge bg-success">Actif</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Inactif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <form method="post"
+                                                    action="{% url 'dashboard:toggle_user_active' user.id %}"
+                                                    class="d-inline">
+                                                    {% csrf_token %}
+                                                    {% if user.is_active %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Désactiver ce compte ?')">
+                                                        <i class="fas fa-ban"></i> Désactiver
+                                                    </button>
+                                                    {% else %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-success"
+                                                        onclick="return confirm('Activer ce compte ?')">
+                                                        <i class="fas fa-check"></i> Activer
+                                                    </button>
+                                                    {% endif %}
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                Aucun utilisateur à afficher
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-lg-7">
+                    <div class="card shadow-sm border-info">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Gestion des tables</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">
+                                En tant que <strong>{{ request.user.get_role_display }}</strong>, vous pouvez uniquement
+                                gérer les tables et la maintenance depuis cette page.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Modal de confirmation -->
+        <div class="modal fade" id="confirmModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">⚠️ Confirmation</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage">Êtes-vous sûr de vouloir continuer ?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger" id="confirmBtn">Confirmer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+        <script>
+            function viderTable(table) {
+                const messages = {
+                    'clients': 'Vider la table Clients ?',
+                    'notifications': 'Vider la table Notifications ?',
+                    'recommandations': 'Vider la table Recommandations ?',
+                    'analyses': 'Vider la table Analyses ?',
+                    'evenements_cdr': 'Vider la table Événements CDR ?',
+                    'interactions': 'Vider la table Interactions ?',
+                    'all': '⚠️ VIDER TOUTES LES TABLES ? Cette action supprimera tous les clients, notifications, analyses, recommandations, etc.'
+                };
+
+                if (!confirm(messages[table] || 'Continuer ?')) return;
+
+                fetch('{% url "dashboard:vider_table" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: 'table=' + encodeURIComponent(table)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.redirect) {
+                            alert('Erreur : ' + data.error);
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            }
+                            return;
+                        }
+
+                        if (data.success) {
+                            alert('✅ ' + data.message);
+                            location.reload();
+                        } else {
+                            alert('❌ Erreur: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('❌ Erreur: ' + error);
+                    });
+            }
+
+            function resetDatabase() {
+                if (!confirm('⚠️ RÉINITIALISATION COMPLÈTE DE LA BASE DE DONNÉES ?\n\nCette action va:\n- Supprimer tous les clients\n- Supprimer toutes les notifications\n- Supprimer toutes les analyses\n- Supprimer toutes les recommandations\n- Supprimer tous les utilisateurs (sauf superusers)\n\nCette action est IRRÉVERSIBLE !')) return;
+
+                if (!confirm('Êtes-vous VRAIMENT sûr ? Tapez "OUI" pour confirmer.')) return;
+
+                fetch('{% url "dashboard:reset_database" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.redirect) {
+                            alert('Erreur : ' + data.error);
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            }
+                            return;
+                        }
+
+                        if (data.success) {
+                            alert('✅ ' + data.message);
+                            location.reload();
+                        } else {
+                            alert('❌ Erreur: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('❌ Erreur: ' + error);
+                    });
+            }
+        </script>
+</body>
+
+</html>

@@ -1,0 +1,566 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Churn Detection System</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Couleurs Tunisie Telecom */
+            --brand: #004595;         /* Bleu TT */
+            --brand-light: #e6f0ff;
+            --brand-dark: #002d62;
+            --accent: #ed1c24;        /* Rouge TT */
+            --accent-purple: #92278f; /* Violet TT */
+            --accent-cyan: #00aeef;   /* Cyan TT */
+            --success: #8cc63f;       /* Vert TT */
+            --success-bg: #f4fae9;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --warning: #f7941d;       /* Orange TT */
+            --warning-bg: #fff8f0;
+            --neutral: #f8f9fa;
+            --neutral-dark: #e9ecef;
+            --border: #dee2e6;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --text-faint: #adb5bd;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Manrope', sans-serif;
+            background: var(--neutral);
+        }
+
+        .navbar-tt {
+            background: #ffffff;
+            height: 70px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 3px solid var(--brand);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo-text {
+            color: var(--brand);
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -.5px;
+        }
+
+        .nav-logo-text span {
+            opacity: .7;
+            font-weight: 400;
+            font-size: 12px;
+            margin-left: 2px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-btn {
+            position: relative;
+            background: var(--neutral);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            padding: 8px 16px;
+            color: var(--brand);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: "Manrope", sans-serif;
+            transition: all .2s;
+            white-space: nowrap;
+        }
+
+        .nav-btn:hover {
+            background: var(--brand);
+            color: white;
+            border-color: var(--brand);
+        }
+
+        .nav-btn i {
+            font-size: 15px;
+        }
+
+        .notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger);
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--brand);
+        }
+
+        .nav-dropdown {
+            position: relative;
+        }
+
+        .dd-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, .18);
+            border: 1px solid var(--border);
+            z-index: 99999;
+            overflow: hidden;
+            animation: ddIn .15s ease;
+        }
+
+        @keyframes ddIn {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dd-panel.open {
+            display: block;
+        }
+
+        .dd-notifs {
+            width: 320px;
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        .dd-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dd-header-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .dd-mark-read {
+            font-size: 11px;
+            color: var(--accent);
+            font-weight: 600;
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'Manrope', sans-serif;
+            padding: 0;
+        }
+
+        .dd-mark-read:hover {
+            text-decoration: underline;
+        }
+
+        .dd-section {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dd-section:last-child {
+            border-bottom: none;
+        }
+
+        .dd-section-header {
+            padding: 10px 16px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--neutral);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dd-section-count {
+            background: var(--brand);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .dd-notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--neutral);
+            text-decoration: none;
+            color: inherit;
+            transition: background .15s;
+        }
+
+        .dd-notif-item:hover {
+            background: var(--neutral);
+        }
+
+        .dd-notif-item.non-lue {
+            background: rgba(200, 50, 255, .03);
+        }
+
+        .dd-notif-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .dd-notif-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .dd-notif-body {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .dd-notif-time {
+            font-size: 10px;
+            color: #aaa;
+            margin-top: 3px;
+            white-space: nowrap;
+        }
+
+        .dd-unread-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        .dd-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .dd-empty i {
+            font-size: 28px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .dd-footer {
+            padding: 10px 16px;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .dd-footer a {
+            font-size: 12px;
+            color: var(--accent);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .dd-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .dd-menu {
+            min-width: 200px;
+            padding: 6px 0;
+        }
+
+        .dd-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            text-decoration: none;
+            transition: background .15s;
+        }
+
+        .dd-menu-item:hover {
+            background: var(--neutral);
+            color: var(--brand);
+        }
+
+        .dd-menu-item.danger {
+            color: var(--danger);
+        }
+
+        .dd-menu-item.danger:hover {
+            background: #fdecea;
+        }
+
+        .dd-separator {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 0;
+        }
+
+        .nav-spacer {
+            height: 60px;
+        }
+    </style>
+
+    {# ThÃ¨me global (permet d'aligner aussi les pages qui incluent cette navbar) #}
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav class="navbar-tt">
+        <a href="{% url 'dashboard:accueil' %}" class="nav-logo">
+            <img src="{% static 'images/logoTT.png' %}" height="42" style="border-radius:6px;" alt="Tunisie Telecom">
+            <div class="nav-logo-text">Churn Detection <span>System</span></div>
+        </a>
+        <div class="nav-actions">
+            <div class="nav-dropdown">
+                <button class="nav-btn" id="btn-notif" onclick="toggleDD('dd-notif')">
+                    <i class="bi bi-bell-fill"></i>
+                    {% if nb_notifications > 0 %}
+                    <span class="notif-badge"></span>
+                    {% endif %}
+                </button>
+
+                <div class="dd-panel dd-notifs" id="dd-notif">
+                    <div class="dd-header">
+                        <span class="dd-header-title">Notifications</span>
+                        {% if nb_notifications > 0 %}
+                        <a href="{% url 'dashboard:marquer_lu' %}" class="dd-mark-read">
+                            Tout marquer lu
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% regroup notifications_liste by type_notif as notifs_by_type %}
+
+                    {% for type_group in notifs_by_type %}
+                    <div class="dd-section">
+                        <div class="dd-section-header">
+                            {% if type_group.grouper == 'recommandation' %}
+                            <i class="bi bi-lightbulb" style="color:var(--accent);"></i> Recommandations
+                            {% elif type_group.grouper == 'alerte_churn' %}
+                            <i class="bi bi-exclamation-triangle" style="color:var(--danger);"></i> Alertes
+                            {% elif type_group.grouper == 'compte' %}
+                            <i class="bi bi-person-check" style="color:var(--success);"></i> Compte
+                            {% else %}
+                            <i class="bi bi-info-circle" style="color:var(--warning);"></i> Info
+                            {% endif %}
+                            <span class="dd-section-count">{{ type_group.list|length }}</span>
+                        </div>
+                        {% for notif in type_group.list %}
+                        <a href="{% url 'dashboard:notification_detail' notif.id %}"
+                            class="dd-notif-item {% if not notif.lu %}non-lue{% endif %}">
+                            <div class="dd-notif-icon" style="background:
+                            {% if notif.type_notif == 'recommandation' %}rgba(200,50,255,.1)
+                            {% elif notif.type_notif == 'alerte_churn' %}rgba(220,53,69,.1)
+                            {% elif notif.type_notif == 'compte' %}rgba(0,180,100,.1)
+                            {% else %}rgba(255,160,0,.1){% endif %};">
+                                <i class="bi
+                                {% if notif.type_notif == 'recommandation' %}bi-lightbulb
+                                {% elif notif.type_notif == 'alerte_churn' %}bi-exclamation-triangle
+                                {% elif notif.type_notif == 'compte' %}bi-person-check
+                                {% else %}bi-bell{% endif %}" style="color:
+                                {% if notif.type_notif == 'recommandation' %}var(--accent)
+                                {% elif notif.type_notif == 'alerte_churn' %}var(--danger)
+                                {% elif notif.type_notif == 'compte' %}var(--success)
+                                {% else %}var(--warning){% endif %};">
+                                </i>
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div class="dd-notif-title">{{ notif.titre }}</div>
+                                <div class="dd-notif-body">{{ notif.contenu|truncatechars:55 }}</div>
+                                <div class="dd-notif-time">{{ notif.date_creation|timesince }}</div>
+                            </div>
+                            {% if not notif.lu %}
+                            <div class="dd-unread-dot"></div>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% empty %}
+                    <div class="dd-empty">
+                        <i class="bi bi-bell-slash"></i>
+                        Aucune notification
+                    </div>
+                    {% endfor %}
+
+                    <div class="dd-footer">
+                        <a href="{% url 'dashboard:notifications' %}">
+                            Voir toutes les notifications
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <button class="nav-btn" onclick="toggleDD('dd-user')">
+                    <i class="bi bi-person-circle"></i>
+                    <span>{{ request.user.get_full_name|default:request.user.username }}</span>
+                    <i class="bi bi-chevron-down" style="font-size:10px; opacity:.7;"></i>
+                </button>
+
+                <div class="dd-panel dd-menu" id="dd-user">
+                    <a href="{% url 'accounts:profile' %}" class="dd-menu-item">
+                        <i class="bi bi-person"></i> Profil
+                    </a>
+                    <div class="dd-separator"></div>
+                    <a href="{% url 'accounts:login' %}" class="dd-menu-item danger">
+                        <i class="bi bi-box-arrow-right"></i> DÃ©connexion
+                    </a>
+                </div>
+            </div>
+            <div class="nav-dropdown">
+                <button class="nav-btn" onclick="toggleDD('dd-menu')">
+                    <i class="bi bi-list" style="font-size:18px;"></i>
+                </button>
+
+                <div class="dd-panel dd-menu" id="dd-menu">
+                    {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
+                    <a href="{% url 'dashboard:accueil' %}" class="dd-menu-item">
+                        <i class="bi bi-house"></i> Accueil
+                    </a>
+                    {% endif %}
+                    {% if request.user.role == 'chef_agence' or request.user.is_superuser %}
+                    <a href="{% url 'dashboard:dashboard_global' %}" class="dd-menu-item">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    {% endif %}
+                    {% if request.user.role == 'chef_agence' or request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
+                    <a href="{% url 'dashboard:administration' %}" class="dd-menu-item">
+                        <i class="bi bi-gear"></i> Administration
+                    </a>
+                    {% endif %}
+                    {% if request.user.role == 'chef_agence' %}
+                    <a href="{% url 'accounts:gestion_comptes' %}" class="dd-menu-item">
+                        <i class="bi bi-shield-lock"></i> Gestion des comptes
+                    </a>
+                    {% endif %}
+                    {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
+                    <a href="{% url 'dashboard:clients' %}" class="dd-menu-item">
+                        <i class="bi bi-people"></i> Clients
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+    </nav>
+
+    <div class="nav-spacer"></div>
+
+    {% block content %}{% endblock %}
+
+    <script>
+        function toggleDD(id) {
+            const target = document.getElementById(id);
+            const isOpen = target.classList.contains('open');
+            document.querySelectorAll('.dd-panel').forEach(p => p.classList.remove('open'));
+            if (!isOpen) target.classList.add('open');
+        }
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.dd-panel').forEach(p => p.classList.remove('open'));
+            }
+        });
+
+        let lastNotificationCount = {{ nb_notifications }};
+
+        // Notifications API check disabled - FastAPI service not running
+        // async function checkNotifications() {
+        //     try {
+        //         const response = await fetch("{% url 'dashboard:notifications_api' %}");
+        //         const data = await response.json();
+
+        //         const badge = document.querySelector('.notif-badge');
+        //         if (badge) {
+        //             if (data.nb_notifications > 0) {
+        //                 badge.style.display = 'flex';
+        //             } else {
+        //                 badge.style.display = 'none';
+        //             }
+        //         }
+
+        //         const dropdown = document.getElementById('dd-notif');
+        //         if (dropdown && dropdown.classList.contains('open')) {
+        //             const notifList = dropdown.querySelector('.dd-panel');
+        //             if (notifList && data.nb_notifications !== lastNotificationCount) {
+        //                 location.reload();
+        //             }
+        //         }
+
+        //         lastNotificationCount = data.nb_notifications;
+        //     } catch (error) {
+        //         console.error('Erreur lors du check des notifications:', error);
+        //     }
+        // }
+
+        // setInterval(checkNotifications, 30000);
+    </script>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>
+
+

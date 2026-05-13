@@ -1,0 +1,731 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    <style>
+        .val-card {
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--warning);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 10px;
+            background: var(--card-bg)
+        }
+
+        .val-card.confirmation {
+            border-left-color: var(--accent)
+        }
+
+        .val-client {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--brand);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px
+        }
+
+        .val-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px
+        }
+
+        .val-contenu {
+            font-size: 13px;
+            color: var(--text-main);
+            line-height: 1.5;
+            margin-bottom: 12px
+        }
+
+        .val-note {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 10px;
+            font-size: 12px;
+            font-family: 'Manrope', sans-serif;
+            color: var(--text-main);
+            background: var(--neutral);
+            resize: none;
+            margin-bottom: 8px
+        }
+
+        .val-note:focus {
+            outline: none;
+            border-color: var(--brand)
+        }
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px
+        }
+
+        .filter-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all .15s;
+            font-family: 'Manrope', sans-serif
+        }
+
+        .filter-pill:hover {
+            border-color: var(--brand);
+            color: var(--brand)
+        }
+
+        .filter-pill.active {
+            border-color: var(--brand);
+            background: var(--brand);
+            color: white
+        }
+
+        .filter-count {
+            background: rgba(255, 255, 255, .25);
+            border-radius: 10px;
+            padding: 1px 6px;
+            font-size: 10px
+        }
+
+        .filter-pill:not(.active) .filter-count {
+            background: var(--neutral);
+            color: var(--text-faint)
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--neutral);
+            text-decoration: none;
+            color: inherit;
+            transition: background .15s;
+            position: relative
+        }
+
+        .notif-item:hover {
+            background: var(--neutral)
+        }
+
+        .notif-item:last-child {
+            border-bottom: none
+        }
+
+        .notif-item.non-lue::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 0 2px 2px 0
+        }
+
+        .notif-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0
+        }
+
+        .notif-body {
+            flex: 1;
+            min-width: 0
+        }
+
+        .notif-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .notif-content {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 4px
+        }
+
+        .notif-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--text-faint)
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .4px
+        }
+
+        .type-badge.recommandation {
+            background: var(--accent-light);
+            color: var(--accent)
+        }
+
+        .type-badge.alerte_churn {
+            background: var(--danger-bg);
+            color: var(--danger)
+        }
+
+        .type-badge.compte {
+            background: var(--success-bg);
+            color: var(--success)
+        }
+
+        .type-badge.info {
+            background: var(--brand-light);
+            color: var(--brand)
+        }
+
+        .client-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--brand-light);
+            color: var(--brand);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 10px;
+            font-weight: 700
+        }
+
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            flex-shrink: 0;
+            margin-top: 4px
+        }
+
+        .actions-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .actions-bar-count {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600
+        }
+
+        .date-label {
+            padding: 8px 20px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: var(--text-faint);
+            background: var(--neutral);
+            border-bottom: 1px solid var(--border)
+        }
+
+        .empty-state {
+            padding: 48px 20px;
+            text-align: center
+        }
+
+        .empty-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: var(--neutral);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 22px;
+            color: var(--text-faint)
+        }
+
+        .empty-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 4px
+        }
+
+        .empty-sub {
+            font-size: 12px;
+            color: var(--text-faint)
+        }
+
+        .btn-accept {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity .15s
+        }
+
+        .btn-accept:hover {
+            opacity: .88
+        }
+
+        .btn-reject {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid #f5a0a0;
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px
+        }
+
+        .btn-reject:hover {
+            background: #f7c1c1
+        }
+
+        .btn-secondary {
+            background: var(--neutral);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: background .15s
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+            color: var(--text-main)
+        }
+
+        .django-msg {
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .django-msg.success {
+            background: var(--success-bg) !important;
+            color: #1a6b46 !important;
+            border: 1px solid #b7e5d0 !important
+        }
+
+        .django-msg.error {
+            background: var(--danger-bg);
+            color: #8b0000;
+            border: 1px solid #f5a0a0
+        }
+
+        .msg-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            margin-left: auto;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .msg-close:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-main);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: opacity .15s
+        }
+
+        .btn-delete:hover {
+            opacity: .88
+        }
+
+        .type-section {
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .type-section-header {
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--neutral);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .type-section-count {
+            background: var(--brand);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+    </style>
+</head>
+
+    <body>
+        {% include 'accounts/navbar.html' %}
+        <div class="page-wrap">
+
+            {% for msg in messages %}
+            <div class="django-msg {{ msg.tags }}" id="msg-{{ forloop.counter }}">
+                <i
+                    class="bi bi-{% if msg.tags == 'success' %}check-circle-fill{% else %}exclamation-triangle-fill{% endif %}"></i>
+                {{ msg }}
+                <button class="msg-close" onclick="closeMessage('msg-{{ forloop.counter }}')">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            {% endfor %}
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title"><i class="bi bi-bell-fill me-2"></i>Notifications</h1>
+                    <p class="page-sub">
+                        {{ nb_notifs }} notification{% if nb_notifs > 1 %}s{% endif %}
+                        {% if nb_non_lues > 0 %}
+                        · <span style="color:var(--accent);font-weight:700;">{{ nb_non_lues }} non lue{% if nb_non_lues > 1 %}s{% endif %}</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <a href="{% url 'dashboard:notifications_supprimees' %}" class="btn-secondary"><i class="bi bi-trash3"></i> Corbeille</a>
+                    <a href="{% url 'dashboard:notifications_archivees' %}" class="btn-secondary"><i class="bi bi-archive"></i> Archivées</a>
+                    <a href="{% url 'dashboard:accueil' %}" class="btn-secondary"><i class="bi bi-arrow-left"></i> Retour</a>
+                </div>
+            </div>
+
+            <div class="filters">
+                <button class="filter-pill active" data-filtre="toutes" onclick="filtrer(this)"><i
+                        class="bi bi-grid-3x3-gap"></i> Toutes <span class="filter-count">{{ nb_notifs }}</span></button>
+                <button class="filter-pill" data-filtre="recommandation" onclick="filtrer(this)"><i
+                        class="bi bi-lightbulb"></i> Recommandations <span class="filter-count"
+                        id="cnt-recommandation">{{ notif_counts.recommandation|default:0 }}</span></button>
+                <button class="filter-pill" data-filtre="alerte_churn" onclick="filtrer(this)"><i
+                        class="bi bi-exclamation-triangle"></i> Alertes <span class="filter-count"
+                        id="cnt-alerte_churn">{{ notif_counts.alerte_churn|default:0 }}</span></button>
+                <button class="filter-pill" data-filtre="compte" onclick="filtrer(this)"><i class="bi bi-person-check"></i>
+                    Comptes <span class="filter-count" id="cnt-compte">{{ notif_counts.compte|default:0 }}</span></button>
+                <button class="filter-pill" data-filtre="info" onclick="filtrer(this)"><i class="bi bi-info-circle"></i>
+                    Infos <span class="filter-count" id="cnt-info">{{ notif_counts.info|default:0 }}</span></button>
+                <button class="filter-pill" data-filtre="non-lues" onclick="filtrer(this)"><i class="bi bi-circle-fill"
+                        style="font-size:8px;"></i> Non lues <span class="filter-count" id="cnt-non-lues">{{ nb_non_lues|default:0 }}</span></button>
+            </div>
+
+            <div class="card">
+                <div class="actions-bar" style="display:flex;justify-content:space-between;align-items:center;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <input type="checkbox" id="selectAll" style="width:18px;height:18px;cursor:pointer;">
+                        <span class="actions-bar-count" id="label-count">{{ nb_notifs }} notification{% if nb_notifs > 1 %}s{% endif %}</span>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <button type="button" id="bulkArchiveBtn" class="btn-secondary" style="font-size:11px;padding:6px 12px;display:none;"><i class="bi bi-archive"></i> Archiver</button>
+                        <button type="button" id="bulkDeleteBtn" class="btn-secondary" style="font-size:11px;padding:6px 12px;display:none;color:var(--danger);border-color:var(--danger);"><i class="bi bi-trash3"></i> Supprimer</button>
+                        {% if nb_non_lues > 0 %}<a href="{% url 'dashboard:marquer_lu' %}" class="btn-secondary"
+                            style="font-size:11px;padding:6px 12px;"><i class="bi bi-check2-all"></i> Tout marquer comme
+                            lu</a>{% endif %}
+                    </div>
+                </div>
+                <div id="notifs-list">
+                    {% if notifications %}
+                    {% regroup notifications by type_notif as notifs_by_type %}
+                    {% for type_group in notifs_by_type %}
+                    <div class="type-section">
+                        <div class="type-section-header">
+                            {% if type_group.grouper == 'recommandation' %}
+                            <i class="bi bi-lightbulb" style="color:var(--accent);"></i> Recommandations
+                            {% elif type_group.grouper == 'alerte_churn' %}
+                            <i class="bi bi-exclamation-triangle" style="color:var(--danger);"></i> Alertes
+                            {% elif type_group.grouper == 'compte' %}
+                            <i class="bi bi-person-check" style="color:var(--success);"></i> Compte
+                            {% else %}
+                            <i class="bi bi-info-circle" style="color:var(--warning);"></i> Info
+                            {% endif %}
+                            <span class="type-section-count">{{ type_group.list|length }}</span>
+                        </div>
+                        {% regroup type_group.list by date_creation|date:"d/m/Y" as notifs_par_date %}
+                        {% for groupe in notifs_par_date %}
+                        <div class="date-group">
+                            <div class="date-label">{{ groupe.grouper }}</div>
+                            {% for notif in groupe.list %}
+                            <div class="notif-item-wrapper" style="position:relative;">
+                                <input type="checkbox" class="notif-checkbox" value="{{ notif.id }}" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:18px;height:18px;cursor:pointer;z-index:10;">
+                                <a href="{% url 'dashboard:notification_detail' notif.id %}" class="notif-item {% if not notif.lu %}non-lue{% endif %}"
+                                    data-type="{{ notif.type_notif }}" data-lu="{{ notif.lu|yesno:'true,false' }}" style="padding-left:44px;">
+                                    <div class="notif-icon"
+                                        style="background:{% if notif.type_notif == 'recommandation' %}var(--accent-light){% elif notif.type_notif == 'alerte_churn' %}var(--danger-bg){% elif notif.type_notif == 'compte' %}var(--success-bg){% else %}var(--brand-light){% endif %};">
+                                        <i class="bi {% if notif.type_notif == 'recommandation' %}bi-lightbulb{% elif notif.type_notif == 'alerte_churn' %}bi-exclamation-triangle-fill{% elif notif.type_notif == 'compte' %}bi-person-check{% else %}bi-bell{% endif %}"
+                                            style="color:{% if notif.type_notif == 'recommandation' %}var(--accent){% elif notif.type_notif == 'alerte_churn' %}var(--danger){% elif notif.type_notif == 'compte' %}var(--success){% else %}var(--brand){% endif %};"></i>
+                                    </div>
+                                    <div class="notif-body">
+                                        <div class="notif-title">{{ notif.titre }}</div>
+                                        <div class="notif-content">{{ notif.contenu }}</div>
+                                        <div class="notif-meta">
+                                            <span><i class="bi bi-clock me-1"></i>{{ notif.date_creation|timesince }}</span>
+                                            {% if notif.client %}
+                                            <span class="client-chip"><i class="bi bi-person"></i> {{ notif.client.client_id }}</span>
+                                            {% endif %}
+                                            <span style="display:inline-flex; gap:4px; margin-left:auto;">
+                                                {% if not notif.lu %}
+                                                <form method="POST" action="{% url 'dashboard:marquer_lu_notification' notif.id %}" style="display:inline;" onclick="event.stopPropagation();">
+                                                    {% csrf_token %}
+                                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:var(--brand); font-size:13px; padding:0;" title="Marquer comme lu"><i class="bi bi-check2"></i></button>
+                                                </form>
+                                                {% endif %}
+                                                <form method="POST" action="{% url 'dashboard:archiver_notification' notif.id %}" style="display:inline;" onclick="event.stopPropagation();">
+                                                    {% csrf_token %}
+                                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:var(--warning); font-size:13px; padding:0;" title="Archiver"><i class="bi bi-archive"></i></button>
+                                                </form>
+                                                <form method="POST" action="{% url 'dashboard:supprimer_notification' notif.id %}" style="display:inline;" onclick="event.stopPropagation();">
+                                                    {% csrf_token %}
+                                                    <button type="button" onclick="showDeleteModal(this)" style="background:none; border:none; cursor:pointer; color:var(--danger); font-size:13px; padding:0;" title="Supprimer"><i class="bi bi-trash3"></i></button>
+                                                </form>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% if not notif.lu %}<div class="unread-dot"></div>{% endif %}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon"><i class="bi bi-bell-slash"></i></div>
+                        <div class="empty-title">Aucune notification</div>
+                        <div class="empty-sub">Vous êtes à jour.</div>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Modal de confirmation suppression -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div class="modal-body p-4 text-center">
+                    <div style="width:64px;height:64px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                        <i class="bi bi-trash3" style="font-size:28px;color:var(--danger);"></i>
+                    </div>
+                    <h5 style="font-weight:700;color:var(--text-main);margin-bottom:8px;">Supprimer cette notification ?</h5>
+                    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">La notification sera déplacée dans la <strong>corbeille</strong>.</p>
+                    <p style="font-size:12px;color:var(--text-faint);margin-bottom:20px;">Vous pourrez la restaurer pendant 30 jours avant suppression définitive.</p>
+                    <div style="display:flex;gap:10px;justify-content:center;">
+                        <button type="button" class="btn-secondary" data-bs-dismiss="modal" style="padding:10px 20px;">Annuler</button>
+                        <button type="button" id="confirmDeleteBtn" class="btn-delete" style="padding:10px 20px;"><i class="bi bi-trash3"></i> Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDeleteForm = null;
+
+        function closeMessage(id) {
+            const msg = document.getElementById(id);
+            if (msg) {
+                msg.style.transition = 'opacity 0.3s, transform 0.3s';
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-10px)';
+                setTimeout(() => {
+                    msg.remove();
+                }, 300);
+            }
+        }
+
+        function showDeleteModal(btn) {
+            event.stopPropagation();
+            currentDeleteForm = btn.closest('form');
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+            if (currentDeleteForm) {
+                currentDeleteForm.submit();
+            }
+        });
+
+        // Bulk delete functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Checkbox selection and bulk button visibility
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.notif-checkbox');
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+
+            if (selectAllCheckbox && checkboxes.length > 0) {
+                selectAllCheckbox.addEventListener('change', (e) => {
+                    checkboxes.forEach(cb => cb.checked = e.target.checked);
+                    updateBulkButtons();
+                });
+            }
+
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateBulkButtons);
+            });
+
+            function updateBulkButtons() {
+                const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
+                if (bulkDeleteBtn) {
+                    bulkDeleteBtn.style.display = checkedCount > 0 ? 'inline-flex' : 'none';
+                }
+            }
+        });
+        
+        function filtrer(btn) {
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            const f = btn.dataset.filtre;
+            const items = document.querySelectorAll('.notif-item');
+            let v = 0;
+            items.forEach(i => {
+                const show = f === 'toutes' || f === 'non-lues' ? i.dataset.lu === 'false' : i.dataset.type === f;
+                const finalShow = f === 'toutes' ? true : show;
+                i.style.display = finalShow ? 'flex' : 'none';
+                if (finalShow) v++;
+            });
+            document.querySelectorAll('.date-group').forEach(g => {
+                g.style.display = [...g.querySelectorAll('.notif-item')].some(i => i.style.display !== 'none') ? 'block' : 'none';
+            });
+            document.getElementById('empty-filter').style.display = (v === 0 && document.querySelectorAll('.notif-item').length > 0) ? 'block' : 'none';
+            document.getElementById('label-count').textContent = v + ' notification' + (v > 1 ? 's' : '');
+        }
+
+        document.getElementById('bulkDeleteBtn').addEventListener('click', () => {
+            const notifIds = [];
+            const checkboxes = document.querySelectorAll('.notif-checkbox:checked');
+            checkboxes.forEach(checkbox => notifIds.push(checkbox.value));
+            if (notifIds.length > 0) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'dashboard:bulk_delete_notifications' %}";
+                notifIds.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'notif_ids';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                form.appendChild(csrfInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    </script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

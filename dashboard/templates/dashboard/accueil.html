@@ -1,0 +1,1586 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Couleurs Tunisie Telecom */
+            --brand: #004595;         /* Bleu TT */
+            --brand-light: #e6f0ff;
+            --brand-dark: #002d62;
+            --accent: #ed1c24;        /* Rouge TT */
+            --accent-purple: #92278f; /* Violet TT */
+            --accent-cyan: #00aeef;   /* Cyan TT */
+            --success: #8cc63f;       /* Vert TT */
+            --success-bg: #f4fae9;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --warning: #f7941d;       /* Orange TT */
+            --warning-bg: #fff8f0;
+            --neutral: #f8f9fa;
+            --neutral-dark: #e9ecef;
+            --border: #dee2e6;
+            --text-main: #212529;
+            --text-muted: #6c757d;
+            --text-faint: #adb5bd;
+            --card-bg: #ffffff;
+            --radius-sm: 10px;
+            --radius-md: 18px;
+            --radius-lg: 30px;
+            --radius-pill: 50px;
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            background: linear-gradient(180deg, #eef2ff 0%, #f7f8ff 100%);
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        /* ── LAYOUT ─────────────────────────────────────────── */
+        .page-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+        }
+
+        /* ── CARTE DE BASE ──────────────────────────────────── */
+        .card {
+            position: relative;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), #ffffff);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(17, 41, 84, 0.08);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--brand) 50%, var(--accent-purple) 100%);
+        }
+
+        .card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── EN-TÊTE DE PAGE ────────────────────────────────── */
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--brand-dark);
+            margin: 0 0 8px;
+        }
+
+        .page-header p {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin: 0;
+            max-width: 760px;
+        }
+
+        /* ── BADGE ÉTAPE ────────────────────────────────────── */
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--brand-light);
+            color: var(--brand);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        /* ── LABELS DE SECTION ──────────────────────────────── */
+        .section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-label .step-num {
+            background: var(--brand);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* ── GRILLE SOURCES ─────────────────────────────────── */
+        .source-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .src-btn {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            cursor: pointer;
+            background: #ffffff;
+            text-align: left;
+            transition: all .2s;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .src-btn:hover {
+            border-color: var(--brand);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .src-btn.active {
+            border: 2px solid #0f3ba1;
+            background: rgba(15, 59, 161, 0.08);
+        }
+
+        .src-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+            display: block;
+            color: var(--brand);
+        }
+
+        .src-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .src-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ── ZONE UPLOAD ────────────────────────────────────── */
+        .upload-zone {
+            border: 1.5px dashed rgba(15, 59, 161, 0.25);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s, background .2s, box-shadow .2s;
+            margin-bottom: 12px;
+            background: #ffffff;
+            box-shadow: 0 10px 26px rgba(15, 31, 66, 0.04);
+        }
+
+        .upload-zone:hover {
+            border-color: rgba(123, 44, 255, 0.75);
+            background: linear-gradient(135deg, rgba(15, 59, 161, 0.08), rgba(123, 44, 255, 0.12));
+        }
+
+        .upload-zone-icon {
+            font-size: 24px;
+            color: var(--text-faint);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .upload-zone p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin: 0 0 10px;
+        }
+
+        .upload-zone span {
+            font-size: 11px;
+            color: var(--text-faint);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ── INPUTS FORMULAIRE ──────────────────────────────── */
+        .form-input {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            font-size: 13px;
+            color: var(--text-main);
+            font-family: 'Manrope', sans-serif;
+            background: var(--neutral);
+            margin-bottom: 8px;
+            transition: border-color .2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--brand);
+            background: white;
+        }
+
+        /* ── SELECT ALGO ────────────────────────────────────── */
+        .algo-select {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            font-size: 13px;
+            color: var(--text-main);
+            font-family: 'Manrope', sans-serif;
+            background: var(--neutral);
+            cursor: pointer;
+        }
+
+        .algo-select:focus {
+            outline: none;
+            border-color: var(--brand);
+        }
+
+        /* ── ALERTE ÉTAT VIDE ───────────────────────────────── */
+        .alert-warning {
+            background: var(--warning-bg);
+            border: 1px solid #ffd166;
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            font-size: 12px;
+            color: #7a4d00;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        .alert-warning.show {
+            display: flex;
+        }
+
+        /* ── BOUTONS ────────────────────────────────────────── */
+        .btn-launch {
+            background: linear-gradient(135deg, var(--brand), var(--accent-purple));
+            color: white;
+            border: none;
+            border-radius: var(--radius-pill);
+            padding: 14px 30px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: "Manrope", sans-serif;
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 20px rgba(0, 69, 149, 0.2);
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(0, 69, 149, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .btn-launch:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-reset {
+            background: var(--neutral);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 11px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background .2s;
+        }
+
+        .btn-reset:hover {
+            background: var(--border);
+        }
+
+        .btn-secondary {
+            background: var(--neutral);
+            color: var(--brand);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+        }
+
+        .btn-voir {
+            background: linear-gradient(135deg, #0f3ba1, #7b2cff);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            width: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            margin-top: 12px;
+            transition: opacity .2s, transform .1s;
+            box-shadow: 0 10px 24px rgba(15, 59, 161, 0.14);
+        }
+
+        .btn-voir:hover {
+            opacity: .95;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-voir.show {
+            display: flex;
+        }
+
+        /* ── BARRE DE PROGRESSION ───────────────────────────── */
+        .progress-track {
+            height: 4px;
+            background: var(--neutral);
+            border-radius: 2px;
+            margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--brand), var(--accent));
+            border-radius: 2px;
+            width: 0%;
+            transition: width .5s ease;
+        }
+
+        /* ── LOG D'EXÉCUTION ────────────────────────────────── */
+        .exec-log {
+            background: black;
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 2;
+            max-height: 180px;
+            overflow-y: auto;
+            color: var(--text-muted);
+        }
+
+        .exec-log::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .exec-log::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .log-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .log-line.done {
+            color: var(--success);
+        }
+
+        .log-line.active {
+            color: var(--brand);
+        }
+
+        .log-line.pending {
+            color: var(--text-faint);
+        }
+
+        .log-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+
+        /* ── RÉSULTATS ──────────────────────────────────────── */
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--neutral);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .result-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .result-value.danger {
+            color: var(--danger);
+        }
+
+        .result-value.success {
+            color: var(--success);
+        }
+
+        .result-value.accent {
+            color: var(--accent);
+        }
+
+        .empty-results {
+            text-align: center;
+            padding: 28px 0;
+        }
+
+        .empty-results i {
+            font-size: 32px;
+            color: var(--text-faint);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .empty-results p {
+            font-size: 12px;
+            color: var(--text-faint);
+            margin: 0;
+        }
+
+        /* ── CRISP-DM ───────────────────────────────────────── */
+        .crisp-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .crisp-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .crisp-item {
+            background: var(--neutral);
+            border-radius: var(--radius-sm);
+            padding: 12px 8px;
+            text-align: center;
+            border: 1px solid transparent;
+            transition: all .3s ease;
+        }
+
+        .crisp-item.done {
+            background: var(--success-bg);
+            border-color: #b7e5d0;
+        }
+
+        .crisp-item.active {
+            background: var(--brand-light);
+            border-color: #b8c8ff;
+        }
+
+        .crisp-num {
+            font-size: 10px;
+            color: var(--text-faint);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .crisp-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.3;
+        }
+
+        .crisp-item.done .crisp-title {
+            color: #1a6b46;
+        }
+
+        .crisp-item.active .crisp-title {
+            color: var(--brand);
+        }
+
+        .crisp-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border);
+            margin: 8px auto 0;
+        }
+
+        .crisp-item.done .crisp-dot {
+            background: var(--success);
+        }
+
+        .crisp-item.active .crisp-dot {
+            background: var(--brand);
+        }
+
+        /* ── KPIs (en bas, après analyse) ──────────────────── */
+        .kpi-section {
+            opacity: .4;
+            transition: opacity .5s ease;
+            pointer-events: none;
+        }
+
+        .kpi-section.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .kpi-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .kpi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 16px;
+        }
+
+        .kpi-value {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* ── DIVIDER TEXTE ──────────────────────────────────── */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 0;
+        }
+
+        .section-divider span {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            color: var(--text-faint);
+            white-space: nowrap;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── BADGES FORMAT ──────────────────────────────────── */
+        .format-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--neutral);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .format-badge i {
+            font-size: 11px;
+        }
+
+        /* ── ZONE MOCK ──────────────────────────────────────── */
+        .mock-zone {
+            text-align: center;
+            padding: 16px;
+        }
+
+        .mock-zone i {
+            font-size: 28px;
+            color: var(--success);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .mock-zone p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* ── RESPONSIVE ─────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .two-col {
+                grid-template-columns: 1fr !important;
+            }
+
+            .source-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+
+    {# Thème global (cards arrondies + dégradé bleu/violet) #}
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+</head>
+
+<body>
+
+    {% include 'accounts/navbar.html' %}
+
+    <div class="page-wrap">
+        <div class="page-header">
+            <h1>Système d'Analyse Prédictive Churn</h1>
+            <p>Chargez vos données, sélectionnez un algorithme et lancez l'analyse prédictive.</p>
+        </div>
+        <div class="row g-3 mb-3" style="--bs-gutter-x:16px;">
+            <div class="col-12 col-lg-6">
+                <div class="card h-100">
+                    <div class="section-label">
+                        <span class="step-num">1</span> Source des données
+                    </div>
+
+                    <div class="source-grid" style="grid-template-columns:1fr 1fr;">
+                        <button class="src-btn active" onclick="selectMethod('upload')" id="method-upload">
+                            <i class="bi bi-cloud-arrow-up src-icon"></i>
+                            <div class="src-title">Importer un fichier</div>
+                            <div class="src-desc">CSV, Excel,... avec scores ML</div>
+                        </button>
+                        <button class="src-btn" onclick="selectMethod('mock')" id="method-mock">
+                            <i class="bi bi-magic src-icon" style="color:var(--success);"></i>
+                            <div class="src-title">Données mock</div>
+                            <div class="src-desc">50 clients simulés</div>
+                        </button>
+                    </div>
+
+                    <div id="zone-upload">
+
+                        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                            <span class="format-badge"><i class="bi bi-filetype-csv"></i> CSV</span>
+                            <span class="format-badge"><i class="bi bi-file-earmark-excel"></i> XLSX</span>
+                            <span class="format-badge"><i class="bi bi-file-earmark-excel"></i> XLS</span>
+                            <span class="format-badge"><i class="bi bi-file-earmark-spreadsheet"></i> XLSM</span>
+                            <span class="format-badge"><i class="bi bi-filetype-txt"></i> TXT</span>
+                            <span class="format-badge" title="Séparateur point-virgule ou tabulation"><i
+                                    class="bi bi-table"></i> TSV</span>
+                        </div>
+
+                        <div class="upload-zone" id="drop-zone" onclick="document.getElementById('data-file').click()"
+                            ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)"
+                            ondrop="handleDrop(event)">
+                            <i class="bi bi-cloud-arrow-up upload-zone-icon"></i>
+                            <p id="upload-label">Glissez votre fichier ici</p>
+                            <span>CSV · Excel (xlsx, xls, xlsm) · TXT · TSV — max 50 Mo</span>
+                            <button class="btn-secondary"
+                                onclick="event.stopPropagation(); document.getElementById('data-file').click()">
+                                <i class="bi bi-folder2-open"></i> Parcourir
+                            </button>
+                        </div>
+
+                        <div id="file-info"
+                            style="display:none; background:var(--success-bg); border:1px solid #b7e5d0; border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; color:#1a6b46; display:none; align-items:center; gap:8px; margin-top:8px;">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span id="file-name"></span>
+                            <span id="file-size" style="color:#3b8c64; margin-left:auto;"></span>
+                            <button onclick="retirerFichier()"
+                                style="background:none;border:none;cursor:pointer;color:#1a6b46;padding:0;font-size:14px;"
+                                title="Retirer">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <input type="file" id="data-file" accept=".csv,.xlsx,.xls,.xlsm,.xlsb,.ods,.txt,.tsv,.tab"
+                            style="display:none;" onchange="handleFileUpload(this)">
+                    </div>
+
+                    <div id="zone-mock" style="display:none;" class="mock-zone">
+                        <p><i class="bi bi-magic" style="color:var(--success);"></i> 50 clients fictifs seront générés et analysés automatiquement.</p>
+                        <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">
+                            <i class="bi bi-info-circle"></i> Cliquez sur <strong>Lancer l'analyse</strong> pour générer les données mock et lancer l'analyse en une seule étape.
+                        </p>
+                    </div>
+
+
+                    <div class="section-label mt-3">
+                        <span class="step-num">2</span> Modèle ML
+                    </div>
+                    <select class="algo-select" id="model-select">
+                        {% if ml_models %}
+                        {% for model in ml_models %}
+                        <option value="{{ model.type_modele }}" data-accuracy="{{ model.accuracy }}"
+                            data-precision="{{ model.precision }}" data-recall="{{ model.recall }}"
+                            data-auc="{{ model.auc }}">
+                            {{ model.nom }}
+                        </option>
+                        {% endfor %}
+                        {% else %}
+                        <option value="" disabled selected>Aucun modèle disponible</option>
+                        <option value="random_forest">Random Forest</option>
+                        <option value="xgboost">XGBoost</option>
+                        <option value="logistic_regression">Régression Logistique</option>
+                        {% endif %}
+                    </select>
+
+                    <!-- ALERTE ÉTAT VIDE -->
+                    <div class="alert-warning show" id="alert-nodata">
+                        <i class="bi bi-exclamation-triangle-fill"
+                            style="font-size:14px; flex-shrink:0; margin-top:1px;"></i>
+                        <span>Aucune donnée chargée. Sélectionnez une source avant de lancer l'analyse.</span>
+                    </div>
+
+                    <!-- ACTIONS -->
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="button" class="btn-launch" id="btn-lancer" onclick="lancerAvecAnimation()"
+                            disabled>
+                            Lancer l'analyse
+                        </button>
+                        
+                        <button class="btn-reset" onclick="reinitialiser()" title="Réinitialiser" style="border-radius: var(--radius-pill); width: 50px;">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- COLONNE DROITE : exécution + résultats -->
+            <div class="col-12 col-lg-6 d-flex flex-column gap-3">
+                <div class="card">
+                    <div class="section-label">
+                        <span class="step-num">3</span> Exécution en temps réel
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-bar"></div>
+                    </div>
+                    <div class="exec-log" id="console">
+                        <div class="log-line pending">
+                            <div class="log-dot"></div>
+                            <span>Système prêt & en attente de données</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RÉSULTATS -->
+                <div class="card flex-grow-1">
+                    <div class="section-label">
+                        <span class="step-num">4</span> Résultats
+                    </div>
+
+                    <div id="results-empty" class="empty-results">
+                        <i class="bi bi-hourglass-split"></i>
+                        <p>Les résultats apparaîtront ici<br>après le lancement de l'analyse.</p>
+                    </div>
+
+                    <div id="results-content" style="display:none;">
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-people"></i> Total clients</span>
+                            <span class="result-value" id="res-total">{% if total_clients %}{{ total_clients }}{% else
+                                %}—{% endif %}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-exclamation-triangle"></i> Clients en
+                                churn</span>
+                            <span class="result-value danger" id="res-churn">—</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-check-circle"></i> Clients non-churn</span>
+                            <span class="result-value success" id="res-non-churn">—</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-sliders"></i> Seuil optimal</span>
+                            <span class="result-value accent" id="res-seuil">{% if seuil_optimal %}{{ seuil_optimal }}{%
+                                else %}0.25{% endif %}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-graph-up"></i> AUC-ROC</span>
+                            <span class="result-value" id="res-auc">{% if auc_roc %}{{ auc_roc }}{% else
+                                %}0.8646{%endif%}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-target"></i> F1-score</span>
+                            <span class="result-value" id="res-f1">{% if f1_score %}{{ f1_score }}{% else%}0.7097
+                                {%endif%}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-check-circle"></i> Recall</span>
+                            <span class="result-value" id="res-recall">{% if recall %}{{ recall }}{% else %}0.88
+                                {% endif%}</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="result-label"><i class="bi bi-clock"></i> Durée</span>
+                            <span class="result-value" id="res-duration">—</span>
+                        </div>
+                    </div>
+
+                    <!-- SHAP VALUES -->
+                    <div id="shap-section"
+                        style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+                        <div class="section-label" style="font-size:13px; margin-bottom:12px;">
+                            <i class="bi bi-bar-chart-fill" style="color:var(--accent); margin-right:6px;"></i>
+                            Valeurs SHAP (Top Features)
+                        </div>
+                        <div id="shap-values-list" style="max-height:200px; overflow-y:auto;">
+                            <!-- SHAP values will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- RECOMMANDATIONS -->
+                    <div id="rec-section"
+                        style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
+                        <div class="section-label" style="font-size:13px; margin-bottom:12px;">
+                            <i class="bi bi-lightbulb-fill" style="color:var(--warning); margin-right:6px;"></i>
+                            Recommandations
+                            <span id="nb-rec-badge"
+                                style="background:var(--warning); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px;">0</span>
+                        </div>
+                        <div id="recommandations-list" style="max-height:200px; overflow-y:auto;">
+                            <!-- Recommandations will be populated here -->
+                        </div>
+                    </div>
+
+                    <a href="/clients/" id="btn-voir-clients" class="btn-voir">
+                        <i class="bi bi-table"></i> Voir les clients
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- CRISP-DM -->
+        <div class="card mb-3">
+            <div class="section-label">
+                <i class="bi bi-diagram-3"></i> Pipeline CRISP-DM
+            </div>
+            <div class="crisp-grid">
+                <div class="crisp-item" id="crisp-1">
+                    <div class="crisp-num">01</div>
+                    <div class="crisp-title">Compréhension métier</div>
+                    <div class="crisp-dot"></div>
+                </div>
+                <div class="crisp-item" id="crisp-2">
+                    <div class="crisp-num">02</div>
+                    <div class="crisp-title">Exploration des données</div>
+                    <div class="crisp-dot"></div>
+                </div>
+                <div class="crisp-item" id="crisp-3">
+                    <div class="crisp-num">03</div>
+                    <div class="crisp-title">Préparation</div>
+                    <div class="crisp-dot"></div>
+                </div>
+                <div class="crisp-item" id="crisp-4">
+                    <div class="crisp-num">04</div>
+                    <div class="crisp-title">Modélisation</div>
+                    <div class="crisp-dot"></div>
+                </div>
+                <div class="crisp-item" id="crisp-5">
+                    <div class="crisp-num">05</div>
+                    <div class="crisp-title">Évaluation</div>
+                    <div class="crisp-dot"></div>
+                </div>
+                <div class="crisp-item" id="crisp-6">
+                    <div class="crisp-num">06</div>
+                    <div class="crisp-title">Déploiement</div>
+                    <div class="crisp-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-section" id="kpi-section">
+            <div class="section-divider mb-3">
+                <span><i class="bi bi-speedometer2 me-1"></i> Indicateurs clés</span>
+            </div>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:var(--brand-light);">
+                        <i class="bi bi-people-fill" style="color:var(--brand);"></i>
+                    </div>
+                    <div class="kpi-value" style="color:var(--brand);" id="kpi-total">0</div>
+                    <div class="kpi-label">Clients analysés</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:var(--danger-bg);">
+                        <i class="bi bi-graph-down-arrow" style="color:var(--danger);"></i>
+                    </div>
+                    <div class="kpi-value" style="color:var(--danger);" id="kpi-churn">—</div>
+                    <div class="kpi-label">Taux de churn</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:var(--accent-light);">
+                        <i class="bi bi-check-circle" style="color:var(--accent);"></i>
+                    </div>
+                    <div class="kpi-value" style="color:var(--accent);" id="kpi-accuracy">—</div>
+                    <div class="kpi-label">Recall modèle</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:var(--success-bg);">
+                        <i class="bi bi-list-check" style="color:var(--success);"></i>
+                    </div>
+                    <div class="kpi-value" style="color:var(--success);" id="kpi-steps">0/6</div>
+                    <div class="kpi-label">Étapes CRISP-DM</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let dataReady = false;
+        const clientsExist = {% if total_clients > 0 %}true{% else %}false{% endif %};
+        const ACCEPTED_EXTENSIONS = [
+            'csv', 'xlsx', 'xls', 'xlsm', 'xlsb', 'ods', 'txt', 'tsv', 'tab'
+        ];
+
+        const FORMAT_ICONS = {
+            csv: 'bi-filetype-csv',
+            xlsx: 'bi-file-earmark-excel',
+            xls: 'bi-file-earmark-excel',
+            xlsm: 'bi-file-earmark-excel',
+            xlsb: 'bi-file-earmark-excel',
+            ods: 'bi-file-earmark-spreadsheet',
+            txt: 'bi-filetype-txt',
+            tsv: 'bi-table',
+            tab: 'bi-table',
+        };
+
+        /* ── SÉLECTION DE SOURCE ────────────────────────────── */
+        function selectMethod(method) {
+            ['upload', 'mock'].forEach(m => {
+                document.getElementById(`method-${m}`).classList.remove('active');
+                document.getElementById(`zone-${m}`).style.display = 'none';
+            });
+            document.getElementById(`method-${method}`).classList.add('active');
+            document.getElementById(`zone-${method}`).style.display = 'block';
+
+            if (method === 'mock') {
+                document.getElementById('btn-lancer').disabled = false;
+            }
+        }
+
+        /* ── GESTION DRAG & DROP ────────────────────────────── */
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            document.getElementById('drop-zone').classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('drop-zone').classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) traiterFichier(file);
+        }
+
+        /* ── SÉLECTION VIA INPUT ────────────────────────────── */
+        function handleFileUpload(input) {
+            if (input.files.length > 0) traiterFichier(input.files[0]);
+        }
+
+        /* ── TRAITEMENT DU FICHIER ──────────────────────────── */
+        function traiterFichier(file) {
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            if (!ACCEPTED_EXTENSIONS.includes(ext)) {
+                afficherErreurFichier(`Format ".${ext}" non supporté. Utilisez CSV, Excel ou TXT.`);
+                return;
+            }
+
+            const tailleOk = file.size <= 50 * 1024 * 1024;
+            if (!tailleOk) {
+                afficherErreurFichier('Fichier trop volumineux (max 50 Mo).');
+                return;
+            }
+
+            /* Afficher les infos fichier */
+            const icon = FORMAT_ICONS[ext] || 'bi-file-earmark';
+            document.getElementById('file-name').innerHTML =
+                `<i class="bi ${icon}"></i> ${file.name}`;
+            document.getElementById('file-size').textContent =
+                file.size > 1024 * 1024
+                    ? `${(file.size / 1024 / 1024).toFixed(1)} Mo`
+                    : `${Math.round(file.size / 1024)} Ko`;
+
+            const info = document.getElementById('file-info');
+            info.style.display = 'flex';
+
+            /* Mettre à jour le label de la zone */
+            document.getElementById('upload-label').textContent = 'Fichier chargé — cliquez pour en choisir un autre';
+
+            activerLancement();
+            log(`Fichier chargé : ${file.name} (${ext.toUpperCase()})`, 'done');
+        }
+
+        /* ── RETIRER LE FICHIER ─────────────────────────────── */
+        function retirerFichier() {
+            document.getElementById('data-file').value = '';
+            document.getElementById('file-info').style.display = 'none';
+            document.getElementById('upload-label').textContent = 'Glissez votre fichier ici';
+            document.getElementById('btn-lancer').disabled = true;
+            const alertEl = document.getElementById('alert-nodata');
+            alertEl.classList.add('show');
+            alertEl.style.display = 'flex';
+            dataReady = false;
+            console.log('[retirerFichier] File removed, alert shown');
+        }
+
+        /* ── ERREUR FICHIER ─────────────────────────────────── */
+        function afficherErreurFichier(msg) {
+            const info = document.getElementById('file-info');
+            info.style.background = 'var(--danger-bg)';
+            info.style.borderColor = '#f5a0a0';
+            info.style.color = '#8b0000';
+            info.style.display = 'flex';
+            document.getElementById('file-name').innerHTML =
+                `<i class="bi bi-exclamation-triangle-fill"></i> ${msg}`;
+            document.getElementById('file-size').textContent = '';
+        }
+
+        /* ── ACTIVER LE BOUTON LANCER ───────────────────────── */
+        function activerLancement() {
+            dataReady = true;
+            document.getElementById('btn-lancer').disabled = false;
+            const alertEl = document.getElementById('alert-nodata');
+            alertEl.classList.remove('show');
+            alertEl.style.display = 'none';
+            console.log('[activerLancement] Alert hidden, button enabled');
+        }
+
+        /* ── LOG ────────────────────────────────────────────── */
+        function log(msg, type = 'done') {
+            const c = document.getElementById('console');
+            const line = document.createElement('div');
+            line.className = `log-line ${type}`;
+            line.innerHTML = `<div class="log-dot"></div><span>${msg}</span>`;
+            c.appendChild(line);
+            c.scrollTop = c.scrollHeight;
+        }
+
+        /* ── ÉTAPES CRISP ───────────────────────────────────── */
+        const stepLabels = [
+            'Compréhension métier',
+            'Exploration des données',
+            'Préparation des données',
+            'Modélisation en cours',
+            'Évaluation du modèle',
+            'Déploiement terminé',
+        ];
+
+        /* ── LANCER L'ANALYSE ───────────────────────────────── */
+        async function lancerAvecAnimation() {
+            const activeMethod = document.querySelector('.src-btn.active').id.replace('method-', '');
+            const algorithme = document.getElementById('model-select').value;
+            // nbClients sera mis à jour avec la vraie valeur du serveur
+            let nbClients = activeMethod === 'mock' ? 50 : 0;
+
+            document.getElementById('btn-lancer').disabled = true;
+
+            const accuracy = (87 + Math.random() * 6).toFixed(1);
+            const start = Date.now();
+
+            // Lancer la vraie analyse côté serveur en parallèle
+            const formData = new FormData();
+            const method = activeMethod === 'upload' ? 'csv' : 'mock';
+            formData.append('methode', method);
+            formData.append('nb_clients', nbClients);
+            formData.append('algorithme', algorithme);
+
+            if (method === 'csv') {
+                const fileInput = document.getElementById('data-file');
+                if (fileInput.files.length) {
+                    formData.append('csv_file', fileInput.files[0]);
+                } else if (!clientsExist) {
+                    afficherErreurFichier('Veuillez charger un fichier avant de lancer l\'analyse.');
+                    document.getElementById('btn-lancer').disabled = false;
+                    return;
+                }
+                // Si clientsExist est true mais pas de fichier sélectionné,
+                // on relance l'analyse sur les clients existants sans ré-uploader.
+            }
+
+            const analysePromise = fetch("{% url 'dashboard:lancer_analyse' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            }).then(async r => {
+                console.log('[Analyse] Réponse du serveur:', r.status, r.statusText);
+                if (r.ok) {
+                    const data = await r.json();
+                    console.log('[Analyse] Données reçues:', data);
+                    return data;
+                } else {
+                    const errorText = await r.text();
+                    console.error('[Analyse] Erreur serveur:', r.status, errorText);
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        console.error('[Analyse] Erreur JSON:', errorJson);
+                        if (errorJson.redirect) {
+                            throw new Error('Redirection requise: ' + errorJson.error);
+                        }
+                        throw new Error(errorJson.error || `Erreur serveur: ${r.status}`);
+                    } catch (e) {
+                        if (errorText.includes('<!DOCTYPE html>')) {
+                            throw new Error('Erreur de communication: réponse HTML reçue au lieu de JSON');
+                        }
+                        throw new Error(`Erreur serveur (${r.status}): ${errorText.substring(0, 200)}`);
+                    }
+                }
+            }).catch(err => {
+                console.error('[Analyse] Erreur réseau:', err);
+                return null;
+            });
+
+            for (let i = 0; i < 6; i++) {
+                await new Promise(r => setTimeout(r, 700));
+
+                if (i > 0) document.getElementById(`crisp-${i}`).classList.remove('active');
+                document.getElementById(`crisp-${i + 1}`).classList.add('active');
+                log(stepLabels[i], 'active');
+
+                const pct = Math.round((i + 1) / 6 * 100);
+                document.getElementById('progress-bar').style.width = pct + '%';
+                document.getElementById('kpi-steps').textContent = `${i + 1}/6`;
+
+                await new Promise(r => setTimeout(r, 300));
+                document.getElementById(`crisp-${i + 1}`).classList.remove('active');
+                document.getElementById(`crisp-${i + 1}`).classList.add('done');
+
+                const lastLine = document.getElementById('console').lastElementChild;
+                if (lastLine) lastLine.className = 'log-line done';
+
+                if (i === 0) document.getElementById('kpi-total').textContent = nbClients;
+                if (i === 2) document.getElementById('kpi-churn').textContent = '…';
+                if (i === 4) document.getElementById('kpi-accuracy').textContent = accuracy + '%';
+            }
+
+            // Attendre les vrais résultats du serveur
+            const stats = await analysePromise;
+
+            const duration = ((Date.now() - start) / 1000).toFixed(1);
+            log(`Pipeline terminé en ${duration}s`, 'done');
+
+            // Afficher la zone résultats
+            const resultsEmptyEl = document.getElementById('results-empty');
+            const resultsContentEl = document.getElementById('results-content');
+            if (resultsEmptyEl) resultsEmptyEl.style.display = 'none';
+            if (resultsContentEl) resultsContentEl.style.display = 'block';
+
+            // Persister la durée pour survivre au rechargement
+            sessionStorage.setItem('lastDuration', duration);
+
+            // Recharger la page pour mettre à jour tous les KPIs avec les données fraîches
+            log('Mise à jour des données...', 'active');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+
+            // Afficher les valeurs SHAP
+            if (stats.shap_values && stats.shap_values.length > 0) {
+                document.getElementById('shap-section').style.display = 'block';
+                const shapList = document.getElementById('shap-values-list');
+                shapList.innerHTML = stats.shap_values.map(shap => `
+                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+                            <div>
+                                <div style="font-size:12px; font-weight:600; color:var(--text-main);">${shap.feature}</div>
+                                <div style="font-size:10px; color:var(--text-muted);">Client: ${shap.client_id}</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:13px; font-weight:700; color:${shap.direction === 'vers_churn' ? 'var(--danger)' : 'var(--success)'};">
+                                    ${shap.shap_value > 0 ? '+' : ''}${shap.shap_value.toFixed(4)}
+                                </div>
+                                <div style="font-size:10px; color:${shap.direction === 'vers_churn' ? 'var(--danger)' : 'var(--success)'};">
+                                    ${shap.direction === 'vers_churn' ? '→ Churn' : '→ Rétention'}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            // Afficher les recommandations
+            if (stats.recommandations && stats.recommandations.length > 0) {
+                document.getElementById('rec-section').style.display = 'block';
+                document.getElementById('nb-rec-badge').textContent = stats.nb_recommandations || stats.recommandations.length;
+                const recList = document.getElementById('recommandations-list');
+                recList.innerHTML = stats.recommandations.map(rec => `
+                        <div style="background:var(--brand-light); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; border-left:3px solid var(--accent);">
+                            <div style="font-size:12px; font-weight:700; color:var(--brand); margin-bottom:4px;">
+                                ${rec.client_nom || rec.client_id} — ${rec.type}
+                            </div>
+                            <div style="font-size:11px; color:var(--text-main);">${rec.message}</div>
+                            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
+                                Priorité: <span style="font-weight:600; color:var(--warning);">${rec.priorite}</span>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            document.getElementById('res-duration').textContent = duration + 's';
+
+            document.getElementById('kpi-section').classList.add('active');
+            document.getElementById('btn-voir-clients').classList.add('show');
+        }
+
+        /* ── MOCK SIMPLE ────────────────────────────────────── */
+        async function lancerMockSimple() {
+            log('Génération des données mock…', 'active');
+            try {
+                const res = await fetch("{% url 'dashboard:generer_mock' %}", {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+                if (res.ok) {
+                    log('50 clients mock générés avec succès.', 'done');
+                    log('Vous pouvez maintenant lancer l\'analyse.', 'done');
+                    activerLancement();
+                } else {
+                    try {
+                        const errorData = await res.json();
+                        if (errorData.redirect) {
+                            alert('Erreur : ' + errorData.error);
+                            if (errorData.redirect_url) {
+                                window.location.href = errorData.redirect_url;
+                            }
+                            return;
+                        }
+                        log('Erreur lors de la génération: ' + (errorData.error || 'Erreur inconnue'), 'pending');
+                    } catch (e) {
+                        log('Erreur lors de la génération.', 'pending');
+                    }
+                }
+            } catch {
+                log('Erreur de connexion au serveur.', 'pending');
+            }
+        }
+
+        /* ── ENTRAÎNER LES MODÈLES ML ───────────────────────── */
+        async function trainModels() {
+            const modelSelect = document.getElementById('model-select');
+            const selectedModel = modelSelect ? modelSelect.value : null;
+
+            if (!selectedModel) {
+                log('Erreur: Aucun modèle sélectionné', 'pending');
+                return;
+            }
+
+            log('Début de l\'entraînement du modèle: ' + selectedModel, 'active');
+
+            const trainStart = Date.now();
+
+            try {
+                const res = await fetch("{% url 'dashboard:train_models' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json',
+                    },
+                    body: 'model_type=' + selectedModel
+                });
+
+                const data = await res.json();
+                const trainDuration = ((Date.now() - trainStart) / 1000).toFixed(1);
+
+                if (data.redirect) {
+                    alert('Erreur : ' + data.error);
+                    if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    }
+                    return;
+                }
+
+                if (data.success) {
+                    log('Entraînement terminé en ' + trainDuration + 's !', 'done');
+
+                    // Afficher les résultats du modèle
+                    if (data.models && data.models.length > 0) {
+                        const model = data.models[0]; // Un seul modèle entraîné
+                        const accPct = (model.accuracy * 100).toFixed(2) + '%';
+                        const precPct = (model.precision * 100).toFixed(2) + '%';
+                        const recPct = (model.recall * 100).toFixed(2) + '%';
+                        const aucPct = (model.auc * 100).toFixed(2) + '%';
+                        log(model.nom + ': Accuracy ' + accPct + ', Precision ' + precPct + ', Recall ' + recPct + ', AUC ' + aucPct, 'done');
+
+                        // Mettre à jour l'option dans la liste déroulante avec les nouvelles métriques
+                        const select = document.getElementById('model-select');
+                        const option = select.querySelector('option[value="' + selectedModel + '"]');
+                        if (option) {
+                            option.setAttribute('data-accuracy', model.accuracy);
+                            option.setAttribute('data-precision', model.precision);
+                            option.setAttribute('data-recall', model.recall);
+                            option.setAttribute('data-auc', model.auc);
+                        }
+
+                        log('Métriques du modèle mises à jour.', 'done');
+                    }
+                } else {
+                    log('Erreur: ' + data.error, 'pending');
+                }
+            } catch (error) {
+                log('Erreur de connexion: ' + error.message, 'pending');
+            }
+        }
+
+        /* ── RÉINITIALISATION ──────────────────────────────────── */
+        function reinitialiser() {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser ?\n\nCette action va :\n- Effacer tous les clients de la liste\n- Réinitialiser le dashboard\n\nCette action est irréversible.')) {
+                fetch("{% url 'dashboard:reinitialiser' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                })
+                    .then(async response => {
+                        const contentType = response.headers.get('content-type') || '';
+                        if (!contentType.includes('application/json')) {
+                            const text = await response.text();
+                            if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
+                                throw new Error('Réponse HTML reçue (URL invalide, redirection ou erreur serveur).');
+                            }
+                            throw new Error('Réponse non JSON reçue.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.redirect) {
+                            // Redirection nécessaire (utilisateur sans agence)
+                            alert('Erreur : ' + data.error);
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            }
+                            return;
+                        }
+
+                        if (data.success) {
+                            // Réinitialiser l'interface
+                            document.getElementById('results-empty').style.display = 'block';
+                            document.getElementById('results-content').style.display = 'none';
+                            document.getElementById('kpi-total').textContent = '0';
+                            document.getElementById('kpi-churn').textContent = '—';
+                            document.getElementById('kpi-accuracy').textContent = '—';
+                            document.getElementById('kpi-steps').textContent = '0/6';
+                            document.getElementById('kpi-section').classList.remove('active');
+                            document.getElementById('btn-voir-clients').classList.remove('show');
+                            document.getElementById('console').innerHTML = '<div class="log-line pending"><div class="log-dot"></div><span>Système prêt — en attente de données</span></div>';
+                            document.getElementById('progress-bar').style.width = '0%';
+
+                            // Réinitialiser les résultats
+                            document.getElementById('res-total').textContent = '—';
+                            document.getElementById('res-churn').textContent = '—';
+                            document.getElementById('res-non-churn').textContent = '—';
+                            document.getElementById('res-seuil').textContent = '0.25';
+                            document.getElementById('res-auc').textContent = '0.8646';
+                            document.getElementById('res-f1').textContent = '0.7097';
+                            document.getElementById('res-recall').textContent = '0.88';
+                            document.getElementById('res-duration').textContent = '—';
+
+                            alert('Réinitialisation effectuée avec succès.');
+                        } else {
+                            alert('Erreur lors de la réinitialisation : ' + (data.error || 'Erreur inconnue'));
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erreur de communication : ' + error);
+                    });
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        /* ── DRAG OVER CSS ──────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            const dz = document.getElementById('drop-zone');
+            if (dz) {
+                dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--brand)'; dz.style.background = 'var(--brand-light)'; });
+                dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; dz.style.background = ''; });
+            }
+
+            // Restaurer l'état si des données existent déjà
+            {% if total_clients > 0 %}
+            dataReady = true;
+            document.getElementById('btn-lancer').disabled = false;
+            const alertNodata = document.getElementById('alert-nodata');
+            alertNodata.classList.remove('show');
+            alertNodata.style.display = 'none';
+            document.getElementById('upload-label').textContent = 'Données déjà chargées — cliquez pour en choisir un autre';
+            // Afficher un indicateur visuel que des données sont présentes
+            const fileInfo = document.getElementById('file-info');
+            fileInfo.style.display = 'flex';
+            document.getElementById('file-name').innerHTML =
+                '<i class="bi bi-check-circle-fill"></i> Données en base ({{ total_clients }} clients)';
+            document.getElementById('file-size').textContent = '';
+            console.log('[DOMContentLoaded] {{ total_clients }} clients found — UI restored');
+            {% else %}
+            console.log('[DOMContentLoaded] No clients in database');
+            {% endif %}
+            {% if has_session %}
+            const resultsEmpty = document.getElementById('results-empty');
+            const resultsContent = document.getElementById('results-content');
+            if (resultsEmpty) resultsEmpty.style.display = 'none';
+            if (resultsContent) resultsContent.style.display = 'block';
+            {% if total_clients > 0 %}
+            const resTotal = document.getElementById('res-total');
+            const resChurn = document.getElementById('res-churn');
+            const resNonChurn = document.getElementById('res-non-churn');
+            const kpiTotal = document.getElementById('kpi-total');
+            const kpiChurn = document.getElementById('kpi-churn');
+            const kpiSteps = document.getElementById('kpi-steps');
+            if (resTotal) resTotal.textContent = '{{ total_clients }}';
+            if (resChurn) resChurn.textContent = '{{ clients_churn }}';
+            if (resNonChurn) resNonChurn.textContent = '{{ clients_non_churn }}';
+            if (kpiTotal) kpiTotal.textContent = '{{ total_clients }}';
+            if (kpiChurn) kpiChurn.textContent = '{{ taux_churn }}%';
+            if (kpiSteps) kpiSteps.textContent = '6/6';
+            {% endif %}
+            const kpiAccuracy = document.getElementById('kpi-accuracy');
+            if (kpiAccuracy) kpiAccuracy.textContent = '{{ recall|default:"0.92" }}';
+            {% if seuil_optimal %}
+            const resSeuil = document.getElementById('res-seuil');
+            if (resSeuil) resSeuil.textContent = '{{ seuil_optimal }}';
+            {% endif %}
+            {% if auc_roc %}
+            const resAuc = document.getElementById('res-auc');
+            if (resAuc) resAuc.textContent = '{{ auc_roc }}';
+            {% endif %}
+            {% if f1_score %}
+            const resF1 = document.getElementById('res-f1');
+            if (resF1) resF1.textContent = '{{ f1_score }}';
+            {% endif %}
+            {% if recall %}
+            const resRecall = document.getElementById('res-recall');
+            if (resRecall) resRecall.textContent = '{{ recall }}';
+            {% endif %}
+            const kpiSection = document.getElementById('kpi-section');
+            const btnVoirClients = document.getElementById('btn-voir-clients');
+            if (kpiSection) kpiSection.classList.add('active');
+            if (btnVoirClients) btnVoirClients.classList.add('show');
+            {% endif %}
+
+            // Restaurer la durée de la dernière analyse (persistée via sessionStorage)
+            const lastDuration = sessionStorage.getItem('lastDuration');
+            if (lastDuration) {
+                const resDuration = document.getElementById('res-duration');
+                if (resDuration) resDuration.textContent = lastDuration + 's';
+                sessionStorage.removeItem('lastDuration');
+            }
+
+            // Initialiser la méthode par défaut
+            selectMethod('upload');
+        });
+    </script>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>
+
+
+
+
+

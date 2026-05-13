@@ -1,0 +1,90 @@
+{
+  "version_shap": "v1",
+  "date_creation": "2026-05-07 07:27:31",
+  "modele_associe": "churn_model_v1.pkl (RF Optuna Fβ=2)",
+  "explainer": {
+    "type": "TreeExplainer",
+    "methode": "Tree SHAP exact (Lundberg et al. 2018)",
+    "exactitude": "Exact au niveau individuel (vs approximation Ensemble)"
+  },
+  "base_value": {
+    "valeur": 0.4933042857203588,
+    "description": "Probabilité moyenne de churn sur le train set"
+  },
+  "top_10_features": [
+    {
+      "rang": 1,
+      "feature": "nb_evenements_total",
+      "importance": 0.1309010185418777,
+      "importance_pct": 35.5203201727266
+    },
+    {
+      "rang": 2,
+      "feature": "tenure_mois",
+      "importance": 0.10878046781197875,
+      "importance_pct": 29.51785317074768
+    },
+    {
+      "rang": 3,
+      "feature": "facture_moyenne_mensuelle",
+      "importance": 0.03097306407788347,
+      "importance_pct": 8.404618734305966
+    },
+    {
+      "rang": 4,
+      "feature": "taux_cookies",
+      "importance": 0.01231868351068887,
+      "importance_pct": 3.3427057121497614
+    },
+    {
+      "rang": 5,
+      "feature": "duree_appel_moyenne_sec",
+      "importance": 0.012118287633063305,
+      "importance_pct": 3.288327787410563
+    },
+    {
+      "rang": 6,
+      "feature": "nb_sessions",
+      "importance": 0.008791281322509753,
+      "importance_pct": 2.3855362684145733
+    },
+    {
+      "rang": 7,
+      "feature": "data_moyenne_gb",
+      "importance": 0.008369559780338874,
+      "importance_pct": 2.27110106868499
+    },
+    {
+      "rang": 8,
+      "feature": "duree_session_moyenne_sec",
+      "importance": 0.005794161654421973,
+      "importance_pct": 1.5722603184463466
+    },
+    {
+      "rang": 9,
+      "feature": "plan_tarifaire_Offre_Classique",
+      "importance": 0.005359301326366421,
+      "importance_pct": 1.4542598761655363
+    },
+    {
+      "rang": 10,
+      "feature": "qualite_signal_dominante",
+      "importance": 0.00519798663667287,
+      "importance_pct": 1.410486729934089
+    }
+  ],
+  "concentration": {
+    "top_5_pct": 80.07382557734059,
+    "top_10_pct": 89.16746983898612
+  },
+  "fichiers": {
+    "explainer": "shap_explainer_v1.pkl",
+    "matrix": "shap_matrix_v1.csv",
+    "importance": "shap_importance_v1.csv",
+    "metadata": "shap_meta_v1.json"
+  },
+  "usage_fastapi": {
+    "option_A_explication_live": "Charger shap_explainer_v1.pkl au démarrage. Pour chaque prédiction, calculer explainer(X_client) et retourner le top 5 des features par |SHAP value|.",
+    "option_B_dashboard": "Charger shap_importance_v1.csv pour afficher le graphique global. Charger shap_matrix_v1.csv pour les visualisations agrégées du test set."
+  }
+}

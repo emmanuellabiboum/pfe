@@ -1,0 +1,129 @@
+{% extends 'accounts/navbar.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="container py-4">
+
+    <div class="card border-0 rounded-4 p-4 mb-4" style="background: linear-gradient(135deg, #082281, #c832ff); color:white;">
+        <div class="d-flex align-items-center justify-content-between">
+
+            <div>
+                <h4 class="fw-bold mb-1">
+                    {{ user.get_full_name|default:user.username }}
+                </h4>
+                <div class="mb-2">{{ user.get_role_display }}</div>
+
+                {% if user.est_bloque %}
+                <span class="badge bg-dark">Bloqué</span>
+                {% elif user.statut == 'actif' %}
+                <span class="badge bg-success">Actif</span>
+                {% elif user.statut == 'en_attente' %}
+                <span class="badge bg-warning text-dark">En attente</span>
+                {% else %}
+                <span class="badge bg-danger">Suspendu</span>
+                {% endif %}
+
+                <div class="mt-2 small">
+                    <i class="bi bi-geo-alt"></i>
+                    {% if user.role in "admin,super_admin" %}
+                        {% if user.admin_ville.ville %}
+                            {{ user.admin_ville.ville.nom }} ({{ user.get_role_display }})
+                        {% else %}
+                            Non assigné
+                        {% endif %}
+                    {% else %}
+                        {% if user.agence %}
+                            {{ user.agence.nom }} — {{ user.agence.ville.nom }}
+                        {% else %}
+                            Non assigné
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                <i class="bi bi-pencil"></i> Modifier
+            </button>
+
+        </div>
+    </div>
+
+    <div class="card p-4 shadow-sm border-0 rounded-4">
+        <h5 class="fw-bold mb-4" style="color:#082281">Informations personnelles</h5>
+
+        <div class="row g-3">
+
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:#f8f9ff">
+                    <small class="text-muted">Email</small>
+                    <div class="fw-bold"><i class="bi bi-envelope me-1"></i>{{ user.email }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:#f8f9ff">
+                    <small class="text-muted">Téléphone</small>
+                    <div class="fw-bold"><i class="bi bi-telephone me-1"></i>{{ user.telephone|default:"Non renseigné" }}</div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-3 rounded-3" style="background:#f8f9ff">
+                    <small class="text-muted">Date d'inscription</small>
+                    <div class="fw-bold"><i class="bi bi-clock me-1"></i>{{ user.date_joined|date:"d/m/Y" }}</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier profil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Nom</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ user.first_name }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Prénom</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ user.last_name }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <input type="text" name="telephone" class="form-control" value="{{ user.telephone }}">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

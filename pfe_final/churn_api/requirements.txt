@@ -1,0 +1,31 @@
+# =============================================================================
+# requirements.txt — Dépendances Python pour l'API FastAPI
+# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
+# =============================================================================
+#
+# Versions épinglées : reproductibilité garantie pour la soutenance.
+# Si tu veux installer dans un venv tout neuf :
+#   python -m venv venv
+#   .\venv\Scripts\activate   (Windows PowerShell)
+#   pip install -r requirements.txt
+
+# ── Framework Web ────────────────────────────────────────────────────────────
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
+
+# ── Machine Learning ─────────────────────────────────────────────────────────
+# Versions alignées sur celles du notebook pour éviter les warnings
+# d'incompatibilité de pickle entre environnements
+scikit-learn==1.8.0
+numpy==1.26.4
+pandas==2.2.3
+shap==0.46.0
+
+# ── Utilitaires API ──────────────────────────────────────────────────────────
+python-multipart==0.0.12     # Pour l'upload de CSV (UploadFile)
+python-dotenv==1.0.1         # Variables d'environnement optionnelles
+
+# ── Tests (optionnel mais recommandé pour la soutenance) ─────────────────────
+pytest==8.3.3
+httpx==0.27.2                # Client HTTP pour TestClient FastAPI

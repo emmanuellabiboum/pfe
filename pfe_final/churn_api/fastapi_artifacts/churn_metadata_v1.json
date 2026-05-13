@@ -1,0 +1,33 @@
+{
+  "version_modele": "v1",
+  "date_creation": "2026-05-07 07:06:31",
+  "projet": "PFE Prédiction du Churn — Tunisie Télécom Agence Kairouan",
+  "modele": {
+    "nom": "Random Forest optimisé (Optuna, Fβ=2, 100 essais)",
+    "type": "RandomForestClassifier",
+    "hyperparametres": {
+      "n_estimators": 112,
+      "max_depth": 3,
+      "min_samples_split": 18,
+      "min_samples_leaf": 2,
+      "max_features": 0.7,
+      "class_weight": "balanced"
+    }
+  },
+  "seuil_decision": {
+    "valeur": 0.32,
+    "critere": "max F1 sur [0.10, 0.90]"
+  },
+  "metriques_test": {
+    "AUC_ROC": 0.8954,
+    "F1": 0.7797,
+    "Recall": 0.92,
+    "Precision": 0.6765
+  },
+  "fichiers": [
+    "churn_model_v1.pkl",
+    "churn_threshold_v1.pkl",
+    "feature_names_v1.json",
+    "churn_metadata_v1.json"
+  ]
+}

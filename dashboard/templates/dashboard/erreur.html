@@ -1,0 +1,30 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Erreur
+                </div>
+                <div class="card-body text-center">
+                    <h5 class="card-title text-danger">{{ message }}</h5>
+                    <p class="card-text">
+                        {% if request.user.role == "admin" or request.user.role == "super_admin" %}
+                            En tant qu'administrateur de ville, vous n'avez pas d'agence assignée.
+                            <br>Accédez au <a href="{% url 'dashboard:dashboard_global' %}">dashboard global</a> pour voir toutes les agences de votre ville.
+                        {% else %}
+                            Votre compte n'est pas correctement configuré. Contactez votre administrateur.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'dashboard:dashboard_global' %}" class="btn btn-primary">
+                        <i class="bi bi-house"></i> Retour au dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

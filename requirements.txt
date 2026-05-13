@@ -1,0 +1,34 @@
+# Django Core
+Django>=4.2,<5.0
+psycopg2-binary>=2.9.9
+python-decouple>=3.8
+python-dotenv>=1.0.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+shap>=0.42.0
+joblib>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+
+# PDF & Reports
+pdfkit>=1.0.0
+Pillow>=10.0.0
+
+# Email
+sendgrid>=6.9.0
+
+# FastAPI & HTTP Client
+fastapi>=0.95.0
+uvicorn>=0.20.0
+httpx>=0.24.0
+python-multipart>=0.0.9
+
+# Security & CORS
+django-cors-headers>=4.0.0
+django-ratelimit>=4.0.0
+
+# Development
+ipython>=8.0.0
+django-extensions>=3.2.0

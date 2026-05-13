@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code de vérification — {{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 20px;
+        }
+        .context-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .code-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px dashed #e2e8f0;
+        }
+        .code-label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+        .code {
+            font-size: 42px;
+            font-weight: 700;
+            color: #1e3a8a;
+            letter-spacing: 8px;
+            font-family: 'Courier New', monospace;
+        }
+        .timer-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: #fef3c7;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+        }
+        .timer-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .timer-icon {
+            font-size: 20px;
+        }
+        .timer-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #92400e;
+        }
+        .timer-display {
+            font-size: 28px;
+            font-weight: 700;
+            color: #dc2626;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        .timer-info {
+            font-size: 13px;
+            color: #92400e;
+            margin-top: 8px;
+        }
+        .warning {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fee2e2;
+            border-radius: 6px;
+            border-left: 4px solid #dc2626;
+            font-size: 13px;
+            color: #991b1b;
+        }
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .footer {
+            padding: 30px;
+            background: #f8fafc;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .brand {
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔐 Code de vérification</h1>
+            <p>{{ site_name }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <div class="greeting">
+                Bonjour{% if nom_utilisateur %} <strong>{{ nom_utilisateur }}</strong>{% endif %},
+            </div>
+
+            <span class="context-badge">{{ context_affiche }}</span>
+
+            <p style="color: #374151; line-height: 1.6;">
+                Vous avez demandé un code de vérification pour sécuriser une action. 
+                Utilisez le code ci-dessous pour continuer :
+            </p>
+
+            <!-- Code -->
+            <div class="code-container">
+                <div class="code-label">Votre code à usage unique</div>
+                <div class="code">{{ code }}</div>
+            </div>
+
+            <!-- Timer Section -->
+            <div class="timer-section">
+                <div class="timer-header">
+                    <span class="timer-icon">⏱️</span>
+                    <span class="timer-title">Temps de validité</span>
+                </div>
+                <div class="timer-display" id="countdown">{{ duree_formatee }}</div>
+                <div class="timer-info">
+                    Ce code expire dans <strong>{{ duree_minutes }} minute{{ duree_minutes|pluralize }}</strong>.
+                    Passé ce délai, vous devrez en demander un nouveau.
+                </div>
+            </div>
+
+            <!-- Warning -->
+            <div class="warning">
+                <strong>⚠️ Ne partagez pas ce code</strong>
+                Ce code est strictement personnel. Ne le communiquez jamais par téléphone, 
+                email ou message. Notre service ne vous demandera jamais votre code.
+            </div>
+
+            <p style="margin-top: 25px; font-size: 13px; color: #64748b;">
+                Si vous n'avez pas demandé ce code, vous pouvez ignorer cet email. 
+                Votre compte reste sécurisé.
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p class="brand">Tunisie Telecom — Direction Relation Client</p>
+            <p>Cet email a été envoyé automatiquement. Merci de ne pas y répondre.</p>
+            <p style="margin-top: 15px; font-size: 11px; color: #94a3b8;">
+                © {% now "Y" %} Tunisie Telecom. Tous droits réservés.
+            </p>
+        </div>
+    </div>
+
+    <!-- JavaScript pour compte à rebours visuel dans l'email (fallback) -->
+    <script>
+        // Compte à rebours côté client (si l'email supporte JS)
+        (function() {
+            var minutes = parseInt('{{ duree_minutes }}', 10) || 5;
+            var totalSeconds = minutes * 60;
+            var countdownEl = document.getElementById('countdown');
+            
+            function updateTimer() {
+                if (totalSeconds <= 0) {
+                    if (countdownEl) {
+                        countdownEl.textContent = "EXPIRÉ";
+                        countdownEl.style.color = "#dc2626";
+                    }
+                    return;
+                }
+                
+                var m = Math.floor(totalSeconds / 60);
+                var s = totalSeconds % 60;
+                if (countdownEl) {
+                    countdownEl.textContent = 
+                        (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                }
+                
+                totalSeconds--;
+                setTimeout(updateTimer, 1000);
+            }
+            
+            if (countdownEl) {
+                updateTimer();
+            }
+        })();
+    </script>
+</body>
+</html>

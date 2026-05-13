@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des comptes — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        body {
+            background-color: #f1f3f9;
+        }
+
+        .navbar-custom {
+            background-color: #082281;
+            padding: 16px 32px;
+        }
+
+        .card-user {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .card-user::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #082281, #c832ff);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .card-user:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-user:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-user:active {
+            transform: translateY(-4px) scale(1.01);
+        }
+
+        .badge-statut {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-actif {
+            background-color: rgba(0, 180, 100, 0.1);
+            color: #00b464;
+        }
+
+        .badge-attente {
+            background-color: rgba(255, 160, 0, 0.1);
+            color: #ffa000;
+        }
+
+        .badge-suspendu {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .badge-bloque {
+            background-color: rgba(100, 100, 100, 0.1);
+            color: #666;
+        }
+
+        .role-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .card-user:hover .role-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .btn-action {
+            border: none;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-valider {
+            background-color: rgba(0, 180, 100, 0.15);
+            color: #00b464;
+        }
+
+        .btn-refuser {
+            background-color: rgba(220, 53, 69, 0.15);
+            color: #dc3545;
+        }
+
+        .btn-suspendre {
+            background-color: rgba(255, 160, 0, 0.15);
+            color: #ffa000;
+        }
+
+        .btn-debloquer {
+            background-color: rgba(8, 34, 129, 0.15);
+            color: #082281;
+        }
+
+        .btn-secondary {
+            background-color: #f1f3f9;
+            color: #082281;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+            color: #082281;
+        }
+
+        .stat-card {
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
+            bottom: 10px;
+        }
+
+        .info-bulle {
+            position: relative;
+        }
+
+        .info-bulle:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'accounts/navbar.html' %}
+
+    <div class="container py-4">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="fw-bold" style="color:#082281; margin:0;">Gestion des comptes</h1>
+                <p class="text-muted mb-0" style="font-size:13px;">
+                    {% if is_super_admin %}Super admin : gestion des comptes admin ville et chefs d'agence
+                    {% elif is_admin %}Ville : {{ admin_ville.nom }}
+                    {% elif is_chef %}{% if chef_agence %}Agence : {{ chef_agence }}{% else %}Aucune agence assignée{% endif %}{% endif %}
+                </p>
+            </div>
+            <div style="display:flex; gap:8px;">
+                {% if request.user.role == 'admin' or request.user.role == 'super_admin' %}
+                <a href="{% url 'dashboard:administration' %}" class="btn-action btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+                {% else %}
+                <a href="{% url 'dashboard:accueil' %}" class="btn-action btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="row g-3 mb-5">
+            <div class="col-6 col-md-3">
+                <div class="stat-card bg-white text-center">
+                    <div class="small text-muted fw-bold text-uppercase mb-2"
+                        style="font-size:10px; letter-spacing:1.2px">
+                        Total</div>
+                    <div style="font-size:28px; font-weight:800; color:#082281; margin-top:4px;">{{ stats.total }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card text-center"
+                    style="background:linear-gradient(135deg,rgba(255,160,0,0.1),rgba(255,193,7,0.1))">
+                    <div class="small fw-bold text-uppercase mb-2"
+                        style="font-size:10px; letter-spacing:1.2px; color:#ffa000">En attente</div>
+                    <div style="font-size:28px; font-weight:800; color:#ffa000; margin-top:4px;">{{ stats.en_attente }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card text-center"
+                    style="background:linear-gradient(135deg,rgba(0,180,100,0.1),rgba(40,167,69,0.1))">
+                    <div class="small fw-bold text-uppercase mb-2"
+                        style="font-size:10px; letter-spacing:1.2px; color:#00b464">Actifs</div>
+                    <div style="font-size:28px; font-weight:800; color:#00b464; margin-top:4px;">{{ stats.actifs }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card text-center"
+                    style="background:linear-gradient(135deg,rgba(220,53,69,0.1),rgba(225,83,97,0.1))">
+                    <div class="small fw-bold text-uppercase mb-2"
+                        style="font-size:10px; letter-spacing:1.2px; color:#dc3545">Bloqués</div>
+                    <div style="font-size:28px; font-weight:800; color:#dc3545; margin-top:4px;">{{ stats.bloques }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3">
+            {% for u in users %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card-user bg-white p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            {% if u.role == 'chef_agence' %}
+                            <div class="role-icon" style="background:rgba(8,34,129,0.1)">
+                                <i class="bi bi-person-badge" style="color:#082281"></i>
+                            </div>
+                            {% elif u.role == 'agent_marketing' %}
+                            <div class="role-icon" style="background:rgba(200,50,255,0.1)">
+                                <i class="bi bi-megaphone" style="color:#c832ff"></i>
+                            </div>
+                            {% else %}
+                            <div class="role-icon" style="background:rgba(0,180,100,0.1)">
+                                <i class="bi bi-briefcase" style="color:#00b464"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div class="fw-bold" style="color:#082281">{{ u.get_full_name|default:u.username }}
+                                </div>
+                                <div class="small text-muted">{{ u.get_role_display }}</div>
+                            </div>
+                        </div>
+                        {% if u.est_bloque %}
+                        <span class="badge-statut badge-bloque">Bloqué</span>
+                        {% elif u.statut == 'actif' %}
+                        <span class="badge-statut badge-actif">Actif</span>
+                        {% elif u.statut == 'en_attente' %}
+                        <span class="badge-statut badge-attente">En attente</span>
+                        {% else %}
+                        <span class="badge-statut badge-suspendu">Suspendu</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-envelope me-1"></i>{{ u.email }}<br>
+                        {% if u.telephone %}
+                        <i class="bi bi-telephone me-1"></i>{{ u.telephone }}
+                        {% endif %}
+                        <br>
+                        <i class="bi bi-clock me-1"></i>Demande : {{ u.date_demande|date:"d/m/Y H:i" }}
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if u.est_bloque %}
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="debloquer">
+                            <button class="btn-action btn-debloquer">
+                                <i class="bi bi-unlock me-1"></i>Débloquer
+                            </button>
+                        </form>
+                        {% else %}
+                        {% if u.statut == 'en_attente' %}
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="valider">
+                            <button class="btn-action btn-valider">
+                                <i class="bi bi-check-circle me-1"></i>Valider
+                            </button>
+                        </form>
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="refuser">
+                            <button class="btn-action btn-refuser">
+                                <i class="bi bi-x-circle me-1"></i>Refuser
+                            </button>
+                        </form>
+                        {% elif u.statut == 'actif' %}
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="suspendre">
+                            <button class="btn-action btn-suspendre">
+                                <i class="bi bi-pause-circle me-1"></i>Suspendre
+                            </button>
+                        </form>
+                        {% elif u.statut == 'suspendu' %}
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="valider">
+                            <button class="btn-action btn-valider">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Réactiver
+                            </button>
+                        </form>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <i class="bi bi-people fs-1 text-muted mb-3"></i>
+                <h5 class="text-muted">Aucun utilisateur</h5>
+                <p class="text-muted">Aucun compte dans votre agence pour le moment.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

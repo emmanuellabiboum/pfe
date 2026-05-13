@@ -1,0 +1,567 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+    <style>
+        .card-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        /* FILTRES */
+        .filter-btn {
+            border: 2px solid var(--brand-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: var(--brand);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--brand-dark);
+            background: var(--brand-light);
+        }
+
+        .filter-btn.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .filter-btn.non-churn.active {
+            border-color: var(--success);
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .filter-btn.churn.active {
+            border-color: var(--danger);
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        /* SEARCH */
+        .search-input {
+            border: 2px solid var(--brand-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px 8px 36px;
+            font-size: 13px;
+            color: var(--brand);
+            font-weight: 600;
+            background: var(--neutral);
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--brand-dark);
+            box-shadow: 0 0 0 3px rgba(15, 59, 161, 0.08);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* TABLE */
+        .table-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 6px;
+        }
+
+        .table-custom thead th {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-faint);
+            padding: 8px 16px;
+            border-bottom: 2px solid var(--brand-light);
+            white-space: nowrap;
+        }
+
+        .table-custom tbody tr {
+            background: white;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .table-custom tbody tr:hover {
+            background: var(--brand-light);
+            transform: translateX(4px);
+        }
+
+        .table-custom tbody td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: var(--text-main);
+            border-top: 1px solid var(--brand-light);
+            border-bottom: 1px solid var(--brand-light);
+        }
+
+        .table-custom tbody td:first-child {
+            border-left: 1px solid var(--brand-light);
+            border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+        }
+
+        .table-custom tbody td:last-child {
+            border-right: 1px solid var(--brand-light);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        /* BADGES */
+        .badge-risque {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-non-churn {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .badge-churn {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        /* SCORE BAR */
+        .score-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 100px;
+        }
+
+        .score-bar-bg {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--brand-light);
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .score-val {
+            font-size: 12px;
+            font-weight: 800;
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* PAGINATION */
+        .page-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 2px solid var(--brand-light);
+            background: white;
+            color: var(--brand);
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover {
+            border-color: var(--brand-dark);
+            background: var(--brand-light);
+        }
+
+        .page-btn.active {
+            border-color: var(--brand-dark);
+            background: var(--brand-dark);
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* BTN RETOUR */
+        .btn-retour {
+            background: white;
+            border: 2px solid var(--brand-light);
+            border-radius: var(--radius-sm);
+            padding: 8px 16px;
+            color: var(--brand);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-retour:hover {
+            border-color: var(--brand-dark);
+            background: var(--brand-light);
+            color: var(--brand-dark);
+        }
+
+        .btn-fiche {
+            background: linear-gradient(135deg, var(--brand), var(--accent));
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 6px 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-fiche:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(15, 59, 161, 0.3);
+            color: white;
+        }
+
+        /* KPI mini */
+        .kpi-mini {
+            background: linear-gradient(135deg, var(--brand-light), var(--neutral));
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            border: 1px solid rgba(15, 59, 161, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .kpi-mini-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .kpi-mini-val {
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .kpi-mini-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'accounts/navbar.html' %}
+
+    <div class="page-wrap">
+
+        <!-- HEADER -->
+        <div class="page-header">
+            <div>
+                <h1><i class="bi bi-people-fill me-2"></i>Liste des clients</h1>
+                <p>
+                    {% if request.user.agence %}
+                    <i class="bi bi-geo-alt me-1"></i>{{ request.user.agence.nom }} — {{ request.user.agence.ville }}
+                    {% endif %}
+                </p>
+            </div>
+            <a href="{% url 'dashboard:accueil' %}" class="btn-retour">
+                <i class="bi bi-arrow-left"></i> Retour à l'accueil
+            </a>
+        </div>
+
+        <!-- KPIs MINI -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="kpi-mini">
+                    <div class="kpi-mini-icon" style="background:var(--brand-light);">
+                        <i class="bi bi-people-fill" style="color:var(--brand);"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-mini-val" style="color:var(--brand);" id="kpi-total">—</div>
+                        <div class="kpi-mini-label">Total clients</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-mini">
+                    <div class="kpi-mini-icon" style="background:var(--danger-bg);">
+                        <i class="bi bi-exclamation-triangle-fill" style="color:var(--danger);"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-mini-val" style="color:var(--danger);" id="kpi-churn">—</div>
+                        <div class="kpi-mini-label">Churn</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-mini">
+                    <div class="kpi-mini-icon" style="background:var(--success-bg);">
+                        <i class="bi bi-check-circle-fill" style="color:var(--success);"></i>
+                    </div>
+                    <div>
+                        <div class="kpi-mini-val" style="color:var(--success);" id="kpi-non-churn">—</div>
+                        <div class="kpi-mini-label">Non-churn</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLEAU -->
+        <div class="card">
+
+            <!-- FILTRES + SEARCH -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="filter-btn active" onclick="filtrer('tous')" id="f-tous">
+                        <i class="bi bi-grid-3x3-gap"></i> Tous
+                    </button>
+                    <button class="filter-btn churn" onclick="filtrer('churn')" id="f-churn">
+                        <i class="bi bi-exclamation-triangle"></i> Churn
+                    </button>
+                    <button class="filter-btn non-churn" onclick="filtrer('non_churn')" id="f-non-churn">
+                        <i class="bi bi-check-circle"></i> Non-churn
+                    </button>
+                </div>
+                <div class="search-wrapper" style="width:100%; max-width:260px;">
+                    <i class="bi bi-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher un client..."
+                        oninput="rechercher(this.value)" id="search-input">
+                </div>
+            </div>
+
+            <!-- TABLE -->
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>ID Client</th>
+                            <th>Nom</th>
+                            <th>Ancienneté</th>
+                            <th>Réclamations</th>
+                            <th>Score churn</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Les lignes seront générées par JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div style="font-size:12px; color:#888; font-weight:600;" id="pagination-info"></div>
+            <div class="d-flex gap-1" id="pagination-btns"></div>
+        </div>
+    </div>
+    <script>
+        const FICHE_URL = "{% url 'dashboard:fiche_client' 0 %}".replace('/0/', '/PLACEHOLDER/');
+
+        // Vrais clients depuis Django
+        const allClients = {{ clients_json| safe }}.map(c => ({
+            id: c.id,
+            client_id: c.client_id,
+            nom: c.nom,
+            anciennete: Number(c.anciennete_mois_safe) || 0,
+            reclamations: Number(c.nb_reclamations_safe) || 0,
+            score: Number(c.score_churn) || 0,
+            churn_predit: !!c.churn_predit
+        }));
+
+        let filtreActif = 'tous';
+        let recherche = '';
+        let pageActuelle = 1;
+        const parPage = 10;
+
+        function updateKPIs(clients) {
+            const churnCount = clients.filter(c => c.churn_predit).length;
+            document.getElementById('kpi-total').textContent = clients.length;
+            document.getElementById('kpi-churn').textContent = churnCount;
+            document.getElementById('kpi-non-churn').textContent = clients.length - churnCount;
+        }
+
+        function filtrer(risque) {
+            filtreActif = risque;
+            pageActuelle = 1;
+            ['tous', 'churn', 'non_churn'].forEach(r => {
+                document.getElementById(`f-${r}`).classList.remove('active');
+            });
+            document.getElementById(`f-${risque}`).classList.add('active');
+            afficher();
+        }
+
+        function rechercher(val) {
+            recherche = val.toLowerCase();
+            pageActuelle = 1;
+            afficher();
+        }
+
+        function afficher() {
+            let clients = allClients;
+
+            if (filtreActif === 'churn') {
+                clients = clients.filter(c => c.churn_predit);
+            } else if (filtreActif === 'non_churn') {
+                clients = clients.filter(c => !c.churn_predit);
+            }
+            if (recherche) {
+                clients = clients.filter(c =>
+                    (c.nom && c.nom.toLowerCase().includes(recherche)) ||
+                    (c.client_id && c.client_id.toLowerCase().includes(recherche))
+                );
+            }
+
+            const total = clients.length;
+            updateKPIs(clients);
+            const totalPages = Math.ceil(total / parPage);
+            const debut = (pageActuelle - 1) * parPage;
+            const fin = debut + parPage;
+            const page = clients.slice(debut, fin);
+
+            const tbody = document.getElementById('table-body');
+
+            if (page.length === 0) {
+                tbody.innerHTML = `
+            <tr><td colspan="7" style="text-align:center; padding:40px; color:#aaa; font-size:13px; font-weight:600;">
+                <i class="bi bi-search" style="font-size:28px; display:block; margin-bottom:10px; color:#ddd;"></i>
+                Aucun client trouvé
+            </td></tr>`;
+            } else {
+                tbody.innerHTML = page.map(c => {
+                    const scoreColor = c.churn_predit ? 'var(--danger)' : 'var(--success)';
+                    const badgeExtra = c.churn_predit ? 'badge-churn' : 'badge-non-churn';
+                    const statutLabel = c.churn_predit ? 'Churn' : 'Non-churn';
+                    const url = FICHE_URL.replace('PLACEHOLDER', c.id);
+
+                    return `
+            <tr onclick="window.location.href='${url}'" style="cursor:pointer;">
+                <td><span style="font-family:'Courier New'; font-size:12px; color:var(--text-muted);">${c.client_id || '—'}</span></td>
+                <td><span style="font-weight:700;">${c.nom || '—'}</span></td>
+                <td><span style="color:var(--text-muted);">${c.anciennete} mois</span></td>
+                <td>
+                    <span style="display:inline-flex; align-items:center; gap:4px;">
+                        <i class="bi bi-chat-left-text" style="color:var(--text-faint); font-size:11px;"></i>
+                        <span style="font-weight:700;">${c.reclamations}</span>
+                    </span>
+                </td>
+                <td>
+                    <div class="score-bar-wrap">
+                        <div class="score-bar-bg">
+                            <div class="score-bar-fill" style="width:${c.score * 100}%; background:${scoreColor};"></div>
+                        </div>
+                        <span class="score-val" style="color:${scoreColor};">${(c.score * 100).toFixed(0)}%</span>
+                    </div>
+                </td>
+                <td><span class="badge-risque ${badgeExtra}">${statutLabel}</span></td>
+                <td>
+                    <a href="${url}" class="btn-fiche" onclick="event.stopPropagation()">
+                        <i class="bi bi-eye"></i> Voir
+                    </a>
+                </td>
+            </tr>`;
+                }).join('');
+            }
+
+            document.getElementById('pagination-info').textContent =
+                `${Math.min(debut + 1, total)}–${Math.min(fin, total)} sur ${total} client${total > 1 ? 's' : ''}`;
+
+            const paginationEl = document.getElementById('pagination-btns');
+            paginationEl.innerHTML = '';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '<i class="bi bi-chevron-left"></i>';
+            prevBtn.disabled = pageActuelle === 1;
+            prevBtn.onclick = () => { if (pageActuelle > 1) { pageActuelle--; afficher(); } };
+            paginationEl.appendChild(prevBtn);
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - pageActuelle) > 1) {
+                    if (i === 4) {
+                        const dots = document.createElement('span');
+                        dots.style.cssText = 'padding:0 4px; color:#aaa; font-size:13px; line-height:32px;';
+                        dots.textContent = '...';
+                        paginationEl.appendChild(dots);
+                    }
+                    continue;
+                }
+                const btn = document.createElement('button');
+                btn.className = `page-btn${i === pageActuelle ? ' active' : ''}`;
+                btn.textContent = i;
+                btn.onclick = () => { pageActuelle = i; afficher(); };
+                paginationEl.appendChild(btn);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = '<i class="bi bi-chevron-right"></i>';
+            nextBtn.disabled = pageActuelle === totalPages || totalPages === 0;
+            nextBtn.onclick = () => { if (pageActuelle < totalPages) { pageActuelle++; afficher(); } };
+            paginationEl.appendChild(nextBtn);
+        }
+
+        afficher();
+    </script>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

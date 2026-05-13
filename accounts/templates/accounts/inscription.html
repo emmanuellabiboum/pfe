@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Manrope', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background-color: #fdfcff;
+        }
+
+        .left-panel {
+            background-color: #082281;
+            background-image: radial-gradient(circle at 20% 30%, rgba(0, 64, 128, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0, 51, 102, 0.6) 0%, transparent 50%);
+            min-height: 100vh;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #f1f3f9 !important;
+            border: none !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(200, 50, 255, 0.2) !important;
+        }
+
+        .btn-inscription {
+            background-color: #c832ff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-weight: 700;
+            width: 100%;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .btn-inscription:hover {
+            opacity: 0.85;
+            color: white;
+        }
+
+        .role-card {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: #f1f3f9;
+        }
+
+        .role-card:hover {
+            border-color: #c832ff;
+            background-color: rgba(200, 50, 255, 0.05);
+        }
+
+        .role-card.selected {
+            border-color: #c832ff;
+            background-color: rgba(200, 50, 255, 0.08);
+        }
+
+        .role-card input[type="radio"] {
+            display: none;
+        }
+
+        .role-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .role-disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .badge-pris {
+            font-size: 9px;
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0" style="min-height:100vh">
+            <div
+                class="col-lg-5 d-none d-lg-flex flex-column align-items-center justify-content-center p-5 text-white left-panel">
+                <div style="max-width:420px">
+                    <div class="mb-4 rounded-pill" style="height:4px; width:64px; background-color:#c832ff;"></div>
+                    <h1 class="display-4 fw-bold mb-4" style="letter-spacing:-1px;">
+                        Rejoignez<br>la plateforme
+                    </h1>
+                    <p class="lead mb-5" style="opacity:0.75">
+                        Créez votre compte pour accéder au système de prédiction du churn
+                        de Tunisie Telecom. Votre demande sera validée par le chef d'agence.
+                    </p>
+                    <div class="p-4 rounded-4"
+                        style="background-color:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1)">
+                        <i class="bi bi-person-check fs-2 mb-3 d-block" style="color:#c832ff"></i>
+                        <p class="mb-1 fw-bold">Processus de validation</p>
+                        <p class="small mb-0" style="opacity:0.75">
+                            Après inscription, le chef d'agence recevra une notification
+                            et validera votre compte sous 24h.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7 d-flex flex-column align-items-center justify-content-center p-4 p-lg-5"
+                style="overflow-y:auto">
+                <div class="w-100" style="max-width:500px">
+
+                    <div class="mb-4 text-center text-lg-start">
+                        <h2 class="fw-bold mb-2" style="color:#001e8c; letter-spacing:-1.5px;">
+                            Tunisie <span style="color:#c832ff">Telecom</span>
+                        </h2>
+                        <h5 class="fw-bold text-dark">Créer un compte</h5>
+                        <p class="text-muted small">Remplissez le formulaire ci-dessous</p>
+                    </div>
+
+                    <div class="p-1 rounded-4 border border-light shadow-sm" style="background-color:#f1f3f9">
+                        <div class="bg-white p-4 rounded-4">
+
+                            {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} py-2 small">{{ message }}</div>
+                            {% endfor %}
+                            {% endif %}
+
+                            <form method="POST" id="form-inscription">
+                                {% csrf_token %}
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="small fw-bold text-uppercase text-muted mb-1"
+                                            style="letter-spacing:1px">Prénom</label>
+                                        <input type="text" name="first_name" class="form-control" placeholder="Prénom"
+                                            required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="small fw-bold text-uppercase text-muted mb-1"
+                                            style="letter-spacing:1px">Nom</label>
+                                        <input type="text" name="last_name" class="form-control" placeholder="Nom"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">Nom d'utilisateur</label>
+                                    <input type="text" name="username" class="form-control" placeholder="nom.prenom"
+                                        required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">Email professionnel</label>
+                                    <input type="email" name="email" class="form-control" placeholder="nom@tt.tn"
+                                        required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">Téléphone</label>
+                                    <input type="text" name="telephone" class="form-control"
+                                        placeholder="+216 XX XXX XXX">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">
+                                        <i class="bi bi-geo-alt-fill me-1" style="color:#ff6600"></i>Ville
+                                    </label>
+                                    <select name="ville" class="form-select" id="ville-select" required>
+                                        <option value="">-- Choisir une ville --</option>
+                                        {% for ville in villes %}
+                                        <option value="{{ ville.id }}" {% if ville.prioritaire %}style="font-weight:bold;color:#082281"{% endif %}>
+                                            {{ ville.nom }} {% if ville.prioritaire %}(Prioritaire){% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3" id="agence-container" style="display:none">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">Agence</label>
+                                    <select name="agence" class="form-select" id="agence-select">
+                                        <option value="">-- Choisir une agence --</option>
+                                        {% for agence in agences %}
+                                        <option value="{{ agence.id }}" data-ville="{{ agence.ville.id }}">
+                                            {{ agence.nom }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="small fw-bold text-uppercase text-muted mb-2 d-block"
+                                        style="letter-spacing:1px">
+                                        Votre rôle
+                                    </label>
+                                    <div class="row g-2" id="roles-container">
+                                        <div class="col-3">
+                                            <label class="role-card d-block text-center" id="card-admin">
+                                                <input type="radio" name="role" value="admin" required>
+                                                <div class="role-icon mx-auto"
+                                                    style="background-color:rgba(255,102,0,0.1)">
+                                                    <i class="bi bi-shield-fill" style="color:#ff6600"></i>
+                                                </div>
+                                                <div class="small fw-bold" style="color:#ff6600; font-size:10px">Admin</div>
+                                                <span class="badge-pris d-none" id="badge-admin">Pris</span>
+                                            </label>
+                                        </div>
+                                        <div class="col-3">
+                                            <label class="role-card d-block text-center" id="card-chef">
+                                                <input type="radio" name="role" value="chef_agence" required>
+                                                <div class="role-icon mx-auto"
+                                                    style="background-color:rgba(8,34,129,0.1)">
+                                                    <i class="bi bi-person-badge" style="color:#082281"></i>
+                                                </div>
+                                                <div class="small fw-bold" style="color:#082281; font-size:10px">Chef
+                                                    d'agence</div>
+                                                <span class="badge-pris d-none" id="badge-chef">Pris</span>
+                                            </label>
+                                        </div>
+                                        <div class="col-3">
+                                            <label class="role-card d-block text-center" id="card-marketing">
+                                                <input type="radio" name="role" value="agent_marketing" required>
+                                                <div class="role-icon mx-auto"
+                                                    style="background-color:rgba(200,50,255,0.1)">
+                                                    <i class="bi bi-megaphone" style="color:#c832ff"></i>
+                                                </div>
+                                                <div class="small fw-bold" style="color:#c832ff; font-size:10px">Agent
+                                                    Marketing</div>
+                                                <span class="badge-pris d-none" id="badge-marketing">Pris</span>
+                                            </label>
+                                        </div>
+                                        <div class="col-3">
+                                            <label class="role-card d-block text-center" id="card-commercial">
+                                                <input type="radio" name="role" value="agent_commercial" required>
+                                                <div class="role-icon mx-auto"
+                                                    style="background-color:rgba(0,180,100,0.1)">
+                                                    <i class="bi bi-briefcase" style="color:#00b464"></i>
+                                                </div>
+                                                <div class="small fw-bold" style="color:#00b464; font-size:10px">Agent
+                                                    Commercial</div>
+                                                <span class="badge-pris d-none" id="badge-commercial">Pris</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">Mot de passe</label>
+                                    <input type="password" name="password" class="form-control" placeholder="•••••••••"
+                                        required>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="small fw-bold text-uppercase text-muted mb-1"
+                                        style="letter-spacing:1px">Confirmer le mot de passe</label>
+                                    <input type="password" name="password2" class="form-control" placeholder="•••••••••"
+                                        required>
+                                </div>
+
+                                <button type="submit" class="btn-inscription">
+                                    <i class="bi bi-person-plus me-2"></i>Envoyer la demande
+                                </button>
+                            </form>
+
+                            <div class="text-center mt-3">
+                                <span class="text-muted small">Déjà un compte ? </span>
+                                <a href="{% url 'accounts:login' %}" class="small fw-bold text-decoration-none"
+                                    style="color:#c832ff">
+                                    Se connecter
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-center" style="font-size:10px">
+                        <p class="text-muted mb-1">© 2026 Tunisie Telecom — Système de détection du churn</p>
+                        <p class="text-muted mb-0">PFE Informatique</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const agenceContainer = document.getElementById('agence-container');
+        const villeSelect = document.getElementById('ville-select');
+        const agenceSelect = document.getElementById('agence-select');
+
+        function filterAgencesByVille(villeId) {
+            const agenceOptions = agenceSelect.querySelectorAll('option[data-ville]');
+            let hasAgences = false;
+            
+            agenceOptions.forEach(opt => {
+                if (opt.dataset.ville === villeId) {
+                    opt.style.display = 'block';
+                    hasAgences = true;
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+            
+            agenceSelect.value = '';
+            
+            return hasAgences;
+        }
+        function toggleRoleFields(role) {
+            if (role === 'admin') {
+                agenceContainer.style.display = 'none';
+                agenceSelect.required = false;
+                agenceSelect.value = '';
+            } else {
+                if (villeSelect.value) {
+                    agenceContainer.style.display = 'block';
+                }
+                agenceSelect.required = true;
+            }
+        }
+
+        villeSelect.addEventListener('change', function() {
+            const villeId = this.value;
+            const selectedRole = document.querySelector('input[name="role"]:checked')?.value;
+            checkAdminDisponible();
+            
+            if (villeId) {
+                filterAgencesByVille(villeId);
+                if (selectedRole && selectedRole !== 'admin') {
+                    agenceContainer.style.display = 'block';
+                }
+            } else {
+                agenceContainer.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('click', function () {
+                document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                const role = this.querySelector('input').value;
+                toggleRoleFields(role);
+            });
+        });
+
+        agenceSelect.addEventListener('change', function () {
+            const agenceId = this.value;
+            if (!agenceId) return;
+
+            fetch(`/accounts/roles-disponibles/?agence_id=${agenceId}`)
+                .then(res => res.json())
+                .then(data => {
+                    const roles = ['chef_agence', 'agent_marketing', 'agent_commercial'];
+                    const cartes = {
+                        'chef_agence': 'chef',
+                        'agent_marketing': 'marketing',
+                        'agent_commercial': 'commercial'
+                    };
+
+                    roles.forEach(role => {
+                        const key = cartes[role];
+                        const card = document.getElementById(`card-${key}`);
+                        const badge = document.getElementById(`badge-${key}`);
+
+                        if (data.pris.includes(role)) {
+                            card.classList.add('role-disabled');
+                            badge.classList.remove('d-none');
+                        } else {
+                            card.classList.remove('role-disabled');
+                            badge.classList.add('d-none');
+                        }
+                    });
+                });
+        });
+
+        function checkAdminDisponible() {
+            const villeId = villeSelect.value;
+            const adminCard = document.getElementById('card-admin');
+            const adminBadge = document.getElementById('badge-admin');
+            
+            if (!villeId) {
+                adminCard.classList.remove('role-disabled');
+                adminBadge.classList.add('d-none');
+                return;
+            }
+
+            fetch(`/accounts/roles-disponibles/?ville_id=${villeId}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.pris.includes('admin') || data.pris.includes('super_admin')) {
+                        adminCard.classList.add('role-disabled');
+                        adminBadge.classList.remove('d-none');
+                        adminBadge.textContent = 'Pris';
+                        if (adminCard.classList.contains('selected')) {
+                            adminCard.classList.remove('selected');
+                            adminCard.querySelector('input').checked = false;
+                        }
+                    } else {
+                        adminCard.classList.remove('role-disabled');
+                        adminBadge.classList.add('d-none');
+                    }
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            villeSelect.value = '';
+            agenceSelect.value = '';
+            agenceContainer.style.display = 'none';
+            const adminCard = document.getElementById('card-admin');
+            const adminBadge = document.getElementById('badge-admin');
+            adminCard.classList.remove('role-disabled');
+            adminBadge.classList.add('d-none');
+        });
+    </script>
+
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>

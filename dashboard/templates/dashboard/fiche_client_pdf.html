@@ -1,0 +1,933 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fiche Client — {{ client.nom }} — Tunisie Telecom</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand:       #1e3a8a;
+      --brand-light: #dbeafe;
+      --accent:      #3b82f6;
+      --success:     #059669;
+      --success-bg:  #ecfdf5;
+      --danger:      #dc2626;
+      --danger-bg:   #fef2f2;
+      --warning:     #d97706;
+      --warning-bg:  #fffbeb;
+      --neutral:     #f8fafc;
+      --border:      #e2e8f0;
+      --text:        #0f172a;
+      --muted:       #64748b;
+      --faint:       #94a3b8;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11.5px;
+      background: #dde3ed;
+      color: var(--text);
+      line-height: 1.4;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* ── TOOLBAR ── */
+    .screen-toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: var(--brand);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,.3);
+    }
+
+    .tb-left { display: flex; align-items: center; gap: 10px; color: white; font-size: 12px; font-weight: 600; }
+
+    .btn-back {
+      background: rgba(255,255,255,.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 5px;
+      padding: 5px 12px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-back:hover { background: rgba(255,255,255,.25); color: white; }
+
+    .btn-print {
+      background: white;
+      color: var(--brand);
+      border: none;
+      border-radius: 5px;
+      padding: 6px 16px;
+      font-family: inherit;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-print:hover { opacity: .88; }
+
+    /* ── DOCUMENT ── */
+    .document-wrap {
+      margin: 52px auto 32px;
+      max-width: 794px;
+    }
+
+    /* ── PAGE : hauteur naturelle, PAS de min-height ── */
+    .page {
+      background: white;
+      width: 794px;
+      box-shadow: 0 3px 20px rgba(0,0,0,.13);
+      margin-bottom: 12px;
+      page-break-after: always;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .page:last-child { margin-bottom: 0; page-break-after: avoid; }
+
+    /* ── EN-TÊTE ── */
+    .page-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 60%, #2563eb 100%);
+      padding: 0 28px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .page-header::after {
+      content: '';
+      position: absolute;
+      right: -20px; top: -20px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,.05);
+      border-radius: 50%;
+    }
+
+    .header-brand .brand-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 15px;
+      color: white;
+      letter-spacing: .4px;
+    }
+
+    .header-brand .brand-sub {
+      font-size: 8px;
+      color: rgba(165,180,252,.85);
+      font-weight: 500;
+      letter-spacing: .7px;
+      text-transform: uppercase;
+      display: block;
+      margin-top: 1px;
+    }
+
+    .header-meta { text-align: right; }
+
+    .header-meta .doc-type {
+      font-size: 8px;
+      font-weight: 700;
+      color: rgba(255,255,255,.45);
+      text-transform: uppercase;
+      letter-spacing: .9px;
+      display: block;
+    }
+
+    .header-meta .doc-id   { font-size: 12px; font-weight: 700; color: white; }
+
+    .header-meta .doc-date {
+      font-size: 8px;
+      color: rgba(165,180,252,.8);
+      display: block;
+    }
+
+    .header-accent {
+      height: 2px;
+      background: linear-gradient(90deg, #3b82f6, #93c5fd, #3b82f6);
+      flex-shrink: 0;
+    }
+
+    /* ── CORPS ── */
+    .page-body { padding: 14px 28px 16px; }
+
+    /* ── PIED DE PAGE ── */
+    .page-footer {
+      border-top: 1px solid var(--border);
+      padding: 6px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--neutral);
+      flex-shrink: 0;
+    }
+
+    .footer-left  { font-size: 7.5px; color: var(--faint); display: flex; align-items: center; gap: 4px; }
+    .footer-center { font-size: 8px;  color: var(--muted); font-weight: 700; }
+    .footer-right { font-size: 7.5px; color: var(--faint); }
+
+    /* ── WATERMARK ── */
+    .confidential-stamp {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) rotate(-35deg);
+      font-size: 62px;
+      font-weight: 900;
+      color: rgba(30,58,138,.04);
+      pointer-events: none;
+      white-space: nowrap;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      font-family: 'DM Serif Display', serif;
+      z-index: 0;
+    }
+
+    .page-body > * { position: relative; z-index: 1; }
+
+    /* ── SECTION TITLE ── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--brand-light);
+    }
+
+    .s-icon {
+      width: 21px; height: 21px;
+      background: var(--brand);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .s-icon.muted { background: var(--muted); }
+
+    .s-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 13px;
+      color: var(--brand);
+    }
+
+    .s-title.muted { color: var(--muted); }
+
+    .s-sub { font-size: 8.5px; color: var(--faint); margin-left: auto; font-style: italic; }
+
+    /* ── HERO CLIENT ── */
+    .client-hero {
+      background: linear-gradient(135deg, #f0f5ff, #e8f0fe);
+      border: 1px solid var(--brand-light);
+      border-radius: 9px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .hero-avatar {
+      width: 42px; height: 42px;
+      background: var(--brand);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .hero-info { flex: 1; }
+
+    .client-id-badge {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 1px;
+    }
+
+    .client-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 18px;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 5px;
+    }
+
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    .hero-tag {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-tag i { font-size: 10px; }
+
+    .hero-score { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
+
+    .score-circle {
+      width: 66px; height: 66px;
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .score-circle svg.ring {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .score-num { font-size: 16px; font-weight: 800; line-height: 1; position: relative; z-index: 1; }
+    .score-lbl { font-size: 7.5px; font-weight: 600; opacity: .7; text-transform: uppercase; letter-spacing: .4px; position: relative; z-index: 1; }
+
+    .risk-pill {
+      font-size: 8.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* ── GRILLE 2 COL ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .info-card {
+      background: var(--neutral);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 13px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4.5px 0;
+      border-bottom: 1px dashed var(--border);
+      font-size: 11px;
+    }
+    .info-row:last-child { border-bottom: none; }
+
+    .ir-label { color: var(--muted); font-weight: 500; display: flex; align-items: center; gap: 5px; }
+    .ir-label i { font-size: 11px; }
+    .ir-val { font-weight: 700; }
+    .ir-val.danger  { color: var(--danger); }
+    .ir-val.warning { color: var(--warning); }
+    .ir-val.success { color: var(--success); }
+
+    /* ── SCORE BAR + ALERTES ── */
+    .score-bar-wrap {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 9px 13px;
+      margin-bottom: 7px;
+      text-align: center;
+    }
+
+    .score-bar-label { font-size: 9.5px; color: var(--muted); font-weight: 600; margin-bottom: 3px; }
+
+    .score-big { font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 5px; }
+
+    .score-bar-track { background: #e2e8f0; border-radius: 3px; height: 6px; overflow: hidden; }
+    .score-bar-fill  { height: 100%; border-radius: 3px; }
+
+    .alerts-stack { display: flex; flex-direction: column; gap: 5px; }
+
+    .alert-item {
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-size: 10.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.35;
+    }
+
+    .alert-item i { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+    .alert-item.danger  { background: var(--danger-bg);   color: #7f1d1d; }
+    .alert-item.warning { background: var(--warning-bg);  color: #78350f; }
+    .alert-item.info    { background: var(--brand-light); color: #1e3a8a; }
+    .alert-item.success { background: var(--success-bg);  color: #064e3b; }
+
+    /* ── SHAP ── */
+    .shap-intro {
+      background: linear-gradient(135deg, #1e3a8a, #1e40af);
+      border-radius: 8px;
+      padding: 11px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .si-icon {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.12);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .si-title { font-family: 'DM Serif Display', serif; font-size: 13px; color: white; margin-bottom: 2px; }
+
+    .si-body { font-size: 9.5px; color: rgba(165,180,252,.9); line-height: 1.4; }
+
+    .si-legend { margin-left: auto; display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; }
+
+    .legend-item { display: flex; align-items: center; gap: 5px; font-size: 9.5px; color: rgba(255,255,255,.82); font-weight: 600; }
+
+    .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+    .shap-chart { margin-bottom: 12px; }
+
+    .shap-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .shap-row:last-child { border-bottom: none; }
+
+    .sr-feature { min-width: 130px; font-size: 10.5px; font-weight: 700; }
+    .sr-desc    { min-width: 110px; font-size: 9px; color: var(--faint); font-style: italic; }
+
+    .sr-track {
+      flex: 1;
+      height: 17px;
+      background: #f1f5f9;
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sr-fill {
+      height: 100%;
+      border-radius: 3px;
+      position: absolute;
+      top: 0;
+      width: 1%;
+    }
+
+    .sr-fill.pos { left: 0;  background: linear-gradient(90deg,  #fee2e2, #dc2626); }
+    .sr-fill.neg { right: 0; background: linear-gradient(270deg, #d1fae5, #059669); }
+
+    .sr-val { min-width: 44px; text-align: right; font-size: 10.5px; font-weight: 800; }
+    .sr-val.pos { color: var(--danger); }
+    .sr-val.neg { color: var(--success); }
+
+    .shap-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+
+    .shap-table thead th {
+      background: var(--brand);
+      color: white;
+      font-weight: 700;
+      padding: 7px 10px;
+      text-align: left;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .shap-table thead th.r { text-align: right; }
+    .shap-table thead th.c { text-align: center; }
+
+    .shap-table tbody tr:nth-child(even) { background: var(--neutral); }
+
+    .shap-table tbody td {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .feat-name { font-weight: 700; color: var(--text); font-size: 10.5px; }
+    .feat-desc { font-size: 8.5px; color: var(--faint); }
+
+    .shap-val-pos { color: var(--danger);  font-weight: 800; }
+    .shap-val-neg { color: var(--success); font-weight: 800; }
+
+    .direction-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .direction-badge.up   { background: var(--danger-bg);  color: var(--danger); }
+    .direction-badge.down { background: var(--success-bg); color: var(--success); }
+
+    /* ── RECOMMANDATIONS ── */
+    .rec-item {
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: 7px;
+      padding: 9px 12px;
+      margin-bottom: 7px;
+    }
+
+    .rec-item.marketing  { border-left-color: #3b82f6; }
+    .rec-item.commercial { border-left-color: #059669; }
+    .rec-item.technique  { border-left-color: #d97706; }
+
+    .rec-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      gap: 6px;
+    }
+
+    .rec-badges { display: flex; align-items: center; gap: 5px; }
+
+    .rec-badge {
+      font-size: 8.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .rec-badge i { font-size: 9px; }
+    .rec-badge.marketing  { background: #dbeafe; color: #1d4ed8; }
+    .rec-badge.commercial { background: #d1fae5; color: #065f46; }
+    .rec-badge.technique  { background: #fef3c7; color: #92400e; }
+    .rec-badge.auto       { background: var(--brand-light); color: var(--brand); }
+    .rec-badge.manuel     { background: #f3e8ff; color: #7c3aed; }
+
+    .rec-echeance { font-size: 9px; color: var(--faint); display: flex; align-items: center; gap: 3px; }
+    .rec-echeance i { font-size: 10px; }
+
+    .rec-content { font-size: 11px; color: var(--text); line-height: 1.45; font-weight: 500; }
+
+    .no-recs { text-align: center; padding: 18px 0; color: var(--muted); font-size: 11px; }
+    .no-recs i { font-size: 24px; display: block; margin-bottom: 6px; color: var(--success); }
+
+    .spacer-md { height: 12px; }
+
+    .arch-table { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 6px; }
+
+    .arch-table thead th {
+      background: var(--muted);
+      color: white;
+      padding: 6px 9px;
+      font-size: 8.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      text-align: left;
+    }
+
+    .arch-table tbody tr:nth-child(even) { background: var(--neutral); }
+
+    .arch-table tbody td {
+      padding: 5px 9px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .type-label { display: inline-flex; align-items: center; gap: 3px; font-size: 9.5px; font-weight: 600; }
+    .type-label i { font-size: 10px; }
+
+    .statut-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 8.5px;
+      font-weight: 700;
+    }
+
+    .statut-badge i { font-size: 9px; }
+    .statut-badge.completee { background: var(--success-bg); color: #065f46; }
+    .statut-badge.retiree   { background: var(--neutral); color: var(--muted); border: 1px solid var(--border); }
+    .statut-badge.expiree   { background: var(--danger-bg); color: #7f1d1d; }
+
+    /* ── PRINT ── */
+    @media print {
+      body { background: white; font-size: 10.5px; }
+      .screen-toolbar { display: none !important; }
+      .document-wrap  { margin: 0; max-width: 100%; }
+
+      .page {
+        width: 100%;
+        box-shadow: none;
+        margin-bottom: 0;
+        page-break-after: always;
+      }
+
+      .page:last-child { page-break-after: avoid; }
+      .page-body { padding: 12px 22px 14px; }
+
+      @page { size: A4; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="screen-toolbar">
+  <div class="tb-left">
+    <a href="{% url 'dashboard:fiche_client' client.id %}" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Retour à la fiche
+    </a>
+    <span>Aperçu — {{ client.nom }}</span>
+  </div>
+  <button class="btn-print" onclick="window.print()">
+    <i class="bi bi-printer-fill"></i> Imprimer / PDF
+  </button>
+</div>
+
+<div class="document-wrap">
+
+  <!-- ══ PAGE 1 — APERÇU CLIENT ══ -->
+  <div class="page">
+    <div class="page-header">
+      <div class="header-brand">
+        <span class="brand-name">Tunisie Telecom</span>
+        <span class="brand-sub">Direction Relation Client · Outil de rétention</span>
+      </div>
+      <div class="header-meta">
+        <span class="doc-type">Fiche client confidentielle</span>
+        <span class="doc-id">{{ client.client_id }}</span>
+        <span class="doc-date">Généré le {% now "d/m/Y à H:i" %}</span>
+      </div>
+    </div>
+    <div class="header-accent"></div>
+    <div class="confidential-stamp">Confidentiel</div>
+
+    <div class="page-body">
+
+      <div class="client-hero">
+        <div class="hero-avatar"><i class="bi bi-person-fill"></i></div>
+        <div class="hero-info">
+          <span class="client-id-badge">{{ client.client_id }}</span>
+          <div class="client-name">{{ client.nom }}</div>
+          <div class="hero-tags">
+            <span class="hero-tag"><i class="bi bi-tag-fill"></i> {{ client.segment }}</span>
+            <span class="hero-tag"><i class="bi bi-telephone-fill"></i> {{ client.telephone }}</span>
+            <span class="hero-tag"><i class="bi bi-calendar3"></i> {{ client.anciennete_mois }} mois d'ancienneté</span>
+          </div>
+        </div>
+        <div class="hero-score">
+          <div class="score-circle"
+               style="background:{% if score_pct >= 70 %}#fef2f2{% elif score_pct >= 40 %}#fffbeb{% else %}#ecfdf5{% endif %};
+                      color:{% if score_pct >= 70 %}var(--danger){% elif score_pct >= 40 %}var(--warning){% else %}var(--success){% endif %};">
+            <svg class="ring" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="33" cy="33" r="27" fill="none" stroke="#e2e8f0" stroke-width="5"/>
+              <circle cx="33" cy="33" r="27"
+                      fill="none"
+                      stroke="{% if score_pct >= 70 %}#dc2626{% elif score_pct >= 40 %}#d97706{% else %}#059669{% endif %}"
+                      stroke-width="5"
+                      stroke-linecap="round"
+                      stroke-dasharray="169.6"
+                      stroke-dashoffset="{% widthratio score_pct 100 170 %}"/>
+            </svg>
+            <span class="score-num">{{ score_pct }}%</span>
+            <span class="score-lbl">churn</span>
+          </div>
+          <span class="risk-pill"
+                style="{% if score_pct >= 70 %}background:var(--danger-bg);color:var(--danger);{% elif score_pct >= 40 %}background:var(--warning-bg);color:var(--warning);{% else %}background:var(--success-bg);color:var(--success);{% endif %}">
+            <i class="bi bi-{% if score_pct >= 70 %}exclamation-triangle-fill{% elif score_pct >= 40 %}dash-circle-fill{% else %}shield-check{% endif %}"></i>
+            Risque {{ risque_label }}
+          </span>
+        </div>
+      </div>
+
+      <div class="two-col">
+
+        <div>
+          <div class="section-head">
+            <div class="s-icon"><i class="bi bi-person-lines-fill"></i></div>
+            <span class="s-title">Informations client</span>
+          </div>
+          <div class="info-card">
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-layers"></i> Segment</span>
+              <span class="ir-val">{{ client.segment }}</span>
+            </div>
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-calendar3"></i> Ancienneté</span>
+              <span class="ir-val">{{ client.anciennete_mois }} mois</span>
+            </div>
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-telephone"></i> Téléphone</span>
+              <span class="ir-val">{{ client.telephone }}</span>
+            </div>
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-grid"></i> Services actifs</span>
+              <span class="ir-val">{{ client.nb_services }} service(s)</span>
+            </div>
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-chat-left-text"></i> Réclamations</span>
+              <span class="ir-val {% if client.nb_reclamations >= 5 %}danger{% elif client.nb_reclamations >= 2 %}warning{% else %}success{% endif %}">
+                {{ client.nb_reclamations }} réclamation(s)
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-exclamation-circle"></i> Retards paiement</span>
+              <span class="ir-val {% if client.retards_paiement >= 3 %}danger{% elif client.retards_paiement >= 1 %}warning{% else %}success{% endif %}">
+                {{ client.retards_paiement }} retard(s)
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="ir-label"><i class="bi bi-currency-dollar"></i> Consommation moy.</span>
+              <span class="ir-val">{{ client.consommation_moyenne }} DT/mois</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-head">
+            <div class="s-icon"><i class="bi bi-flag-fill"></i></div>
+            <span class="s-title">Signaux d'alerte</span>
+          </div>
+
+          <div class="score-bar-wrap">
+            <div class="score-bar-label">Probabilité de résiliation</div>
+            <div class="score-big"
+                 style="color:{% if score_pct >= 70 %}var(--danger){% elif score_pct >= 40 %}var(--warning){% else %}var(--success){% endif %};">
+              {{ score_pct }}%
+            </div>
+            <div class="score-bar-track">
+              <div class="score-bar-fill"
+                   style="width:{{ score_pct }}%;
+                          background:{% if score_pct >= 70 %}var(--danger){% elif score_pct >= 40 %}var(--warning){% else %}var(--success){% endif %};"></div>
+            </div>
+          </div>
+
+          <div class="alerts-stack">
+            {% if client.reclamation_manquante %}
+            <div class="alert-item warning">
+              <i class="bi bi-question-circle-fill"></i>
+              <span>Client jamais contacté le support — profil potentiellement désengagé (Silent Churner)</span>
+            </div>
+            {% elif client.nb_reclamations >= 5 %}
+            <div class="alert-item danger">
+              <i class="bi bi-exclamation-triangle-fill"></i>
+              <span>{{ client.nb_reclamations }} réclamations — intervention technique requise</span>
+            </div>
+            {% endif %}
+            {% if client.retards_paiement >= 3 %}
+            <div class="alert-item warning">
+              <i class="bi bi-clock-fill"></i>
+              <span>{{ client.retards_paiement }} retards de paiement — contact commercial conseillé</span>
+            </div>
+            {% endif %}
+            {% if client.anciennete_mois <= 6 %}
+            <div class="alert-item info">
+              <i class="bi bi-person-plus-fill"></i>
+              <span>Client récent ({{ client.anciennete_mois }} mois) — fidélisation prioritaire</span>
+            </div>
+            {% endif %}
+            {% if client.nb_reclamations < 5 and client.retards_paiement < 3 and client.anciennete_mois > 6 %}
+            <div class="alert-item success">
+              <i class="bi bi-check-circle-fill"></i>
+              <span>Profil sans alerte critique — surveillance standard</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="page-footer">
+      <span class="footer-left"><i class="bi bi-lock-fill"></i> Document confidentiel — Usage interne uniquement</span>
+      <span class="footer-center">{{ client.nom }}</span>
+      <span class="footer-right">Page 1 / 2</span>
+    </div>
+  </div>
+
+
+  <!-- ══ PAGE 2 — RECOMMANDATIONS ══ -->
+  <div class="page">
+    <div class="page-header">
+      <div class="header-brand">
+        <span class="brand-name">Tunisie Telecom</span>
+        <span class="brand-sub">Direction Relation Client · Outil de rétention</span>
+      </div>
+      <div class="header-meta">
+        <span class="doc-type">Plan d'action & recommandations</span>
+        <span class="doc-id">{{ client.client_id }}</span>
+        <span class="doc-date">Généré le {% now "d/m/Y à H:i" %}</span>
+      </div>
+    </div>
+    <div class="header-accent"></div>
+    <div class="confidential-stamp">Confidentiel</div>
+
+    <div class="page-body">
+
+      <div class="section-head">
+        <div class="s-icon"><i class="bi bi-lightbulb-fill"></i></div>
+        <span class="s-title">Recommandations actives</span>
+        <span class="s-sub">
+          {% if recommandations_actives %}{{ recommandations_actives.count }} en cours · {% endif %}Agents notifiés à la connexion
+        </span>
+      </div>
+
+      {% if recommandations_actives %}
+        {% for rec in recommandations_actives %}
+        <div class="rec-item {{ rec.type_recommandation }}">
+          <div class="rec-header">
+            <div class="rec-badges">
+              <span class="rec-badge {{ rec.type_recommandation }}">
+                {% if rec.type_recommandation == 'marketing' %}<i class="bi bi-megaphone-fill"></i> Marketing
+                {% elif rec.type_recommandation == 'commercial' %}<i class="bi bi-briefcase-fill"></i> Commercial
+                {% else %}<i class="bi bi-wrench-adjustable"></i> Technique{% endif %}
+              </span>
+              {% if rec.generee_par_systeme %}
+                <span class="rec-badge auto"><i class="bi bi-cpu-fill"></i> Automatique</span>
+              {% else %}
+                <span class="rec-badge manuel"><i class="bi bi-person-fill"></i> Manuel</span>
+              {% endif %}
+            </div>
+            {% if rec.echeance %}
+            <span class="rec-echeance"><i class="bi bi-calendar3"></i> {{ rec.echeance|date:"d/m/Y" }}</span>
+            {% endif %}
+          </div>
+          <div class="rec-content">{{ rec.contenu }}</div>
+        </div>
+        {% endfor %}
+      {% else %}
+      <div class="no-recs">
+        <i class="bi bi-check-circle-fill"></i>
+        Aucune recommandation active pour ce client.
+      </div>
+      {% endif %}
+
+      {% if recommandations_archivees %}
+      <div class="spacer-md"></div>
+      <div class="section-head">
+        <div class="s-icon muted"><i class="bi bi-archive-fill"></i></div>
+        <span class="s-title muted">Recommandations archivées</span>
+        <span class="s-sub">{{ recommandations_archivees.count }} entrée(s)</span>
+      </div>
+
+      <table class="arch-table">
+        <thead>
+          <tr>
+            <th style="width:18%;">Type</th>
+            <th style="width:52%;">Contenu</th>
+            <th style="width:17%; text-align:center;">Statut</th>
+            <th style="width:13%; text-align:center;">Échéance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rec in recommandations_archivees %}
+          <tr>
+            <td>
+              <span class="type-label">
+                {% if rec.type_recommandation == 'marketing' %}<i class="bi bi-megaphone-fill" style="color:#3b82f6;"></i> Marketing
+                {% elif rec.type_recommandation == 'commercial' %}<i class="bi bi-briefcase-fill" style="color:#059669;"></i> Commercial
+                {% else %}<i class="bi bi-wrench-adjustable" style="color:#d97706;"></i> Technique{% endif %}
+              </span>
+            </td>
+            <td style="color:var(--muted);">{{ rec.contenu }}</td>
+            <td style="text-align:center;">
+              <span class="statut-badge {{ rec.statut }}">
+                {% if rec.statut == 'completee' %}<i class="bi bi-check-circle-fill"></i> Complétée
+                {% elif rec.statut == 'retiree' %}<i class="bi bi-x-circle-fill"></i> Rejetée
+                {% else %}<i class="bi bi-clock-history"></i> Expirée{% endif %}
+              </span>
+            </td>
+            <td style="text-align:center; color:var(--faint); font-size:9.5px;">
+              {% if rec.echeance %}{{ rec.echeance|date:"d/m/Y" }}{% else %}—{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+    </div>
+
+    <div class="page-footer">
+      <span class="footer-left"><i class="bi bi-lock-fill"></i> Document confidentiel — Usage interne uniquement</span>
+      <span class="footer-center">{{ client.nom }}</span>
+      <span class="footer-right">Page 2 / 2</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const vals = Array.from(document.querySelectorAll('.sr-val'))
+                      .map(el => Math.abs(parseFloat(el.dataset.val)));
+    const maxVal = Math.max(...vals, 1);
+    document.querySelectorAll('.shap-row').forEach(row => {
+      const valEl = row.querySelector('.sr-val');
+      const fill  = row.querySelector('.sr-fill');
+      if (!valEl || !fill) return;
+      fill.style.width = (Math.abs(parseFloat(valEl.dataset.val)) / maxVal * 94) + '%';
+    });
+  });
+</script>
+
+</body>
+</html>

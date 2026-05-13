@@ -1,0 +1,563 @@
+﻿/* CSS Commun - IdentitÃ© Visuelle Tunisie Telecom Churn Detection */
+/* BasÃ© sur accueil.html */
+
+:root {
+    /* Couleurs Tunisie Telecom */
+    --brand: #004595;         /* Bleu TT */
+    --brand-light: #e6f0ff;
+    --brand-dark: #002d62;
+    --accent: #ed1c24;        /* Rouge TT */
+    --accent-purple: #92278f; /* Violet TT */
+    --accent-cyan: #00aeef;   /* Cyan TT */
+    --success: #8cc63f;       /* Vert TT */
+    --success-bg: #f4fae9;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --warning: #f7941d;       /* Orange TT */
+    --warning-bg: #fff8f0;
+    --neutral: #f8f9fa;
+    --neutral-dark: #e9ecef;
+    --border: #dee2e6;
+    --text-main: #212529;
+    --text-muted: #6c757d;
+    --text-faint: #adb5bd;
+    --card-bg: #ffffff;
+    --radius-sm: 10px;
+    --radius-md: 18px;
+    --radius-lg: 30px;
+    --radius-pill: 50px;
+    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 22px 70px rgba(0, 0, 0, 0.12);
+    --gradient-brand: linear-gradient(90deg, var(--accent-cyan) 0%, var(--brand) 50%, var(--accent-purple) 100%);
+
+    /* Alias pour templates legacy */
+    --primary: var(--brand);
+    --primary-light: var(--brand-light);
+    --primary-dark: var(--brand-dark);
+    --gray-50: var(--neutral);
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    background: linear-gradient(180deg, #eef2ff 0%, #f7f8ff 100%);
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* â”€â”€ LAYOUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+}
+
+/* â”€â”€ CARTE DE BASE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), #ffffff);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(17, 41, 84, 0.08);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+.card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background: var(--gradient-brand);
+}
+
+.card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* â”€â”€ VARIANTES / COMPAT (templates existants) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* Beaucoup de pages utilisent .glass-card, .kpi-card, .card-sectionâ€¦ On les aligne ici. */
+.tt-card,
+.glass-card,
+.kpi-card,
+.card-section,
+.notification-card,
+.periode-card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), #ffffff);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(17, 41, 84, 0.08);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.tt-card::before,
+.glass-card::before,
+.kpi-card::before,
+.card-section::before,
+.notification-card::before,
+.periode-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: var(--gradient-brand);
+}
+
+.tt-card > *,
+.glass-card > *,
+.kpi-card > *,
+.card-section > *,
+.notification-card > *,
+.periode-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.tt-card:hover,
+.glass-card:hover,
+.kpi-card:hover,
+.card-section:hover,
+.notification-card:hover,
+.periode-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* â”€â”€ Boutons (Bootstrap) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.btn-primary {
+    background: var(--gradient-brand);
+    border: none;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    filter: brightness(0.96);
+}
+
+.btn-outline-primary {
+    border-color: rgba(15, 59, 161, 0.35);
+    color: var(--brand);
+}
+
+.btn-outline-primary:hover {
+    background: rgba(15, 59, 161, 0.08);
+    color: var(--brand-dark);
+    border-color: rgba(15, 59, 161, 0.55);
+}
+
+/* â”€â”€ Navbar TT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.navbar-tt {
+    background: var(--gradient-brand) !important;
+}
+
+/* â”€â”€ EN-TÃŠTE DE PAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.page-header {
+    margin-bottom: 28px;
+}
+
+.page-header h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--brand-dark);
+    margin: 0 0 8px;
+}
+
+.page-header p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin: 0;
+    max-width: 760px;
+}
+
+/* â”€â”€ BADGE Ã‰TAPE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--brand-light);
+    color: var(--brand);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-top: 8px;
+}
+
+/* â”€â”€ LABELS DE SECTION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.section-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.section-label .step-num {
+    background: var(--brand);
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+/* â”€â”€ BOUTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.btn-launch {
+    background: linear-gradient(135deg, var(--brand), var(--accent-purple));
+    color: white;
+    border: none;
+    border-radius: var(--radius-pill);
+    padding: 14px 30px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: "Manrope", sans-serif;
+    cursor: pointer;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 20px rgba(0, 69, 149, 0.2);
+}
+
+.btn-launch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(0, 69, 149, 0.3);
+    filter: brightness(1.1);
+}
+
+.btn-launch:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-secondary {
+    background: var(--neutral);
+    color: var(--brand);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+}
+
+.btn-voir {
+    background: linear-gradient(135deg, #0f3ba1, #7b2cff);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+    width: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    margin-top: 12px;
+    transition: opacity .2s, transform .1s;
+    box-shadow: 0 10px 24px rgba(15, 59, 161, 0.14);
+}
+
+.btn-voir:hover {
+    opacity: .95;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-voir.show {
+    display: flex;
+}
+
+/* â”€â”€ INPUTS FORMULAIRE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.form-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font-size: 13px;
+    color: var(--text-main);
+    font-family: 'Manrope', sans-serif;
+    background: var(--neutral);
+    margin-bottom: 8px;
+    transition: border-color .2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--brand);
+    background: white;
+}
+
+/* â”€â”€ ALERTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.alert-warning {
+    background: var(--warning-bg);
+    border: 1px solid #ffd166;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #7a4d00;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.alert-success {
+    background: var(--success-bg);
+    border: 1px solid var(--success);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--success);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.alert-danger {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--danger);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+/* â”€â”€ RÃ‰SULTATS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--neutral-dark);
+}
+
+.result-row:last-child {
+    border-bottom: none;
+}
+
+.result-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.result-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.result-value.accent {
+    color: var(--accent);
+}
+
+.result-value.success {
+    color: var(--success);
+}
+
+.result-value.danger {
+    color: var(--danger);
+}
+
+/* â”€â”€ SHAP VALUES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.shap-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--neutral-dark);
+}
+
+.shap-item:last-child {
+    border-bottom: none;
+}
+
+.shap-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--neutral);
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.shap-fill {
+    height: 100%;
+    border-radius: 5px;
+}
+
+.shap-positive {
+    background: var(--danger);
+}
+
+.shap-negative {
+    background: var(--success);
+}
+
+.shap-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    justify-content: space-between;
+}
+
+.shap-value {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.shap-value.positive {
+    color: var(--danger);
+}
+
+.shap-value.negative {
+    color: var(--success);
+}
+
+/* â”€â”€ RECOMMANDATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.rec-card {
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border-left: 4px solid var(--brand);
+}
+
+.rec-card.commercial {
+    border-left-color: #ffa000;
+}
+
+.rec-card.technique {
+    border-left-color: var(--danger);
+}
+
+.rec-card.marketing {
+    border-left-color: var(--accent);
+}
+
+.rec-card.service {
+    border-left-color: #3b82f6;
+}
+
+.rec-card.facturation {
+    border-left-color: var(--success);
+}
+
+.rec-card.couverture {
+    border-left-color: #f59e0b;
+}
+
+.rec-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rec-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* â”€â”€ BADGES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.badge-success {
+    background: var(--success-bg);
+    color: var(--success);
+}
+
+.badge-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+}
+
+.badge-warning {
+    background: var(--warning-bg);
+    color: var(--warning);
+}
+
+.badge-info {
+    background: var(--brand-light);
+    color: var(--brand);
+}
+
+/* â”€â”€ TABLEAUX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.table-custom {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-custom th {
+    text-align: left;
+    padding: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border);
+}
+
+.table-custom td {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--neutral-dark);
+}
+
+.table-custom tr:hover {
+    background: var(--neutral);
+}
+

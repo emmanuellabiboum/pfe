@@ -1,0 +1,180 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Corbeille — Tunisie Telecom</title>
+<link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+<link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+<style>
+:root{--brand:#001e8c;--success:#00b464;--success-bg:#e6f7ef;--danger:#dc3545;--danger-bg:#fdecea;--neutral:#f4f6fb;--border:#e2e8f0;--text-main:#0f172a;--text-muted:#64748b;--text-faint:#94a3b8;--radius-sm:8px;--radius-md:12px;--radius-lg:16px}
+*{box-sizing:border-box}body{font-family:'Manrope',sans-serif;background:var(--neutral);color:var(--text-main);margin:0}
+.page-wrap{max-width:860px;margin:0 auto;padding:24px 20px 48px}
+.card{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:16px}
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.page-title{font-size:20px;font-weight:700;color:var(--danger);margin:0 0 4px}
+.page-sub{font-size:13px;color:var(--text-muted);margin:0}
+.notif-item{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid var(--neutral);transition:background .15s}
+.notif-item:hover{background:var(--neutral)}.notif-item:last-child{border-bottom:none}
+.notif-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--danger-bg)}
+.notif-icon i{color:var(--danger)}.notif-body{flex:1;min-width:0}
+.notif-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.notif-content{font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:4px}
+.notif-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-faint);flex-wrap:wrap}
+.btn-back{background:var(--neutral);color:var(--text-main);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;text-decoration:none}
+.btn-back:hover{background:var(--border)}
+.btn-restore{background:var(--success-bg);color:var(--success);border:1px solid #b7e5d0;border-radius:var(--radius-sm);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.btn-restore:hover{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-hard{background:var(--danger-bg);color:var(--danger);border:1px solid #f5a0a0;border-radius:var(--radius-sm);padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:all .15s}
+.btn-hard:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+.info-banner{background:var(--danger-bg);border:1px solid #f5a0a0;border-radius:var(--radius-md);padding:12px 16px;font-size:12px;color:#8b0000;display:flex;align-items:center;gap:8px;margin-bottom:16px}
+.empty-state{padding:48px 20px;text-align:center}
+.empty-icon{width:52px;height:52px;border-radius:50%;background:var(--neutral);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:22px;color:var(--text-faint)}
+.empty-title{font-size:14px;font-weight:700;color:var(--text-muted);margin-bottom:4px}
+.empty-sub{font-size:12px;color:var(--text-faint)}
+</style>
+<link href="{% static 'css/common.css' %}" rel="stylesheet">
+</head>
+<body>
+{% include 'accounts/navbar.html' %}
+<div class="page-wrap">
+<div class="page-header">
+<div>
+<h1 class="page-title"><i class="bi bi-trash3 me-2"></i>Corbeille</h1>
+<p class="page-sub">{{ notifications|length }} notification{{ notifications|length|pluralize }} supprimée{{ notifications|length|pluralize }}</p>
+</div>
+<a href="{% url 'dashboard:notifications' %}" class="btn-back"><i class="bi bi-arrow-left"></i> Notifications</a>
+</div>
+{% if notifications %}
+<div class="info-banner"><i class="bi bi-info-circle-fill"></i> Les notifications peuvent être restaurées. Pour une suppression définitive, utilisez le bouton correspondant — cette action est irréversible.</div>
+<div class="card">
+<div class="actions-bar" style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border);">
+<div style="display:flex;align-items:center;gap:12px;">
+<input type="checkbox" id="selectAll" style="width:18px;height:18px;cursor:pointer;">
+<span class="actions-bar-count" id="label-count">{{ notifications|length }} notification{{ notifications|length|pluralize }}</span>
+</div>
+<div style="display:flex;gap:8px;">
+<button type="button" id="bulkRestoreBtn" class="btn-restore" style="display:none;"><i class="bi bi-arrow-counterclockwise"></i> Restaurer</button>
+<button type="button" id="bulkHardDeleteBtn" class="btn-hard" style="display:none;"><i class="bi bi-x-octagon"></i> Supprimer définitivement</button>
+</div>
+</div>
+{% for notif in notifications %}
+<div class="notif-item" style="position:relative;">
+<input type="checkbox" class="notif-checkbox" value="{{ notif.id }}" style="position:absolute;left:20px;top:50%;transform:translateY(-50%);width:18px;height:18px;cursor:pointer;z-index:10;">
+<div class="notif-icon" style="margin-left:30px;"><i class="bi bi-bell-slash-fill"></i></div>
+<div class="notif-body">
+<div class="notif-title">{{ notif.titre }}</div>
+<div class="notif-content">{{ notif.contenu }}</div>
+<div class="notif-meta">
+<span><i class="bi bi-clock me-1"></i>Supprimée {{ notif.date_suppression|timesince }}</span>
+<span><i class="bi bi-calendar me-1"></i>Créée {{ notif.date_creation|date:"d/m/Y H:i" }}</span>
+<span style="margin-left:auto;display:flex;gap:6px;">
+<form method="POST" action="{% url 'dashboard:restaurer_notification' notif.id %}" style="display:inline" onclick="event.stopPropagation();">{% csrf_token %}
+<button type="submit" class="btn-restore"><i class="bi bi-arrow-counterclockwise"></i> Restaurer</button>
+</form>
+<form method="POST" action="{% url 'dashboard:supprimer_definitivement_notification' notif.id %}" style="display:inline" onclick="event.stopPropagation();" onsubmit="return confirm('Suppression définitive ? Cette action est irréversible.')">{% csrf_token %}
+<button type="submit" class="btn-hard"><i class="bi bi-x-octagon"></i> Supprimer définitivement</button>
+</form>
+</span>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+<div class="empty-icon"><i class="bi bi-trash"></i></div>
+<div class="empty-title">Corbeille vide</div>
+<div class="empty-sub">Aucune notification supprimée.</div>
+</div>
+{% endif %}
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.notif-checkbox');
+    const bulkRestoreBtn = document.getElementById('bulkRestoreBtn');
+    const bulkHardDeleteBtn = document.getElementById('bulkHardDeleteBtn');
+
+    if (selectAllCheckbox && checkboxes.length > 0) {
+        selectAllCheckbox.addEventListener('change', (e) => {
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            updateBulkButtons();
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkButtons);
+    });
+
+    function updateBulkButtons() {
+        const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
+        if (bulkRestoreBtn) {
+            bulkRestoreBtn.style.display = checkedCount > 0 ? 'inline-flex' : 'none';
+        }
+        if (bulkHardDeleteBtn) {
+            bulkHardDeleteBtn.style.display = checkedCount > 0 ? 'inline-flex' : 'none';
+        }
+        document.getElementById('label-count').textContent = checkedCount + ' notification' + (checkedCount > 1 ? 's' : '');
+    }
+
+    // Bulk restore
+    if (bulkRestoreBtn) {
+        bulkRestoreBtn.addEventListener('click', () => {
+            const selectedIds = Array.from(document.querySelectorAll('.notif-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+            if (!confirm('Restaurer ' + selectedIds.length + ' notification(s) ?')) return;
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/notifications/bulk-restore/';
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            form.appendChild(csrf);
+            selectedIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'notif_ids';
+                input.value = id;
+                form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+
+    // Bulk hard delete
+    if (bulkHardDeleteBtn) {
+        bulkHardDeleteBtn.addEventListener('click', () => {
+            const selectedIds = Array.from(document.querySelectorAll('.notif-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+            if (!confirm('Supprimer définitivement ' + selectedIds.length + ' notification(s) ? Cette action est irréversible.')) return;
+            
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/notifications/bulk-hard-delete/';
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = 'csrfmiddlewaretoken';
+            csrf.value = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            form.appendChild(csrf);
+            selectedIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'notif_ids';
+                input.value = id;
+                form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+});
+</script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,147 @@
+{
+  "ordinal_mapping": {
+    "qualite_signal_dominante": {
+      "Faible": 0,
+      "Bon": 1,
+      "Excellent": 2
+    }
+  },
+  "ohe_columns": [
+    "genre_client_Homme",
+    "type_abonnement_Offre_a_Facture",
+    "plan_tarifaire_Forfait_Mobile_Mixte",
+    "plan_tarifaire_Offre_Classique",
+    "moyen_paiement_prelevement_bancaire",
+    "moyen_paiement_ticket_recharge",
+    "zone_reseau_principale_SUBURBAIN",
+    "zone_reseau_principale_URBAIN"
+  ],
+  "nominal_info": {
+    "genre_client": {
+      "modalites": [
+        "Femme",
+        "Homme"
+      ],
+      "reference": "Femme"
+    },
+    "type_abonnement": {
+      "modalites": [
+        "Offre Prepayee",
+        "Offre a Facture"
+      ],
+      "reference": "Offre a Facture"
+    },
+    "plan_tarifaire": {
+      "modalites": [
+        "Forfait Illimite",
+        "Forfait_Mobile_Mixte",
+        "Offre Classique"
+      ],
+      "reference": "Forfait Illimite"
+    },
+    "moyen_paiement": {
+      "modalites": [
+        "especes",
+        "prelevement_bancaire",
+        "ticket_recharge"
+      ],
+      "reference": "especes"
+    },
+    "zone_reseau_principale": {
+      "modalites": [
+        "RURAL",
+        "SUBURBAIN",
+        "URBAIN"
+      ],
+      "reference": "RURAL"
+    }
+  },
+  "imputation_stats": {
+    "facture_moyenne_mensuelle": {
+      "strategie": "mediane_par_groupe",
+      "col_groupe": "type_abonnement_Offre_a_Facture",
+      "mediane_prepayee": 22.545,
+      "mediane_facture": 17.700000000000003
+    },
+    "satisfaction_client": {
+      "strategie": "mediane_globale",
+      "valeur": 2.0
+    },
+    "tendance_data_pct": {
+      "strategie": "mediane_globale",
+      "valeur": 0.0
+    },
+    "ratio_data_voix": {
+      "strategie": "mediane_globale",
+      "valeur": 0.0
+    },
+    "score_frustration": {
+      "strategie": "constante_metier",
+      "valeur": 0
+    }
+  },
+  "feature_names_ordered": [
+    "facture_moyenne_mensuelle",
+    "satisfaction_client",
+    "consentement_marketing",
+    "optout_marketing",
+    "tenure_mois",
+    "duree_appel_moyenne_sec",
+    "data_moyenne_gb",
+    "nb_evenements_total",
+    "nb_sessions",
+    "duree_session_moyenne_sec",
+    "taux_cookies",
+    "recence_session_jours",
+    "qualite_signal_dominante",
+    "data_manquante",
+    "satisfaction_manquante",
+    "reclamation_manquante",
+    "tendance_data_pct",
+    "ratio_sms_appels",
+    "ratio_data_voix",
+    "score_qualite_zone",
+    "score_frustration",
+    "flag_offre_data",
+    "flag_offre_voix",
+    "genre_client_Homme",
+    "type_abonnement_Offre_a_Facture",
+    "plan_tarifaire_Forfait_Mobile_Mixte",
+    "plan_tarifaire_Offre_Classique",
+    "moyen_paiement_prelevement_bancaire",
+    "moyen_paiement_ticket_recharge",
+    "zone_reseau_principale_SUBURBAIN",
+    "zone_reseau_principale_URBAIN"
+  ],
+  "features_brutes": [
+    "genre_client",
+    "type_abonnement",
+    "plan_tarifaire",
+    "moyen_paiement",
+    "facture_moyenne_mensuelle",
+    "satisfaction_client",
+    "consentement_marketing",
+    "optout_marketing",
+    "tenure_mois",
+    "duree_appel_moyenne_sec",
+    "data_moyenne_gb",
+    "nb_evenements_total",
+    "nb_sessions",
+    "duree_session_moyenne_sec",
+    "taux_cookies",
+    "recence_session_jours",
+    "zone_reseau_principale",
+    "qualite_signal_dominante",
+    "data_manquante",
+    "satisfaction_manquante",
+    "reclamation_manquante",
+    "tendance_data_pct",
+    "ratio_sms_appels",
+    "ratio_data_voix",
+    "score_qualite_zone",
+    "score_frustration",
+    "flag_offre_data",
+    "flag_offre_voix"
+  ],
+  "ohe_col_abonnement": "type_abonnement_Offre_a_Facture"
+}

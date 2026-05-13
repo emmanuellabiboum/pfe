@@ -1,0 +1,301 @@
+genre_client,type_abonnement,plan_tarifaire,moyen_paiement,facture_moyenne_mensuelle,satisfaction_client,consentement_marketing,optout_marketing,tenure_mois,duree_appel_moyenne_sec,data_moyenne_gb,nb_evenements_total,nb_sessions,duree_session_moyenne_sec,taux_cookies,recence_session_jours,zone_reseau_principale,qualite_signal_dominante,data_manquante,satisfaction_manquante,reclamation_manquante,tendance_data_pct,ratio_sms_appels,ratio_data_voix,score_qualite_zone,score_frustration,flag_offre_data,flag_offre_voix,churn
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,5.15,5.0,True,False,23,174.64285714285714,7.702222222222222,39.0,7,105.85714285714286,0.8571428571428571,92,RURAL,Faible,0,0,0,-87.74,1.1429,29.0322,1,0.0,1,1,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,8.24,1.0,True,False,59,68.0,0.0,4.0,1,380.0,0.0,55,URBAIN,Bon,0,0,1,0.0,1.0,0.0,6,,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,9.14,,True,False,31,124.5,0.0,3.0,1,38.0,1.0,561,SUBURBAIN,Bon,0,1,1,0.0,0.5,0.0,4,,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,21.53,2.0,False,False,17,95.9,0.0,18.0,8,259.875,0.375,81,URBAIN,Bon,0,0,0,0.0,0.3,0.0,6,12.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,12.03,1.0,True,False,22,115.0,0.0,6.0,3,139.33333333333334,0.6666666666666666,86,URBAIN,Bon,0,0,0,0.0,0.3333,0.0,6,30.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,,3.0,True,False,24,140.9,7.315333333333333,37.0,10,1044.0,0.7,123,URBAIN,Excellent,0,0,0,200.0,1.2,79.747,9,9.0,1,1,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,22.72,,True,False,25,125.0,0.0,2.0,3,205.0,0.6666666666666666,368,SUBURBAIN,Bon,0,1,1,0.0,1.0,0.0,4,,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,29.39,2.0,False,False,56,0.0,0.0,0.0,1,85.0,0.0,1498,RURAL,Bon,0,0,0,0.0,0.0,0.0,2,28.0,0,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,88.74,5.0,False,False,44,157.3,0.0,21.0,9,405.77777777777777,0.4444444444444444,130,URBAIN,Excellent,0,0,0,0.0,0.6,0.0,9,0.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,,2.0,False,False,19,85.66666666666667,0.0,21.0,3,77.0,0.3333333333333333,135,URBAIN,Excellent,0,0,0,0.0,1.5,0.0,9,16.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,45.04,1.0,False,False,49,60.0,0.0,4.0,1,108.0,0.0,683,RURAL,Faible,0,0,0,0.0,1.0,0.0,1,40.0,0,1,1
+Femme,Offre à Facture,Offre Classique,ticket_recharge,13.22,2.0,True,False,57,98.75,0.0,20.0,6,428.1666666666667,0.8333333333333334,388,SUBURBAIN,Bon,0,0,0,0.0,2.0,0.0,4,8.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,especes,35.87,4.0,True,True,53,244.25,0.0,23.0,9,197.88888888888889,0.8888888888888888,83,URBAIN,Excellent,0,0,0,0.0,1.25,0.0,9,2.0,0,1,0
+Homme,Offre Prépayée,Forfait Illimité,especes,5.04,4.0,False,False,23,0.0,31.038,58.0,6,213.5,0.8333333333333334,5,URBAIN,Bon,0,0,0,110.89,0.0,100.0,6,0.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,21.94,5.0,False,False,31,74.28571428571429,0.0,18.0,9,296.77777777777777,0.4444444444444444,35,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,0.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,22.48,1.0,False,False,55,273.0,0.0,17.0,8,268.125,0.375,254,URBAIN,Excellent,1,0,1,0.0,1.75,0.0,9,,0,1,0
+Femme,Offre Prépayée,Offre Classique,especes,19.3,1.0,False,False,16,194.8,0.0,13.0,8,373.625,0.375,17,SUBURBAIN,Bon,0,0,0,0.0,0.8,0.0,4,10.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,11.86,3.0,False,False,34,119.22222222222224,10.07125,23.0,6,349.6666666666667,0.3333333333333333,361,URBAIN,Excellent,0,0,0,200.0,0.6667,76.8907,9,9.0,1,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,11.1,5.0,False,False,48,199.375,7.531000000000001,31.0,12,264.6666666666667,0.25,81,URBAIN,Bon,0,0,0,200.0,0.3125,24.1747,6,1.0,1,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,22.61,4.0,False,False,56,173.6153846153846,0.0,26.0,14,283.42857142857144,0.5,86,URBAIN,Excellent,0,0,1,0.0,0.1538,0.0,9,,0,1,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,8.7,1.0,False,False,33,0.0,48.895833333333336,46.0,15,378.53333333333336,0.4,69,SUBURBAIN,Bon,0,0,0,-74.57,0.0,100.0,4,20.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,7.02,4.0,False,False,47,194.6,0.0,20.0,11,314.27272727272725,0.1818181818181818,55,SUBURBAIN,Bon,0,0,0,0.0,0.5,0.0,4,2.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,20.3,1.0,False,False,20,196.33333333333331,0.0,13.0,8,222.0,0.5,181,URBAIN,Excellent,0,0,0,0.0,0.6667,0.0,9,15.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,70.12,1.0,True,False,28,193.0,0.0,26.0,12,387.5833333333333,0.8333333333333334,54,URBAIN,Bon,0,0,0,0.0,1.0,0.0,6,15.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,13.32,1.0,False,False,50,433.2,0.0,23.0,14,230.7142857142857,0.2857142857142857,52,SUBURBAIN,Excellent,0,0,0,0.0,0.4,0.0,6,35.0,0,1,0
+Homme,Offre à Facture,Forfait Mobile (Mixte),prelevement_bancaire,16.19,1.0,True,False,21,181.0,4.23,11.0,1,184.0,0.0,353,URBAIN,Bon,0,0,0,,0.4286,3.4187,6,25.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,17.06,2.0,True,True,44,178.42857142857142,0.0,24.0,5,171.8,1.0,12,SUBURBAIN,Bon,0,0,0,0.0,0.3571,0.0,4,8.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,20.99,,False,False,16,131.66666666666666,0.0,4.0,1,95.0,1.0,227,URBAIN,Excellent,0,1,1,0.0,0.3333,0.0,9,,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,18.97,1.0,True,False,12,239.0,3.26,8.0,1,162.0,1.0,1638,URBAIN,Excellent,0,0,0,,1.3333,4.6558,9,25.0,1,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,14.08,5.0,True,False,51,261.8333333333333,0.0,19.0,10,217.1,0.9,257,URBAIN,Excellent,0,0,1,0.0,1.0,0.0,9,,0,1,0
+Femme,Offre Prépayée,Offre Classique,especes,144.68,,True,False,35,90.0,0.0,5.0,1,90.0,1.0,129,URBAIN,Excellent,0,1,1,0.0,0.6667,0.0,9,,0,1,1
+Femme,Offre à Facture,Offre Classique,ticket_recharge,44.09,1.0,True,False,31,0.0,0.0,3.0,1,101.0,1.0,500,URBAIN,Excellent,0,0,0,0.0,20.0,0.0,9,15.0,0,0,1
+Homme,Offre Prépayée,Offre Classique,especes,42.69,5.0,False,False,44,139.83333333333334,0.0,16.0,13,183.15384615384616,0.3846153846153846,31,RURAL,Faible,0,0,0,0.0,0.5,0.0,1,0.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,41.77,3.0,True,False,24,113.9090909090909,0.0,25.0,8,150.125,0.875,10,URBAIN,Excellent,0,0,1,0.0,0.3636,0.0,9,,0,1,1
+Homme,Offre Prépayée,Offre Classique,especes,145.24,2.0,True,False,43,0.0,0.0,2.0,3,99.0,1.0,25,URBAIN,Bon,0,0,0,0.0,20.0,0.0,6,24.0,0,0,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,36.84,1.0,True,False,37,0.0,0.0,2.0,1,147.0,1.0,807,URBAIN,Excellent,0,0,0,0.0,20.0,0.0,9,40.0,0,0,0
+Homme,Offre Prépayée,Offre Classique,especes,21.73,4.0,False,False,27,166.85714285714286,0.0,17.0,7,149.42857142857142,0.5714285714285714,149,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,2.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,22.09,1.0,False,False,13,79.33333333333333,3.8,7.0,3,147.33333333333334,0.3333333333333333,334,RURAL,Bon,0,0,0,-5.71,0.3333,49.0487,2,40.0,1,1,1
+Femme,Offre à Facture,Offre Classique,ticket_recharge,12.89,,True,False,28,76.5,0.0,4.0,3,394.6666666666667,1.0,284,URBAIN,Excellent,1,1,1,0.0,0.0,0.0,9,,0,1,1
+Homme,Offre Prépayée,Offre Classique,especes,119.22,2.0,True,False,37,0.0,0.0,2.0,2,221.0,0.0,56,SUBURBAIN,Bon,0,0,0,0.0,20.0,0.0,4,16.0,0,0,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,15.89,2.0,True,False,28,20.0,0.0,5.0,1,195.0,1.0,181,SUBURBAIN,Bon,0,0,0,0.0,1.5,0.0,4,16.0,0,1,1
+Homme,Offre à Facture,Offre Classique,ticket_recharge,19.64,2.0,False,False,41,13.0,0.0,2.0,1,440.0,0.0,181,URBAIN,Bon,1,0,0,0.0,0.0,0.0,6,8.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,especes,23.78,1.0,False,False,18,127.375,0.0,22.0,9,311.44444444444446,0.4444444444444444,18,SUBURBAIN,Bon,0,0,0,0.0,1.125,0.0,4,25.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,38.96,1.0,True,False,32,167.5,0.0,13.0,3,541.3333333333334,0.6666666666666666,9,RURAL,Faible,0,0,0,0.0,0.5,0.0,1,25.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,47.15,1.0,True,False,22,254.2,0.0,16.0,8,212.5,1.0,77,SUBURBAIN,Bon,0,0,0,0.0,0.6,0.0,4,15.0,0,1,0
+Homme,Offre Prépayée,Forfait Illimité,especes,,,True,False,38,0.0,31.243333333333336,11.0,1,118.0,1.0,1011,URBAIN,Bon,1,1,1,53.29,0.0,0.0,6,,1,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,9.06,3.0,False,False,59,124.28571428571428,0.0,16.0,7,256.7142857142857,0.1428571428571428,108,RURAL,Faible,0,0,0,0.0,0.4286,0.0,1,0.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),especes,15.01,1.0,True,False,32,182.92307692307693,5.81,28.0,5,292.2,0.8,79,URBAIN,Excellent,0,0,0,26.19,0.9231,7.5056,9,35.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,20.03,3.0,True,False,13,252.0,0.0,20.0,7,632.8571428571429,0.8571428571428571,240,RURAL,Bon,0,0,1,0.0,1.5714,0.0,2,,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,17.01,4.0,True,False,17,147.06666666666666,15.398,37.0,3,268.3333333333333,0.6666666666666666,23,URBAIN,Excellent,0,0,0,200.0,0.8,71.4758,9,4.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,11.69,1.0,True,True,47,85.0,0.0,6.0,2,176.5,1.0,619,URBAIN,Bon,0,0,0,0.0,3.0,0.0,6,35.0,0,1,1
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,9.81,1.0,False,False,40,119.2,4.765,8.0,1,73.0,0.0,1077,URBAIN,Excellent,0,0,0,125.26,0.2,16.3737,9,15.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,8.33,4.0,True,True,49,151.57142857142858,0.0,20.0,4,147.75,0.75,128,SUBURBAIN,Excellent,0,0,0,0.0,0.8571,0.0,6,4.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,especes,8.78,5.0,False,False,59,156.0,0.0,20.0,1,36.0,1.0,710,URBAIN,Excellent,0,0,0,0.0,0.625,0.0,9,0.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,142.71,2.0,False,False,52,203.41666666666663,0.0,37.0,10,348.2,0.3,747,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,20.0,0,1,0
+Homme,Offre à Facture,Forfait Mobile (Mixte),ticket_recharge,22.7,4.0,True,False,34,209.9,9.29857142857143,19.0,12,330.9166666666667,0.75,159,SUBURBAIN,Bon,1,0,0,5.42,0.2,,4,2.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,43.87,4.0,True,False,52,190.0,0.0,21.0,10,222.9,0.9,46,SUBURBAIN,Bon,0,0,0,0.0,0.4167,0.0,4,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,2.0,False,False,41,428.5,0.0,20.0,6,360.8333333333333,0.3333333333333333,388,SUBURBAIN,Bon,0,0,0,0.0,1.3333,0.0,4,12.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,47.34,2.0,True,False,30,173.0,0.0,19.0,4,264.5,1.0,58,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,16.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,45.39,4.0,True,False,15,118.33333333333331,0.0,19.0,6,322.5,0.8333333333333334,36,URBAIN,Excellent,0,0,0,0.0,0.7778,0.0,9,4.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,52.7,2.0,False,False,57,188.42857142857144,0.0,22.0,9,386.1111111111111,0.1111111111111111,91,SUBURBAIN,Excellent,0,0,0,0.0,1.4286,0.0,6,16.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,17.57,4.0,True,False,53,224.2,0.0,14.0,7,342.85714285714283,0.7142857142857143,7,URBAIN,Excellent,0,0,0,0.0,1.4,0.0,9,2.0,0,1,0
+Homme,Offre à Facture,Forfait Illimité,ticket_recharge,18.15,4.0,True,False,28,0.0,46.59923076923077,40.0,10,524.6,0.9,10,RURAL,Bon,0,0,0,75.19,0.0,100.0,2,2.0,1,0,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,28.24,5.0,True,False,59,150.375,9.363076923076925,29.0,9,236.66666666666663,1.0,30,URBAIN,Excellent,0,0,0,-72.54,1.0,103.6087,9,0.0,1,1,0
+Homme,Offre Prépayée,Forfait Illimité,ticket_recharge,8.99,2.0,False,False,43,0.0,14.3075,6.0,1,130.0,1.0,361,RURAL,Faible,0,0,0,-77.98,0.0,100.0,1,12.0,1,0,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,13.89,4.0,True,False,34,202.72727272727272,0.0,25.0,9,374.6666666666667,0.8888888888888888,136,URBAIN,Excellent,0,0,0,0.0,0.2727,0.0,9,2.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),especes,30.43,3.0,True,False,58,244.16666666666663,3.9066666666666663,23.0,8,347.5,0.75,343,URBAIN,Bon,0,0,0,-50.94,0.4167,8.192,6,3.0,1,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,10.57,1.0,True,False,14,485.0,0.0,3.0,1,160.0,1.0,245,URBAIN,Excellent,0,0,0,0.0,2.0,0.0,9,30.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,57.54,1.0,True,False,23,126.28571428571428,0.0,20.0,5,227.2,0.4,121,URBAIN,Bon,1,0,0,0.0,1.0,0.0,6,10.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,141.64,1.0,True,True,13,0.0,0.0,1.0,1,113.0,0.0,315,RURAL,Bon,0,0,0,0.0,20.0,0.0,2,25.0,0,0,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,36.02,5.0,True,True,26,188.75,0.0,18.0,12,693.5,0.75,16,URBAIN,Excellent,0,0,0,0.0,0.875,0.0,9,0.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,14.13,2.0,True,True,26,194.5,10.55,5.0,4,290.25,1.0,22,URBAIN,Bon,0,0,0,-46.1,0.5,55.5434,6,28.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,52.62,2.0,True,False,53,861.0,0.0,2.0,1,48.0,1.0,249,URBAIN,Faible,1,0,0,0.0,1.0,0.0,3,20.0,0,1,0
+Femme,Offre à Facture,Offre Classique,prelevement_bancaire,22.24,1.0,True,False,41,311.0,0.0,3.0,1,703.0,0.0,311,URBAIN,Excellent,0,0,0,0.0,0.0,0.0,9,35.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,17.16,2.0,True,False,22,153.0,0.0,7.0,2,98.0,1.0,64,SUBURBAIN,Bon,1,0,0,0.0,3.0,0.0,4,8.0,0,1,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,5.87,5.0,True,False,36,0.0,29.008666666666667,46.0,6,222.83333333333331,1.0,94,SUBURBAIN,Bon,0,0,0,200.0,0.0,100.0,4,1.0,1,0,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,16.85,3.0,True,True,46,137.0,4.662857142857143,25.0,12,213.16666666666663,0.6666666666666666,123,SUBURBAIN,Excellent,0,0,0,200.0,0.6364,22.1787,6,3.0,1,1,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,15.52,,False,False,36,0.0,17.34,5.0,2,445.0,0.5,82,SUBURBAIN,Excellent,0,1,1,200.0,0.0,100.0,6,,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,2.0,True,False,54,132.16666666666666,0.0,18.0,11,336.0,0.8181818181818182,92,URBAIN,Excellent,0,0,0,0.0,1.5,0.0,9,12.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,102.93,1.0,True,False,14,187.0,0.0,2.0,1,607.0,1.0,145,URBAIN,Bon,0,0,0,0.0,1.0,0.0,6,20.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,19.69,5.0,True,False,27,174.75,0.0,12.0,10,206.9,0.8,28,SUBURBAIN,Bon,0,0,1,0.0,0.0,0.0,4,,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,6.75,1.0,False,False,15,157.25,0.0,22.0,12,357.0,0.4166666666666667,216,URBAIN,Excellent,0,0,0,0.0,0.4167,0.0,9,15.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,12.97,2.0,False,False,33,147.14285714285714,0.0,17.0,10,446.8,0.0,158,URBAIN,Excellent,0,0,0,0.0,0.7143,0.0,9,8.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,11.64,2.0,True,False,17,169.3,0.0,20.0,11,185.9090909090909,1.0,47,URBAIN,Excellent,0,0,1,0.0,0.5,0.0,9,,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,5.47,2.0,True,False,45,178.0,0.0,22.0,12,189.08333333333331,0.6666666666666666,90,SUBURBAIN,Bon,0,0,0,0.0,0.75,0.0,4,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,16.95,3.0,False,False,18,232.0,0.0,21.0,10,232.9,0.2,27,URBAIN,Excellent,0,0,0,0.0,0.8571,0.0,9,6.0,0,1,0
+Homme,Offre Prépayée,Forfait Illimité,especes,8.74,5.0,True,True,26,0.0,26.976315789473688,50.0,7,451.0,0.5714285714285714,97,URBAIN,Excellent,0,0,0,-67.0,0.0,100.0,9,0.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,especes,16.09,5.0,True,False,50,150.1,0.0,25.0,11,320.90909090909093,0.8181818181818182,237,SUBURBAIN,Bon,0,0,0,0.0,0.8,0.0,4,0.0,0,1,1
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,14.55,1.0,True,False,36,165.8,9.863076923076925,30.0,6,175.66666666666666,0.8333333333333334,46,SUBURBAIN,Bon,0,0,0,167.27,2.4,158.3803,4,25.0,1,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,21.6,2.0,True,False,48,87.0,0.0,2.0,1,1100.0,1.0,582,RURAL,Bon,0,0,0,0.0,1.0,0.0,2,28.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,13.76,2.0,False,False,31,122.57142857142856,0.0,17.0,7,553.5714285714286,0.0,9,URBAIN,Excellent,0,0,0,0.0,1.2857,0.0,9,12.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,15.74,,False,False,24,154.0,0.0,19.0,4,314.75,0.75,16,URBAIN,Bon,0,1,1,0.0,0.1818,0.0,6,,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,13.27,3.0,True,False,34,75.66666666666667,0.0,14.0,6,193.5,0.8333333333333334,293,URBAIN,Excellent,0,0,0,0.0,0.6667,0.0,9,6.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,35.21,1.0,True,False,52,206.0,0.0,5.0,3,58.66666666666666,1.0,178,URBAIN,Excellent,0,0,0,0.0,3.0,0.0,9,35.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,10.87,2.0,False,False,34,136.0,0.0,21.0,6,863.0,0.3333333333333333,204,SUBURBAIN,Bon,0,0,0,0.0,2.0,0.0,4,8.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,32.67,2.0,False,False,13,186.5,0.0,4.0,3,210.33333333333331,0.0,300,URBAIN,Excellent,0,0,0,0.0,0.0,0.0,9,4.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,110.67,2.0,False,False,47,266.0,0.0,7.0,2,1038.5,0.0,591,RURAL,Faible,0,0,0,0.0,0.0,0.0,1,8.0,0,1,1
+Homme,Offre à Facture,Offre Classique,ticket_recharge,145.56,3.0,False,False,43,110.875,0.0,20.0,2,485.0,0.5,356,URBAIN,Excellent,0,0,0,0.0,0.625,0.0,9,12.0,0,1,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,8.89,1.0,False,False,25,0.0,30.288666666666668,45.0,6,134.5,0.6666666666666666,116,URBAIN,Bon,0,0,0,93.3,0.0,100.0,6,15.0,1,0,0
+Homme,Offre à Facture,Forfait Mobile (Mixte),especes,9.8,5.0,False,False,21,235.30769230769232,7.407500000000001,30.0,11,722.0909090909091,0.2727272727272727,20,SUBURBAIN,Bon,0,0,0,-6.78,0.6154,19.8373,4,0.0,1,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,34.41,1.0,True,False,59,248.64285714285717,12.608333333333334,36.0,6,312.3333333333333,0.5,186,URBAIN,Bon,0,0,0,50.26,0.7143,44.5077,6,35.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,12.66,2.0,True,False,57,129.0909090909091,0.0,21.0,9,302.55555555555554,0.7777777777777778,222,URBAIN,Excellent,0,0,0,0.0,0.4545,0.0,9,8.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,82.22,1.0,False,False,42,31.5,10.608,8.0,2,104.5,1.0,36,URBAIN,Excellent,0,0,0,41.85,0.5,862.1105,9,40.0,1,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,5.74,3.0,True,False,50,101.07692307692308,9.0675,43.0,5,230.6,1.0,80,URBAIN,Excellent,1,0,0,-35.46,1.3846,,9,3.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,128.11,1.0,False,False,22,176.83333333333334,0.0,16.0,10,897.6,0.4,17,URBAIN,Excellent,0,0,0,0.0,1.5,0.0,9,25.0,0,1,0
+Homme,Offre à Facture,Forfait Illimité,ticket_recharge,8.16,5.0,True,False,38,0.0,26.969999999999995,42.0,10,206.7,0.7,184,SUBURBAIN,Bon,0,0,0,33.62,0.0,100.0,4,0.0,1,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,7.25,1.0,True,False,24,258.0,0.0,4.0,1,93.0,1.0,437,SUBURBAIN,Bon,0,0,0,0.0,3.0,0.0,4,15.0,0,1,0
+Homme,Offre Prépayée,Forfait Illimité,ticket_recharge,140.51,1.0,True,True,21,0.0,20.911666666666665,41.0,7,345.2857142857143,0.5714285714285714,166,URBAIN,Excellent,0,0,0,200.0,0.0,100.0,9,5.0,1,0,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,21.2,5.0,True,False,40,0.0,45.62066666666667,39.0,8,126.5,1.0,640,URBAIN,Bon,0,0,1,200.0,0.0,100.0,6,,1,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,,,False,False,47,35.0,0.0,3.0,1,351.0,1.0,257,URBAIN,Bon,0,1,1,0.0,1.0,0.0,6,,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,38.09,2.0,False,False,46,0.0,0.0,2.0,1,105.0,0.0,759,SUBURBAIN,Excellent,0,0,0,0.0,20.0,0.0,6,32.0,0,0,0
+Femme,Offre Prépayée,Forfait Illimité,especes,35.92,5.0,False,False,50,0.0,27.56846153846153,50.0,8,399.25,0.375,48,URBAIN,Bon,0,0,0,56.97,0.0,100.0,6,0.0,1,0,0
+Homme,Offre Prépayée,Offre Classique,especes,6.66,5.0,False,False,47,217.8181818181818,0.0,24.0,8,451.375,0.25,120,URBAIN,Excellent,0,0,0,0.0,0.4545,0.0,9,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,19.59,1.0,True,False,15,246.33333333333331,0.0,5.0,3,119.0,0.6666666666666666,609,SUBURBAIN,Bon,0,0,0,0.0,0.6667,0.0,4,30.0,0,1,1
+Femme,Offre Prépayée,Forfait Illimité,especes,122.74,5.0,True,False,26,0.0,35.81733333333333,37.0,5,268.8,0.6,311,SUBURBAIN,Bon,0,0,0,-41.3,0.0,100.0,4,0.0,1,0,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,49.39,2.0,True,False,58,115.22222222222224,0.0,20.0,8,230.625,0.75,105,SUBURBAIN,Bon,1,0,0,0.0,0.6667,0.0,4,12.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,14.57,2.0,True,False,25,215.75,0.0,16.0,2,241.0,0.5,7,SUBURBAIN,Bon,0,0,0,0.0,1.75,0.0,4,8.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,16.99,3.0,True,False,55,263.2857142857143,0.0,21.0,8,197.25,0.75,74,SUBURBAIN,Bon,0,0,0,0.0,1.4286,0.0,4,3.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,82.34,2.0,True,False,14,133.0,0.0,3.0,3,55.0,1.0,871,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,24.0,0,1,1
+Femme,Offre à Facture,Offre Classique,ticket_recharge,47.34,2.0,True,False,34,475.5,0.0,6.0,1,59.0,1.0,785,RURAL,Bon,1,0,0,0.0,0.0,0.0,2,16.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,12.54,1.0,False,False,29,117.4,0.0,23.0,7,372.57142857142856,0.1428571428571428,473,SUBURBAIN,Faible,0,0,0,0.0,0.8,0.0,2,30.0,0,1,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,5.84,1.0,False,False,25,103.75,0.0,19.0,7,660.4285714285714,0.4285714285714285,28,URBAIN,Excellent,0,0,0,0.0,0.5,0.0,9,20.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,especes,5.26,3.0,True,False,24,192.0,0.0,17.0,6,351.8333333333333,0.6666666666666666,60,SUBURBAIN,Bon,0,0,0,0.0,0.8571,0.0,4,3.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),especes,6.71,5.0,False,False,43,171.9090909090909,13.35,44.0,6,92.16666666666669,0.6666666666666666,127,SUBURBAIN,Bon,0,0,0,-26.49,1.6364,108.4379,4,0.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,42.71,1.0,False,False,46,0.0,0.0,2.0,1,173.0,0.0,537,URBAIN,Excellent,0,0,0,0.0,20.0,0.0,9,40.0,0,0,1
+Homme,Offre à Facture,Offre Classique,ticket_recharge,12.81,4.0,True,False,33,153.0,0.0,13.0,7,540.7142857142857,0.8571428571428571,129,URBAIN,Excellent,0,0,0,0.0,0.4,0.0,9,0.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,23.85,1.0,False,False,12,136.14285714285714,0.0,22.0,8,326.0,0.25,111,URBAIN,Excellent,0,0,0,0.0,1.1429,0.0,9,25.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.66,1.0,False,False,37,118.85714285714286,0.0,15.0,10,146.2,0.1,32,RURAL,Bon,0,0,0,0.0,0.5714,0.0,2,10.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,31.71,2.0,True,False,36,226.54545454545453,0.0,24.0,10,319.2,0.7,194,SUBURBAIN,Bon,0,0,0,0.0,1.0,0.0,4,12.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,12.01,4.0,True,False,28,241.0,0.0,19.0,8,256.875,0.875,131,SUBURBAIN,Excellent,0,0,0,0.0,1.1667,0.0,6,2.0,0,1,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,15.9,2.0,True,False,39,0.0,9.966666666666669,10.0,3,178.0,0.3333333333333333,106,URBAIN,Excellent,0,0,0,-92.37,0.0,100.0,9,8.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,21.88,2.0,True,False,38,119.0,0.0,16.0,15,370.9333333333333,0.9333333333333332,114,SUBURBAIN,Bon,0,0,0,0.0,3.5,0.0,4,12.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,50.38,1.0,True,False,26,88.0,0.0,3.0,2,776.5,1.0,221,SUBURBAIN,Bon,0,0,0,0.0,1.0,0.0,4,20.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,22.27,3.0,False,False,19,281.0769230769231,0.0,26.0,7,537.1428571428571,0.4285714285714285,35,URBAIN,Excellent,0,0,0,0.0,0.5385,0.0,9,3.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,21.18,3.0,True,False,43,166.9090909090909,0.0,22.0,10,580.3,0.9,35,URBAIN,Bon,0,0,0,0.0,0.6364,0.0,6,6.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,50.64,2.0,True,False,34,85.6,0.0,19.0,7,219.42857142857144,0.8571428571428571,77,URBAIN,Bon,0,0,1,0.0,0.5,0.0,6,,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.26,1.0,False,False,46,394.4,0.0,10.0,3,603.0,0.6666666666666666,462,URBAIN,Excellent,0,0,0,0.0,0.6,0.0,9,10.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,20.34,1.0,False,False,31,206.5,0.0,3.0,6,435.8333333333333,0.5,51,URBAIN,Bon,0,0,0,0.0,0.0,0.0,6,25.0,0,1,1
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,19.98,4.0,True,False,33,94.5,16.34375,20.0,8,374.75,0.625,33,RURAL,Faible,0,0,0,200.0,2.0,354.2011,1,2.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,especes,7.37,5.0,True,False,47,162.91666666666666,0.0,24.0,8,440.625,0.625,289,URBAIN,Excellent,0,0,0,0.0,0.9167,0.0,9,0.0,0,1,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,5.55,,True,True,14,199.5,0.0,6.0,3,167.0,1.0,186,URBAIN,Bon,0,1,1,0.0,0.5,0.0,6,,0,1,1
+Homme,Offre à Facture,Offre Classique,ticket_recharge,9.27,1.0,False,False,25,111.83333333333331,0.0,21.0,7,280.85714285714283,0.5714285714285714,18,URBAIN,Excellent,0,0,0,0.0,1.5,0.0,9,25.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,118.82,1.0,True,False,30,90.8,0.0,29.0,12,294.9166666666667,0.8333333333333334,72,URBAIN,Excellent,0,0,0,0.0,0.6,0.0,9,40.0,0,1,0
+Femme,Offre à Facture,Offre Classique,especes,18.29,1.0,True,True,31,214.0,0.0,4.0,3,216.33333333333331,1.0,369,URBAIN,Bon,0,0,0,0.0,3.0,0.0,6,35.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,50.45,5.0,False,False,35,326.875,0.0,13.0,9,589.4444444444445,0.3333333333333333,255,SUBURBAIN,Excellent,0,0,0,0.0,0.375,0.0,6,0.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,especes,22.92,2.0,True,False,18,179.2,0.0,15.0,6,603.5,0.8333333333333334,234,URBAIN,Bon,0,0,0,0.0,0.3,0.0,6,8.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,especes,32.95,3.0,False,False,41,219.08333333333331,0.0,23.0,8,301.0,0.125,208,URBAIN,Bon,0,0,0,0.0,0.3333,0.0,6,6.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,15.95,3.0,False,False,26,214.0,0.0,18.0,4,160.75,0.25,110,SUBURBAIN,Bon,0,0,0,0.0,1.0,0.0,4,3.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,,4.0,True,False,56,215.33333333333331,0.0,16.0,8,217.25,0.875,38,URBAIN,Bon,0,0,0,0.0,1.1667,0.0,6,2.0,0,1,0
+Femme,Offre à Facture,Offre Classique,especes,21.9,1.0,False,False,44,195.33333333333331,0.0,4.0,4,242.25,0.0,264,SUBURBAIN,Excellent,1,0,0,0.0,0.0,0.0,6,50.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,especes,7.89,2.0,True,False,55,308.72727272727275,0.0,30.0,9,203.44444444444449,0.5555555555555556,19,SUBURBAIN,Bon,1,0,0,0.0,0.8182,0.0,4,32.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,15.2,2.0,False,False,52,192.8,0.0,19.0,7,508.1428571428572,0.1428571428571428,61,SUBURBAIN,Bon,0,0,1,0.0,2.2,0.0,4,,0,1,0
+Homme,Offre Prépayée,Forfait Illimité,ticket_recharge,,2.0,True,False,35,0.0,35.33,60.0,10,219.3,0.8,93,RURAL,Bon,0,0,0,-82.53,0.0,100.0,2,12.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.08,3.0,False,False,20,155.71428571428572,0.0,21.0,13,267.2307692307692,0.3846153846153846,80,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,3.0,0,1,0
+Femme,Offre à Facture,Forfait Mobile (Mixte),ticket_recharge,17.58,1.0,True,True,42,289.6666666666667,3.535,6.0,1,59.0,0.0,875,URBAIN,Bon,0,0,0,88.57,0.3333,8.331,6,40.0,1,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,13.3,2.0,False,False,25,82.5,0.0,19.0,6,265.0,0.5,74,SUBURBAIN,Excellent,0,0,0,0.0,1.75,0.0,6,8.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,22.43,4.0,False,False,42,270.1428571428572,0.0,22.0,7,127.42857142857144,0.2857142857142857,52,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,especes,10.0,2.0,True,False,21,341.0,0.0,4.0,2,204.5,0.5,18,SUBURBAIN,Excellent,1,0,1,0.0,1.0,0.0,6,,0,1,1
+Femme,Offre Prépayée,Offre Classique,especes,17.38,1.0,False,False,18,160.57142857142858,0.0,22.0,6,162.33333333333334,0.0,16,SUBURBAIN,Bon,0,0,0,0.0,1.2857,0.0,4,10.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,23.44,4.0,True,False,23,111.71428571428572,0.0,14.0,13,932.0,0.7692307692307693,32,URBAIN,Bon,0,0,0,0.0,0.5714,0.0,6,2.0,0,1,0
+Femme,Offre Prépayée,Forfait Illimité,especes,34.86,2.0,True,False,41,0.0,22.863333333333333,41.0,8,178.5,0.625,186,SUBURBAIN,Bon,0,0,0,-85.09,0.0,100.0,4,24.0,1,0,0
+Homme,Offre Prépayée,Offre Classique,especes,14.61,3.0,True,False,37,271.0,0.0,22.0,12,186.08333333333331,0.6666666666666666,132,URBAIN,Excellent,0,0,0,0.0,0.4,0.0,9,6.0,0,1,0
+Femme,Offre à Facture,Forfait Illimité,ticket_recharge,29.68,1.0,True,True,41,0.0,57.463636363636354,51.0,7,393.0,0.8571428571428571,179,SUBURBAIN,Excellent,0,0,0,-25.45,0.0,100.0,6,25.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,17.72,5.0,True,False,26,253.875,0.0,18.0,13,344.2307692307692,1.0,3,URBAIN,Excellent,0,0,0,0.0,0.5,0.0,9,1.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,17.8,1.0,False,False,38,0.0,7.474999999999999,7.0,2,702.5,0.0,31,URBAIN,Excellent,0,0,1,-16.34,20.0,100.0,9,,1,0,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,4.0,True,False,33,232.1,0.0,25.0,11,408.1818181818182,0.6363636363636364,140,URBAIN,Bon,0,0,0,0.0,0.5,0.0,6,4.0,0,1,0
+Homme,Offre à Facture,Forfait Mobile (Mixte),ticket_recharge,13.62,2.0,False,False,25,245.1818181818182,12.572777777777777,38.0,3,614.3333333333334,0.0,92,SUBURBAIN,Bon,0,0,0,-86.24,0.8182,85.9256,4,8.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,58.87,1.0,True,False,15,153.16666666666666,0.0,21.0,10,295.5,0.9,75,URBAIN,Excellent,0,0,0,0.0,0.8333,0.0,9,20.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,20.0,2.0,False,False,15,349.2,0.0,19.0,17,293.1764705882353,0.3529411764705882,1,SUBURBAIN,Bon,0,0,0,0.0,0.5,0.0,4,12.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,14.48,,False,False,52,68.0,0.0,1.0,1,114.0,0.0,300,SUBURBAIN,Bon,0,1,1,0.0,0.0,0.0,4,,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),especes,9.34,4.0,True,False,18,239.8095238095238,18.3225,31.0,8,319.5,0.625,49,URBAIN,Bon,0,0,0,-75.37,0.0952,29.805,6,0.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,16.13,4.0,False,False,13,231.66666666666663,0.0,20.0,10,308.9,0.4,23,URBAIN,Bon,0,0,0,0.0,0.4444,0.0,6,4.0,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,23.14,2.0,True,False,19,175.0,10.875,9.0,2,881.0,1.0,24,SUBURBAIN,Faible,0,0,0,5.75,1.5,127.2686,2,16.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,especes,8.61,2.0,False,False,53,283.57142857142856,0.0,19.0,10,140.1,0.4,89,RURAL,Faible,0,0,0,0.0,0.5714,0.0,1,8.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,17.6,5.0,True,False,53,230.6,15.82875,26.0,9,503.8888888888889,0.5555555555555556,57,SUBURBAIN,Bon,0,0,0,-93.68,0.8,56.2312,4,0.0,1,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,,2.0,False,False,17,228.16666666666663,10.371666666666668,21.0,5,246.8,0.6,146,URBAIN,Bon,0,0,0,-60.62,0.25,23.2737,6,12.0,1,1,0
+Femme,Offre à Facture,Forfait Mobile (Mixte),especes,89.31,5.0,True,False,39,283.3333333333333,11.161428571428573,26.0,5,256.6,0.8,495,RURAL,Faible,0,0,0,82.84,1.1111,31.3746,1,1.0,1,1,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,20.72,2.0,True,False,39,141.5,0.0,3.0,1,483.0,1.0,426,RURAL,Bon,0,0,0,0.0,0.0,0.0,2,16.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,14.05,3.0,False,False,28,135.5,0.0,11.0,4,459.5,1.0,162,URBAIN,Bon,0,0,0,0.0,1.0,0.0,6,9.0,0,1,1
+Femme,Offre à Facture,Forfait Illimité,ticket_recharge,11.33,3.0,True,False,17,0.0,32.080714285714286,53.0,6,190.16666666666663,0.8333333333333334,28,URBAIN,Bon,0,0,0,93.54,0.0,100.0,6,3.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,6.27,3.0,True,False,53,183.6,0.0,17.0,12,669.5833333333334,0.5833333333333334,32,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,9.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,5.63,,True,True,36,314.0,0.0,5.0,2,255.0,1.0,306,URBAIN,Bon,0,1,1,0.0,1.0,0.0,6,,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,,3.0,True,False,55,196.83333333333331,0.0,15.0,7,188.28571428571428,1.0,34,RURAL,Faible,0,0,1,0.0,0.6667,0.0,1,,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,21.85,2.0,True,False,38,302.3333333333333,44.166,10.0,5,195.8,1.0,3,SUBURBAIN,Bon,0,0,0,200.0,0.6667,249.3163,4,16.0,1,1,1
+Femme,Offre Prépayée,Offre Classique,especes,4.78,4.0,True,False,49,193.8,0.0,19.0,7,231.8571428571429,1.0,53,URBAIN,Bon,1,0,1,0.0,1.6,0.0,6,,0,1,0
+Femme,Offre à Facture,Offre Classique,especes,91.34,,True,False,19,0.0,0.0,1.0,1,30.0,1.0,172,SUBURBAIN,Excellent,0,1,1,0.0,20.0,0.0,6,,0,0,1
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,20.36,1.0,True,False,18,9.0,30.87,3.0,1,128.0,1.0,564,SUBURBAIN,Excellent,0,0,0,,1.0,3512.32,6,25.0,1,1,1
+Femme,Offre à Facture,Offre Classique,ticket_recharge,13.11,,False,False,37,0.0,0.0,4.0,5,490.6,0.8,26,RURAL,Faible,0,1,1,0.0,0.0,0.0,1,,0,0,0
+Homme,Offre Prépayée,Forfait Illimité,ticket_recharge,15.26,2.0,True,False,38,0.0,15.73,5.0,4,266.25,1.0,220,URBAIN,Bon,0,0,0,,0.0,100.0,6,24.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,21.12,5.0,True,False,53,198.7692307692308,0.0,26.0,8,100.375,0.875,65,URBAIN,Bon,0,0,0,0.0,0.3077,0.0,6,1.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,22.69,2.0,True,False,18,185.55555555555557,0.0,17.0,11,514.2727272727273,0.6363636363636364,10,URBAIN,Excellent,0,0,0,0.0,0.6667,0.0,9,8.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,21.51,5.0,True,False,22,207.5,0.0,21.0,8,213.875,0.625,20,URBAIN,Excellent,0,0,0,0.0,1.5,0.0,9,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,47.73,2.0,False,False,45,167.54545454545453,0.0,22.0,11,268.27272727272725,0.4545454545454545,30,SUBURBAIN,Bon,0,0,0,0.0,0.4545,0.0,4,4.0,0,1,1
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,9.18,3.0,True,False,41,0.0,19.034615384615385,42.0,7,451.2857142857143,0.7142857142857143,84,RURAL,Bon,0,0,0,130.02,0.0,100.0,2,9.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,22.14,3.0,True,False,17,168.5,0.0,12.0,8,272.375,1.0,31,RURAL,Bon,0,0,0,0.0,1.0,0.0,2,0.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,39.59,5.0,False,False,53,132.33333333333334,0.0,20.0,8,146.5,0.625,40,URBAIN,Bon,0,0,0,0.0,0.4444,0.0,6,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,5.0,False,False,53,189.2,0.0,18.0,11,485.0,0.2727272727272727,28,URBAIN,Bon,0,0,0,0.0,1.6,0.0,6,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,14.05,1.0,True,False,22,224.0,0.0,4.0,2,268.5,1.0,17,SUBURBAIN,Excellent,0,0,0,0.0,0.5,0.0,6,25.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,58.82,4.0,False,False,28,293.22222222222223,0.0,25.0,10,162.6,0.6,17,URBAIN,Excellent,0,0,0,0.0,0.6667,0.0,9,2.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,14.11,1.0,False,False,23,315.0,0.0,4.0,3,122.66666666666669,0.6666666666666666,63,URBAIN,Excellent,0,0,0,0.0,0.5,0.0,9,15.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,10.64,1.0,True,False,37,178.25,0.0,7.0,2,420.0,0.5,506,SUBURBAIN,Excellent,0,0,0,0.0,0.5,0.0,6,35.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,5.74,1.0,False,False,56,38.0,0.0,4.0,3,362.6666666666667,0.3333333333333333,973,URBAIN,Excellent,0,0,1,0.0,3.0,0.0,9,,0,1,0
+Homme,Offre à Facture,Offre Classique,ticket_recharge,38.34,1.0,False,False,59,209.66666666666663,0.0,24.0,8,192.0,0.5,538,URBAIN,Bon,0,0,0,0.0,0.7778,0.0,6,5.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,2.0,True,False,38,113.33333333333331,0.0,5.0,2,101.5,0.5,227,URBAIN,Excellent,1,0,0,0.0,0.3333,0.0,9,20.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,33.92,1.0,True,False,14,223.0,0.0,6.0,2,195.5,1.0,935,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,30.0,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,13.48,1.0,True,True,31,126.66666666666669,8.68,5.0,2,97.0,1.0,469,URBAIN,Bon,0,0,0,,0.3333,23.3903,6,10.0,1,1,1
+Homme,Offre à Facture,Offre Classique,ticket_recharge,51.73,2.0,False,False,19,174.125,0.0,21.0,6,199.66666666666663,0.3333333333333333,47,SUBURBAIN,Bon,0,0,0,0.0,1.0,0.0,4,24.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,11.02,2.0,False,False,47,203.625,0.0,22.0,5,411.6,0.2,233,URBAIN,Excellent,1,0,0,0.0,0.875,0.0,9,12.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,28.82,1.0,False,False,55,155.5,0.0,17.0,9,162.33333333333334,0.4444444444444444,15,SUBURBAIN,Bon,0,0,0,0.0,0.1667,0.0,4,10.0,0,1,0
+Homme,Offre Prépayée,Forfait Illimité,especes,11.7,2.0,True,False,22,0.0,21.36090909090909,45.0,4,413.75,0.75,53,URBAIN,Excellent,0,0,0,-50.67,0.0,100.0,9,12.0,1,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,9.62,5.0,False,False,24,140.16666666666666,0.0,14.0,6,460.8333333333333,0.3333333333333333,111,SUBURBAIN,Faible,0,0,0,0.0,0.3333,0.0,2,1.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,,1.0,True,True,36,154.66666666666666,11.9725,9.0,1,145.0,1.0,422,SUBURBAIN,Bon,0,0,0,-25.69,0.6667,105.6883,4,25.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.35,2.0,True,False,56,85.0,0.0,3.0,5,362.4,1.0,144,RURAL,Bon,0,0,0,0.0,0.0,0.0,2,32.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.72,2.0,True,True,51,137.0,0.0,26.0,4,1412.0,0.5,68,RURAL,Bon,0,0,0,0.0,0.4167,0.0,2,4.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,22.87,,False,False,32,265.0,14.635,6.0,1,1030.0,0.0,714,URBAIN,Bon,0,1,1,200.0,0.5,56.5518,6,,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,13.4,1.0,True,False,14,222.33333333333331,0.0,15.0,10,171.7,0.7,260,URBAIN,Bon,0,0,0,0.0,2.3333,0.0,6,20.0,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,22.16,1.0,False,False,20,273.75,4.46,10.0,5,837.2,0.4,212,URBAIN,Excellent,0,0,1,,1.25,4.1708,9,,1,1,0
+Homme,Offre Prépayée,Forfait Illimité,especes,58.4,1.0,True,False,12,0.0,22.18,3.0,1,631.0,1.0,360,URBAIN,Bon,0,0,0,,0.0,100.0,6,25.0,1,0,1
+Femme,Offre à Facture,Forfait Mobile (Mixte),ticket_recharge,,1.0,True,True,46,201.0,22.2425,21.0,8,406.625,0.875,263,URBAIN,Excellent,0,0,0,-78.14,0.4167,37.7717,9,15.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,18.3,2.0,True,True,34,100.2,0.0,17.0,5,330.8,0.6,456,URBAIN,Bon,0,0,0,0.0,1.4,0.0,6,12.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,16.32,2.0,True,True,15,200.33333333333331,5.96,6.0,2,179.5,0.0,164,URBAIN,Bon,0,0,0,-6.18,0.3333,20.3096,6,16.0,1,1,1
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,,1.0,False,False,50,170.25,0.0,14.0,6,504.8333333333333,0.6666666666666666,13,URBAIN,Excellent,0,0,1,0.0,0.5,0.0,9,,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),especes,15.92,1.0,True,False,31,119.44444444444444,6.838888888888889,29.0,9,639.5555555555555,0.7777777777777778,71,SUBURBAIN,Bon,0,0,0,200.0,1.2222,58.63,4,20.0,1,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,33.96,1.0,False,False,14,204.6,0.0,7.0,1,97.0,1.0,160,URBAIN,Excellent,0,0,1,0.0,0.2,0.0,9,,0,1,1
+Homme,Offre à Facture,Forfait Mobile (Mixte),especes,8.75,5.0,True,False,27,144.64285714285714,10.031111111111109,27.0,13,276.84615384615387,0.6923076923076923,33,URBAIN,Excellent,0,0,0,200.0,0.2857,45.6527,9,0.0,1,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,12.74,,False,False,35,149.0,0.0,2.0,1,128.0,0.0,112,URBAIN,Excellent,0,1,1,0.0,0.0,0.0,9,,0,1,0
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,,2.0,True,False,12,207.8,0.0,11.0,8,284.875,0.875,57,SUBURBAIN,Bon,0,0,0,0.0,1.0,0.0,4,4.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.7,2.0,False,False,40,143.0,0.0,4.0,4,393.75,0.75,466,SUBURBAIN,Excellent,0,0,0,0.0,1.0,0.0,6,32.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,6.8,2.0,False,False,19,153.4375,13.553999999999998,40.0,5,237.8,0.4,191,URBAIN,Excellent,0,0,0,200.0,0.875,56.5348,9,24.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,6.0,1.0,True,False,22,260.5,0.0,3.0,1,172.0,1.0,272,URBAIN,Excellent,0,0,1,0.0,0.0,0.0,9,,0,1,0
+Homme,Offre à Facture,Offre Classique,prelevement_bancaire,10.75,1.0,True,False,13,6.0,0.0,5.0,3,205.33333333333331,1.0,162,URBAIN,Bon,0,0,0,0.0,2.0,0.0,6,20.0,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,11.64,3.0,False,False,15,118.66666666666669,17.255,29.0,7,193.0,0.4285714285714285,48,URBAIN,Excellent,0,0,0,104.66,1.8333,297.7942,9,9.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,21.06,,False,False,44,106.71428571428572,0.0,24.0,10,173.1,0.2,246,SUBURBAIN,Bon,0,1,1,0.0,1.4286,0.0,4,,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,,True,True,53,233.75,0.0,5.0,1,52.0,1.0,261,URBAIN,Bon,0,1,1,0.0,0.25,0.0,6,,0,1,0
+Homme,Offre Prépayée,Offre Classique,especes,18.06,3.0,False,False,38,198.9,0.0,21.0,12,377.6666666666667,0.4166666666666667,1,SUBURBAIN,Bon,0,0,0,0.0,0.5,0.0,4,12.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,9.01,4.0,False,False,34,238.42857142857144,0.0,15.0,8,547.5,0.375,361,URBAIN,Excellent,0,0,0,0.0,0.7143,0.0,9,4.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,10.73,5.0,False,False,28,166.52941176470588,0.0,33.0,9,132.77777777777777,0.3333333333333333,88,URBAIN,Bon,0,0,0,0.0,0.3529,0.0,6,0.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,,2.0,False,False,46,56.4,0.0,13.0,9,142.66666666666666,0.2222222222222222,54,URBAIN,Excellent,0,0,0,0.0,0.8,0.0,9,16.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,37.29,2.0,False,False,51,317.0,0.0,2.0,1,433.0,0.0,89,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,12.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,6.85,3.0,True,False,55,144.0,0.0,24.0,9,177.88888888888889,0.7777777777777778,288,RURAL,Bon,0,0,0,0.0,0.3846,0.0,2,9.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,21.55,3.0,True,False,21,196.53846153846155,8.132000000000001,23.0,5,226.2,0.8,176,SUBURBAIN,Bon,0,0,0,-78.66,0.3846,16.2958,4,6.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,11.44,1.0,True,False,31,389.0,0.0,21.0,10,273.6,0.8,62,URBAIN,Excellent,1,0,0,0.0,0.8571,0.0,9,10.0,0,1,1
+Femme,Offre à Facture,Offre Classique,ticket_recharge,35.22,5.0,False,False,43,251.16666666666663,0.0,20.0,10,361.2,0.3,96,URBAIN,Excellent,0,0,0,0.0,1.1667,0.0,9,0.0,0,1,0
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,98.96,4.0,False,False,29,0.0,21.95833333333333,56.0,7,181.42857142857144,0.4285714285714285,130,URBAIN,Bon,0,0,0,32.87,0.0,100.0,6,4.0,1,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,10.65,2.0,True,False,41,171.55555555555554,0.0,15.0,9,320.0,0.8888888888888888,129,SUBURBAIN,Bon,0,0,0,0.0,0.3333,0.0,4,8.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,6.71,1.0,False,False,48,239.0,0.0,6.0,1,408.0,0.0,272,URBAIN,Bon,0,0,0,0.0,3.0,0.0,6,45.0,0,1,1
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,21.93,1.0,False,False,31,117.75,7.306923076923076,34.0,6,964.5,0.5,25,URBAIN,Excellent,0,0,0,-72.91,0.75,68.8392,9,25.0,1,1,0
+Homme,Offre à Facture,Forfait Illimité,ticket_recharge,32.68,2.0,True,False,38,0.0,40.69375,51.0,8,429.5,0.5,247,SUBURBAIN,Bon,0,0,0,20.58,0.0,100.0,4,4.0,1,0,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,6.69,2.0,True,False,44,215.83333333333331,4.595,13.0,2,57.0,0.5,302,URBAIN,Excellent,0,0,0,-70.38,0.8333,7.2668,9,8.0,1,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,16.55,1.0,True,False,55,140.14285714285714,13.491818181818182,35.0,5,370.8,1.0,159,RURAL,Bon,0,0,0,200.0,0.7143,77.4576,2,15.0,1,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),prelevement_bancaire,6.03,1.0,True,True,56,110.25,3.99,7.0,2,121.0,1.0,20,URBAIN,Excellent,0,0,0,,0.5,9.2648,9,15.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,especes,24.8,5.0,True,True,16,153.25,0.0,21.0,10,280.3,0.7,11,URBAIN,Excellent,0,0,0,0.0,1.75,0.0,9,0.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,12.81,4.0,True,True,51,231.33333333333331,6.6312500000000005,29.0,2,169.0,1.0,719,SUBURBAIN,Bon,0,0,0,2.2,0.75,19.5689,4,4.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,especes,7.35,1.0,True,False,13,688.6666666666666,0.0,13.0,3,455.0,0.6666666666666666,50,URBAIN,Excellent,0,0,0,0.0,1.3333,0.0,9,15.0,0,1,1
+Femme,Offre Prépayée,Forfait Illimité,ticket_recharge,11.19,4.0,True,False,48,0.0,30.020714285714288,43.0,6,248.16666666666663,0.8333333333333334,251,URBAIN,Excellent,0,0,0,-23.62,0.0,100.0,9,2.0,1,0,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,43.1,1.0,True,True,39,78.33333333333333,0.0,5.0,3,373.3333333333333,0.6666666666666666,19,SUBURBAIN,Excellent,0,0,0,0.0,0.6667,0.0,6,20.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,24.38,3.0,True,True,26,253.45454545454547,0.0,23.0,11,298.1818181818182,0.8181818181818182,44,RURAL,Bon,1,0,0,0.0,0.8182,0.0,2,3.0,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,41.97,1.0,False,False,31,244.7142857142857,0.0,17.0,3,714.3333333333334,0.3333333333333333,34,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,25.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,17.38,5.0,True,False,12,234.28571428571428,10.256666666666668,25.0,6,129.83333333333334,0.6666666666666666,176,SUBURBAIN,Bon,0,0,0,12.37,1.2857,57.6375,4,0.0,1,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,14.66,2.0,False,False,30,176.45454545454547,0.0,20.0,11,289.0,0.4545454545454545,178,RURAL,Faible,0,0,0,0.0,0.2727,0.0,1,12.0,0,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,5.47,1.0,False,False,16,176.66666666666666,0.0,4.0,1,41.0,0.0,228,RURAL,Faible,0,0,0,0.0,0.3333,0.0,1,40.0,0,1,1
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,9.75,2.0,True,True,51,174.6153846153846,9.944545454545452,37.0,9,297.44444444444446,0.7777777777777778,162,URBAIN,Excellent,0,0,0,-90.17,1.0,49.346,9,8.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,6.56,1.0,True,False,45,93.9,0.0,15.0,4,558.5,0.25,52,SUBURBAIN,Bon,0,0,1,0.0,0.3,0.0,4,,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,15.33,4.0,True,False,25,123.47058823529412,17.10111111111111,32.0,12,504.9166666666667,0.75,53,URBAIN,Bon,0,0,0,200.0,0.3529,75.0852,6,2.0,1,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,14.42,3.0,True,False,21,143.0,4.7250000000000005,24.0,11,268.90909090909093,0.6363636363636364,31,RURAL,Faible,0,0,0,200.0,0.4545,24.6072,1,3.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,8.78,2.0,False,False,26,492.0,0.0,5.0,2,91.5,0.5,100,URBAIN,Excellent,0,0,0,0.0,1.0,0.0,9,12.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,,1.0,True,False,12,134.5,0.0,16.0,10,448.5,0.7,292,URBAIN,Bon,0,0,1,0.0,1.75,0.0,6,,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,48.07,2.0,True,False,18,0.0,0.0,2.0,1,64.0,1.0,364,SUBURBAIN,Excellent,0,0,1,0.0,20.0,0.0,6,,0,0,1
+Homme,Offre Prépayée,Offre Classique,prelevement_bancaire,6.2,4.0,True,False,23,239.8,0.0,19.0,6,335.0,0.6666666666666666,12,URBAIN,Excellent,0,0,0,0.0,0.5,0.0,9,2.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,6.66,2.0,True,True,33,272.7,0.0,23.0,11,202.45454545454547,0.9090909090909092,106,URBAIN,Bon,0,0,0,0.0,0.4,0.0,6,16.0,0,1,0
+Homme,Offre à Facture,Forfait Illimité,ticket_recharge,75.4,1.0,False,False,53,0.0,16.439999999999998,5.0,1,287.0,0.0,102,URBAIN,Bon,0,0,0,49.47,0.0,100.0,6,35.0,1,0,0
+Homme,Offre Prépayée,Offre Classique,especes,22.76,3.0,True,False,22,183.25,0.0,22.0,6,200.66666666666663,1.0,7,RURAL,Faible,0,0,0,0.0,1.0,0.0,1,9.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),especes,129.82,3.0,True,False,46,120.8181818181818,12.48857142857143,32.0,7,421.57142857142856,0.7142857142857143,600,URBAIN,Bon,0,0,0,62.37,1.2727,67.3575,6,3.0,1,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,4.59,1.0,True,False,55,0.0,0.0,0.0,3,372.0,1.0,659,SUBURBAIN,Faible,1,0,0,0.0,0.0,0.0,2,25.0,0,0,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,7.12,5.0,False,False,58,203.55555555555557,0.0,24.0,5,267.6,0.4,46,URBAIN,Excellent,0,0,1,0.0,0.8889,0.0,9,,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,14.25,2.0,True,False,22,233.0,3.73,7.0,3,119.33333333333331,1.0,148,URBAIN,Excellent,0,0,0,186.53,0.6667,10.9285,9,12.0,1,1,0
+Homme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,94.55,1.0,True,True,39,199.69230769230768,7.758333333333332,32.0,5,755.4,0.6,125,SUBURBAIN,Bon,0,0,1,-20.68,1.0,18.3618,4,,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,17.14,2.0,False,False,40,9.0,0.0,4.0,3,514.6666666666666,0.6666666666666666,773,SUBURBAIN,Excellent,0,0,0,0.0,1.0,0.0,6,28.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,16.36,2.0,True,False,56,28.5,0.0,6.0,2,249.0,1.0,120,URBAIN,Bon,0,0,1,0.0,1.0,0.0,6,,0,1,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,6.71,4.0,False,False,59,171.57142857142858,0.0,20.0,10,394.0,0.1,9,URBAIN,Bon,0,0,0,0.0,1.0,0.0,6,0.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,especes,33.4,1.0,False,False,12,0.0,0.0,1.0,3,121.33333333333331,0.6666666666666666,295,SUBURBAIN,Bon,0,0,0,0.0,20.0,0.0,4,30.0,0,0,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,79.73,1.0,False,False,51,140.28571428571428,0.0,18.0,10,188.8,0.3,82,URBAIN,Bon,0,0,1,0.0,0.8571,0.0,6,,0,1,0
+Femme,Offre à Facture,Offre Classique,ticket_recharge,13.23,2.0,False,False,18,315.0,0.0,2.0,3,147.33333333333334,0.3333333333333333,12,URBAIN,Bon,0,0,0,0.0,0.0,0.0,6,28.0,0,1,1
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,5.54,3.0,False,False,22,161.4,0.0,22.0,11,286.3636363636364,0.4545454545454545,39,URBAIN,Excellent,0,0,0,0.0,2.0,0.0,9,0.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,19.95,5.0,False,False,43,137.22222222222223,12.68888888888889,27.0,7,411.0,0.2857142857142857,475,SUBURBAIN,Bon,0,0,0,200.0,1.0,94.6889,4,0.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,44.48,4.0,False,False,12,241.8571428571429,0.0,17.0,6,447.8333333333333,0.0,580,SUBURBAIN,Excellent,0,0,0,0.0,0.7143,0.0,6,0.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,especes,50.19,2.0,False,False,13,275.875,0.0,19.0,8,388.625,0.5,118,URBAIN,Excellent,0,0,0,0.0,0.5,0.0,9,8.0,0,1,1
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,43.8,4.0,True,False,30,93.42857142857144,0.0,14.0,5,135.6,1.0,43,URBAIN,Bon,1,0,0,0.0,0.5714,0.0,6,4.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,20.58,2.0,True,False,31,4.0,10.0175,6.0,1,30.0,1.0,360,SUBURBAIN,Excellent,0,0,0,-80.36,1.0,10257.92,6,16.0,1,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),especes,,1.0,True,False,48,112.0,3.02,7.0,4,325.0,1.0,554,URBAIN,Excellent,0,0,0,,2.0,13.8057,9,25.0,1,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,8.07,1.0,True,False,33,0.0,0.0,1.0,2,119.5,0.5,93,URBAIN,Excellent,0,0,1,0.0,0.0,0.0,9,,0,0,1
+Femme,Offre à Facture,Forfait Mobile (Mixte),ticket_recharge,12.26,1.0,True,False,21,166.58823529411765,18.3,41.0,7,456.7142857142857,0.7142857142857143,182,RURAL,Bon,0,0,0,167.37,0.9412,46.3186,2,65.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,ticket_recharge,21.4,3.0,True,False,28,123.41666666666669,0.0,23.0,10,426.9,0.6,232,SUBURBAIN,Bon,0,0,1,0.0,0.4167,0.0,4,,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,19.19,1.0,True,False,54,82.0,0.0,23.0,14,346.5,0.8571428571428571,82,URBAIN,Excellent,0,0,0,0.0,0.9,0.0,9,35.0,0,1,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,33.43,2.0,False,False,33,141.0,0.0,12.0,12,224.16666666666663,0.25,99,URBAIN,Excellent,0,0,0,0.0,0.4286,0.0,9,16.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,55.79,3.0,False,False,46,165.06666666666666,0.0,29.0,10,270.2,0.8,5,URBAIN,Bon,0,0,0,0.0,0.5333,0.0,6,3.0,0,1,0
+Femme,Offre Prépayée,Forfait Mobile (Mixte),ticket_recharge,53.54,2.0,True,True,17,146.72727272727272,8.046363636363639,32.0,6,207.5,0.6666666666666666,64,URBAIN,Excellent,0,0,1,-65.5,0.9091,56.155,9,,1,1,0
+Femme,Offre à Facture,Forfait Mobile (Mixte),ticket_recharge,120.73,1.0,True,False,33,250.0,2.77,7.0,2,108.5,0.5,124,URBAIN,Bon,0,0,0,,1.0,3.782,6,25.0,1,1,0
+Femme,Offre Prépayée,Offre Classique,prelevement_bancaire,19.88,5.0,False,False,54,149.0,0.0,25.0,12,748.4166666666666,0.4166666666666667,1,URBAIN,Excellent,0,0,0,0.0,0.2857,0.0,9,0.0,0,1,0
+Homme,Offre Prépayée,Offre Classique,ticket_recharge,16.61,4.0,True,False,21,101.14285714285714,0.0,19.0,8,260.375,0.75,22,URBAIN,Bon,0,0,0,0.0,1.0,0.0,6,0.0,0,1,0

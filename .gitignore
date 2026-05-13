@@ -1,0 +1,78 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment variables
+.env
+.env.local
+
+# Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Machine Learning models (large files)
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Logs
+logs/
+*.log
+
+# Local development
+local_settings.py
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SendGrid
+sendgrid.env
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# PostgreSQL
+*.dump

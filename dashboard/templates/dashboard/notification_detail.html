@@ -1,0 +1,311 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification — Tunisie Telecom</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+    <style>
+        :root {
+            --brand: #082281;
+            --brand-light: #e8ecf7;
+            --accent: #ff6600;
+            --accent-light: #fff0e6;
+            --success: #00b464;
+            --success-bg: #d4f5e4;
+            --warning: #ffc107;
+            --warning-bg: #fff8e1;
+            --danger: #dc3545;
+            --danger-bg: #f8d7da;
+            --neutral: #f4f6f9;
+            --border: #e5e8ed;
+            --text-main: #1a1d26;
+            --text-muted: #5a6376;
+            --text-faint: #9aa3b5;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--neutral);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .page-wrap {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-title i { color: var(--accent); }
+
+        .page-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .btn-secondary {
+            background: var(--neutral);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            transition: background .15s;
+        }
+
+        .btn-secondary:hover { background: var(--border); }
+
+        .notif-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .notif-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .notif-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .notif-icon.recommandation { background: var(--accent-light); color: var(--accent); }
+        .notif-icon.validation_requise { background: var(--warning-bg); color: var(--warning); }
+        .notif-icon.validation_acceptee { background: var(--success-bg); color: var(--success); }
+        .notif-icon.validation_refusee { background: var(--danger-bg); color: var(--danger); }
+        .notif-icon.alerte_churn { background: var(--danger-bg); color: var(--danger); }
+        .notif-icon.compte { background: var(--success-bg); color: var(--success); }
+        .notif-icon.info { background: var(--brand-light); color: var(--brand); }
+
+        .notif-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .type-badge.recommandation { background: var(--accent-light); color: var(--accent); }
+        .type-badge.validation_requise { background: var(--warning-bg); color: #7a4d00; }
+        .type-badge.validation_acceptee { background: var(--success-bg); color: #1a6b46; }
+        .type-badge.validation_refusee { background: var(--danger-bg); color: #8b0000; }
+        .type-badge.alerte_churn { background: var(--danger-bg); color: var(--danger); }
+        .type-badge.compte { background: var(--success-bg); color: var(--success); }
+        .type-badge.info { background: var(--brand-light); color: var(--brand); }
+
+        .notif-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 12px;
+        }
+
+        .notif-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-main);
+            white-space: pre-wrap;
+        }
+
+        .notif-content p { margin-bottom: 12px; }
+
+        .client-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--brand-light);
+            color: var(--brand);
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 10px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Manrope', sans-serif;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: opacity .15s;
+        }
+
+        .btn-primary:hover { opacity: .9; }
+
+        .unread-badge {
+            background: var(--accent);
+            color: white;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+</head>
+<body>
+    {% include 'accounts/navbar.html' %}
+    <div class="page-wrap">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title"><i class="bi bi-bell-fill"></i> Notification</h1>
+                <p class="page-sub">Détail du message</p>
+            </div>
+            
+        </div>
+
+        <div class="notif-card">
+            <div class="notif-header">
+                <div class="notif-icon {{ notif.type_notif }}">
+                    {% if notif.type_notif == 'recommandation' %}<i class="bi bi-lightbulb"></i>
+                    {% elif notif.type_notif == 'validation_requise' %}<i class="bi bi-hourglass-split"></i>
+                    {% elif notif.type_notif == 'validation_acceptee' %}<i class="bi bi-check-circle-fill"></i>
+                    {% elif notif.type_notif == 'validation_refusee' %}<i class="bi bi-x-circle-fill"></i>
+                    {% elif notif.type_notif == 'alerte_churn' %}<i class="bi bi-exclamation-triangle-fill"></i>
+                    {% elif notif.type_notif == 'compte' %}<i class="bi bi-person-check"></i>
+                    {% else %}<i class="bi bi-bell"></i>
+                    {% endif %}
+                </div>
+                <div style="flex:1;">
+                    <div class="notif-title">
+                        {{ notif.titre }}
+                        {% if not notif.lu %}<span class="unread-badge">Nouveau</span>{% endif %}
+                    </div>
+                    <span class="type-badge {{ notif.type_notif }}">
+                        {% if notif.type_notif == 'recommandation' %}Recommandation
+                        {% elif notif.type_notif == 'validation_requise' %}À valider
+                        {% elif notif.type_notif == 'validation_acceptee' %}Validée
+                        {% elif notif.type_notif == 'validation_refusee' %}Rejetée
+                        {% elif notif.type_notif == 'alerte_churn' %}Alerte churn
+                        {% elif notif.type_notif == 'compte' %}Compte
+                        {% else %}Information
+                        {% endif %}
+                    </span>
+                    <div class="notif-meta">
+                        <span><i class="bi bi-calendar3 me-1"></i> {{ notif.date_creation|date:"d/m/Y \à H:i" }}</span>
+                        <span><i class="bi bi-clock me-1"></i> Il y a {{ notif.date_creation|timesince }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notif-content">
+                {{ notif.contenu|linebreaksbr }}
+            </div>
+
+            {% if notif.client %}
+            <div style="margin-top: 20px;">
+                <span class="client-chip">
+                    <i class="bi bi-person"></i> Client : {{ notif.client.client_id }}
+                </span>
+            </div>
+            {% endif %}
+
+            <div class="actions-bar">
+                <a href="{% url 'dashboard:notifications' %}" class="btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour
+                </a>
+                <div style="display:flex; gap:8px; margin-left:auto;">
+                    {% if not notif.lu %}
+                    <form method="POST" action="{% url 'dashboard:marquer_lu_notification' notif.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-primary" style="background:var(--brand);">
+                            <i class="bi bi-check2"></i> Marquer comme lu
+                        </button>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'dashboard:archiver_notification' notif.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-secondary" style="color:var(--warning); border-color:var(--warning);">
+                            <i class="bi bi-archive"></i> Archiver
+                        </button>
+                    </form>
+                    <form method="POST" action="{% url 'dashboard:supprimer_notification' notif.id %}" onsubmit="return confirm('Supprimer cette notification ?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-secondary" style="color:var(--danger); border-color:var(--danger);">
+                            <i class="bi bi-trash3"></i> Supprimer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+</body>
+</html>

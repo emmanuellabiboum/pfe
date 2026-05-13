@@ -1,0 +1,199 @@
+{% load static %}
+
+<div class="otp-container" style="max-width: 450px; margin: 0 auto; padding: 30px;">
+    <div class="otp-header text-center mb-4">
+        <div class="otp-icon mb-3" style="font-size: 48px;">🔐</div>
+        <h4 class="mb-2">Vérification requise</h4>
+        <p class="text-muted" style="font-size: 14px;">
+            Un code de vérification a été envoyé à votre email.<br>
+            Saisissez-le ci-dessous pour continuer.
+        </p>
+    </div>
+
+    <div class="otp-timer-wrapper text-center mb-4">
+        <div id="otp-timer-display" 
+             data-otp-timer="{{ otp_duration|default:600 }}"
+             data-otp-warning="60"
+             data-otp-danger="30"
+             data-otp-format="MM:SS"
+             style="font-size: 32px; font-weight: 700; font-family: 'Courier New', monospace;
+                    color: #1e3a8a; padding: 15px; background: #f1f5f9; border-radius: 8px; display: inline-block;">
+            --:--
+        </div>
+        <div class="mt-2" style="font-size: 12px; color: #64748b;">
+            <i class="bi bi-clock"></i> Temps restant avant expiration
+        </div>
+    </div>
+
+    <form method="POST" action="{{ submit_url|default:request.path }}" class="otp-form" id="otp-form">
+        {% csrf_token %}
+        <input type="hidden" name="otp_context" value="{{ context|default:'default' }}">
+        
+        <div class="mb-4">
+            <label for="otp_code" class="form-label" style="font-weight: 600;">
+                Code de vérification
+            </label>
+            <input type="text" 
+                   name="otp_code" 
+                   id="otp_code"
+                   class="form-control form-control-lg text-center" 
+                   placeholder="• • • • • •"
+                   maxlength="8"
+                   autocomplete="off"
+                   style="font-size: 24px; letter-spacing: 8px; font-family: 'Courier New', monospace;"
+                   required
+                   autofocus>
+            <div class="form-text text-center mt-2" style="font-size: 12px;">
+                Saisissez le code à 6 chiffres reçu par email
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" id="otp-submit-btn">
+                <i class="bi bi-shield-check"></i> Vérifier le code
+            </button>
+        </div>
+    </form>
+
+    <div class="otp-actions text-center mt-4" style="font-size: 13px;">
+        <p class="text-muted mb-2">
+            Vous n'avez pas reçu le code ?
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{{ resend_url|default:request.path }}?resend_otp=1" 
+               class="text-decoration-none"
+               id="otp-resend-link">
+                <i class="bi bi-arrow-repeat"></i> Renvoyer le code
+            </a>
+            <span class="text-muted">|</span>
+            <a href="mailto:support@tunisietelecom.tn" class="text-decoration-none">
+                <i class="bi bi-envelope"></i> Contacter le support
+            </a>
+        </div>
+    </div>
+
+    <div id="otp-alerts" class="mt-3"></div>
+</div>
+
+<style>
+    .otp-timer-safe {
+        color: #059669 !important;
+    }
+    .otp-timer-warning {
+        color: #f59e0b !important;
+    }
+    .otp-timer-danger {
+        color: #dc2626 !important;
+    }
+    .otp-timer-expired {
+        color: #6b7280 !important;
+        text-decoration: line-through;
+    }
+    
+    @keyframes otp-pulse {
+        0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+    }
+    
+    .otp-form input:focus {
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+    
+    .otp-expired-message {
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<script src="{% static 'js/otp-countdown.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const duration = parseInt('{{ otp_duration|default:600 }}', 10) || 600;
+        const resendUrl = '{{ resend_url|default:request.path }}';
+        
+        new OTPTimer('otp-timer-display', {
+            durationSeconds: duration,
+            warningThreshold: 60,
+            dangerThreshold: 30,
+            onExpire: function() {
+                const form = document.getElementById('otp-form');
+                const submitBtn = document.getElementById('otp-submit-btn');
+                const codeInput = document.getElementById('otp_code');
+                
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="bi bi-x-circle"></i> Code expiré';
+                    submitBtn.classList.remove('btn-primary');
+                    submitBtn.classList.add('btn-secondary');
+                }
+                
+                if (codeInput) {
+                    codeInput.disabled = true;
+                }
+                
+                const alertsDiv = document.getElementById('otp-alerts');
+                if (alertsDiv) {
+                    alertsDiv.innerHTML = 
+                        '<div class="alert alert-danger">' +
+                        '<i class="bi bi-exclamation-triangle-fill"></i>' +
+                        '<strong>Code expiré !</strong><br>' +
+                        'Le temps de validité est écoulé. ' +
+                        '<a href="' + resendUrl + '?resend_otp=1" class="alert-link">' +
+                        'Cliquez ici pour recevoir un nouveau code' +
+                        '</a>.' +
+                        '</div>';
+                }
+            },
+            onWarning: function() {
+                const display = document.getElementById('otp-timer-display');
+                if (display) {
+                    display.style.textShadow = '0 0 10px rgba(245, 158, 11, 0.5)';
+                }
+            }
+        });
+        
+        const codeInput = document.getElementById('otp_code');
+        if (codeInput) {
+            codeInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s/g, '').toUpperCase();
+                value = value.replace(/[^A-Z0-9]/g, '');
+                e.target.value = value;
+            });
+        }
+        
+        const resendLink = document.getElementById('otp-resend-link');
+        if (resendLink) {
+            resendLink.addEventListener('click', function(e) {
+                if (resendLink.classList.contains('disabled')) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                resendLink.classList.add('disabled');
+                resendLink.style.pointerEvents = 'none';
+                resendLink.style.opacity = '0.5';
+                
+                let countdown = 30;
+                const originalText = resendLink.innerHTML;
+                
+                const interval = setInterval(function() {
+                    resendLink.innerHTML = '<i class="bi bi-clock"></i> Renvoyer dans ' + countdown + 's';
+                    countdown--;
+                    
+                    if (countdown < 0) {
+                        clearInterval(interval);
+                        resendLink.classList.remove('disabled');
+                        resendLink.style.pointerEvents = '';
+                        resendLink.style.opacity = '';
+                        resendLink.innerHTML = originalText;
+                    }
+                }, 1000);
+            });
+        }
+    });
+</script>
