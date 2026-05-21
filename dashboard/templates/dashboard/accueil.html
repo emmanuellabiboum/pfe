@@ -14,18 +14,17 @@
 
     <style>
         :root {
-            /* Couleurs Tunisie Telecom */
-            --brand: #004595;         /* Bleu TT */
+            --brand: #004595;
             --brand-light: #e6f0ff;
             --brand-dark: #002d62;
-            --accent: #ed1c24;        /* Rouge TT */
-            --accent-purple: #92278f; /* Violet TT */
-            --accent-cyan: #00aeef;   /* Cyan TT */
-            --success: #8cc63f;       /* Vert TT */
+            --accent: #ed1c24;
+            --accent-purple: #92278f;
+            --accent-cyan: #00aeef;
+            --success: #8cc63f;
             --success-bg: #f4fae9;
             --danger: #dc2626;
             --danger-bg: #fef2f2;
-            --warning: #f7941d;       /* Orange TT */
+            --warning: #f7941d;
             --warning-bg: #fff8f0;
             --neutral: #f8f9fa;
             --neutral-dark: #e9ecef;
@@ -55,14 +54,12 @@
             margin: 0;
         }
 
-        /* ── LAYOUT ─────────────────────────────────────────── */
         .page-wrap {
             max-width: 1100px;
             margin: 0 auto;
             padding: 24px 20px 40px;
         }
 
-        /* ── CARTE DE BASE ──────────────────────────────────── */
         .card {
             position: relative;
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), #ffffff);
@@ -88,7 +85,6 @@
             z-index: 1;
         }
 
-        /* ── EN-TÊTE DE PAGE ────────────────────────────────── */
         .page-header {
             margin-bottom: 28px;
         }
@@ -108,7 +104,6 @@
             max-width: 760px;
         }
 
-        /* ── BADGE ÉTAPE ────────────────────────────────────── */
         .step-badge {
             display: inline-flex;
             align-items: center;
@@ -122,7 +117,6 @@
             margin-top: 8px;
         }
 
-        /* ── LABELS DE SECTION ──────────────────────────────── */
         .section-label {
             font-size: 11px;
             font-weight: 700;
@@ -147,7 +141,6 @@
             font-size: 10px;
         }
 
-        /* ── GRILLE SOURCES ─────────────────────────────────── */
         .source-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -199,7 +192,6 @@
             margin-top: 2px;
         }
 
-        /* ── ZONE UPLOAD ────────────────────────────────────── */
         .upload-zone {
             border: 1.5px dashed rgba(15, 59, 161, 0.25);
             border-radius: var(--radius-md);
@@ -237,7 +229,6 @@
             margin-bottom: 10px;
         }
 
-        /* ── INPUTS FORMULAIRE ──────────────────────────────── */
         .form-input {
             width: 100%;
             border: 1px solid var(--border);
@@ -257,7 +248,6 @@
             background: white;
         }
 
-        /* ── SELECT ALGO ────────────────────────────────────── */
         .algo-select {
             width: 100%;
             border: 1px solid var(--border);
@@ -275,7 +265,6 @@
             border-color: var(--brand);
         }
 
-        /* ── ALERTE ÉTAT VIDE ───────────────────────────────── */
         .alert-warning {
             background: var(--warning-bg);
             border: 1px solid #ffd166;
@@ -293,7 +282,6 @@
             display: flex;
         }
 
-        /* ── BOUTONS ────────────────────────────────────────── */
         .btn-launch {
             background: linear-gradient(135deg, var(--brand), var(--accent-purple));
             color: white;
@@ -384,7 +372,6 @@
             display: flex;
         }
 
-        /* ── BARRE DE PROGRESSION ───────────────────────────── */
         .progress-track {
             height: 4px;
             background: var(--neutral);
@@ -401,7 +388,6 @@
             transition: width .5s ease;
         }
 
-        /* ── LOG D'EXÉCUTION ────────────────────────────────── */
         .exec-log {
             background: black;
             border-radius: var(--radius-sm);
@@ -449,7 +435,6 @@
             flex-shrink: 0;
         }
 
-        /* ── RÉSULTATS ──────────────────────────────────────── */
         .result-row {
             display: flex;
             justify-content: space-between;
@@ -506,7 +491,6 @@
             margin: 0;
         }
 
-        /* ── CRISP-DM ───────────────────────────────────────── */
         .crisp-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -576,7 +560,6 @@
             background: var(--brand);
         }
 
-        /* ── KPIs (en bas, après analyse) ──────────────────── */
         .kpi-section {
             opacity: .4;
             transition: opacity .5s ease;
@@ -632,7 +615,6 @@
             font-weight: 600;
         }
 
-        /* ── DIVIDER TEXTE ──────────────────────────────────── */
         .section-divider {
             display: flex;
             align-items: center;
@@ -657,7 +639,6 @@
             background: var(--border);
         }
 
-        /* ── BADGES FORMAT ──────────────────────────────────── */
         .format-badge {
             display: inline-flex;
             align-items: center;
@@ -675,7 +656,6 @@
             font-size: 11px;
         }
 
-        /* ── ZONE MOCK ──────────────────────────────────────── */
         .mock-zone {
             text-align: center;
             padding: 16px;
@@ -694,7 +674,6 @@
             margin-bottom: 12px;
         }
 
-        /* ── RESPONSIVE ─────────────────────────────────────── */
         @media (max-width: 768px) {
             .two-col {
                 grid-template-columns: 1fr !important;
@@ -706,7 +685,6 @@
         }
     </style>
 
-    {# Thème global (cards arrondies + dégradé bleu/violet) #}
     <link href="{% static 'css/common.css' %}" rel="stylesheet">
 </head>
 
@@ -719,7 +697,9 @@
             <h1>Système d'Analyse Prédictive Churn</h1>
             <p>Chargez vos données, sélectionnez un algorithme et lancez l'analyse prédictive.</p>
         </div>
+
         <div class="row g-3 mb-3" style="--bs-gutter-x:16px;">
+            <!-- COLONNE GAUCHE -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="section-label">
@@ -740,15 +720,15 @@
                     </div>
 
                     <div id="zone-upload">
-
                         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
                             <span class="format-badge"><i class="bi bi-filetype-csv"></i> CSV</span>
                             <span class="format-badge"><i class="bi bi-file-earmark-excel"></i> XLSX</span>
                             <span class="format-badge"><i class="bi bi-file-earmark-excel"></i> XLS</span>
                             <span class="format-badge"><i class="bi bi-file-earmark-spreadsheet"></i> XLSM</span>
                             <span class="format-badge"><i class="bi bi-filetype-txt"></i> TXT</span>
-                            <span class="format-badge" title="Séparateur point-virgule ou tabulation"><i
-                                    class="bi bi-table"></i> TSV</span>
+                            <span class="format-badge" title="Séparateur point-virgule ou tabulation">
+                                <i class="bi bi-table"></i> TSV
+                            </span>
                         </div>
 
                         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('data-file').click()"
@@ -764,7 +744,7 @@
                         </div>
 
                         <div id="file-info"
-                            style="display:none; background:var(--success-bg); border:1px solid #b7e5d0; border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; color:#1a6b46; display:none; align-items:center; gap:8px; margin-top:8px;">
+                            style="display:none; background:var(--success-bg); border:1px solid #b7e5d0; border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; color:#1a6b46; align-items:center; gap:8px; margin-top:8px;">
                             <i class="bi bi-check-circle-fill"></i>
                             <span id="file-name"></span>
                             <span id="file-size" style="color:#3b8c64; margin-left:auto;"></span>
@@ -780,12 +760,16 @@
                     </div>
 
                     <div id="zone-mock" style="display:none;" class="mock-zone">
-                        <p><i class="bi bi-magic" style="color:var(--success);"></i> 50 clients fictifs seront générés et analysés automatiquement.</p>
+                        <p>
+                            <i class="bi bi-magic" style="color:var(--success);"></i>
+                            50 clients fictifs seront générés et analysés automatiquement.
+                        </p>
                         <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">
-                            <i class="bi bi-info-circle"></i> Cliquez sur <strong>Lancer l'analyse</strong> pour générer les données mock et lancer l'analyse en une seule étape.
+                            <i class="bi bi-info-circle"></i>
+                            Cliquez sur <strong>Lancer l'analyse</strong> pour générer les données mock
+                            et lancer l'analyse en une seule étape.
                         </p>
                     </div>
-
 
                     <div class="section-label mt-3">
                         <span class="step-num">2</span> Modèle ML
@@ -801,35 +785,36 @@
                         {% endfor %}
                         {% else %}
                         <option value="" disabled selected>Aucun modèle disponible</option>
-                        <option value="random_forest">Random Forest</option>
-                        <option value="xgboost">XGBoost</option>
-                        <option value="logistic_regression">Régression Logistique</option>
                         {% endif %}
                     </select>
 
-                    <!-- ALERTE ÉTAT VIDE -->
+                    {% if metadata_warning %}
+                    <div class="alert alert-warning mt-3" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        {{ metadata_warning }}
+                    </div>
+                    {% endif %}
+
                     <div class="alert-warning show" id="alert-nodata">
                         <i class="bi bi-exclamation-triangle-fill"
                             style="font-size:14px; flex-shrink:0; margin-top:1px;"></i>
                         <span>Aucune donnée chargée. Sélectionnez une source avant de lancer l'analyse.</span>
                     </div>
 
-                    <!-- ACTIONS -->
                     <div class="d-flex gap-2 mt-3">
                         <button type="button" class="btn-launch" id="btn-lancer" onclick="lancerAvecAnimation()"
                             disabled>
                             Lancer l'analyse
                         </button>
-                        
-                        <button class="btn-reset" onclick="reinitialiser()" title="Réinitialiser" style="border-radius: var(--radius-pill); width: 50px;">
+                        <button class="btn-reset" onclick="reinitialiser()" title="Réinitialiser"
+                            style="border-radius: var(--radius-pill); width: 50px;">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </button>
                     </div>
-
                 </div>
             </div>
 
-            <!-- COLONNE DROITE : exécution + résultats -->
+            <!-- COLONNE DROITE -->
             <div class="col-12 col-lg-6 d-flex flex-column gap-3">
                 <div class="card">
                     <div class="section-label">
@@ -846,7 +831,6 @@
                     </div>
                 </div>
 
-                <!-- RÉSULTATS -->
                 <div class="card flex-grow-1">
                     <div class="section-label">
                         <span class="step-num">4</span> Résultats
@@ -860,8 +844,9 @@
                     <div id="results-content" style="display:none;">
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-people"></i> Total clients</span>
-                            <span class="result-value" id="res-total">{% if total_clients %}{{ total_clients }}{% else
-                                %}—{% endif %}</span>
+                            <span class="result-value" id="res-total">
+                                {% if total_clients %}{{ total_clients }}{% else %}—{% endif %}
+                            </span>
                         </div>
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-exclamation-triangle"></i> Clients en
@@ -874,23 +859,27 @@
                         </div>
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-sliders"></i> Seuil optimal</span>
-                            <span class="result-value accent" id="res-seuil">{% if seuil_optimal %}{{ seuil_optimal }}{%
-                                else %}0.25{% endif %}</span>
+                            <span class="result-value accent" id="res-seuil">
+                                {% if seuil_optimal %}{{ seuil_optimal }}{% else %}0.25{% endif %}
+                            </span>
                         </div>
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-graph-up"></i> AUC-ROC</span>
-                            <span class="result-value" id="res-auc">{% if auc_roc %}{{ auc_roc }}{% else
-                                %}0.8646{%endif%}</span>
+                            <span class="result-value" id="res-auc">
+                                {% if auc_roc %}{{ auc_roc }}{% else %}0.8646{% endif %}
+                            </span>
                         </div>
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-target"></i> F1-score</span>
-                            <span class="result-value" id="res-f1">{% if f1_score %}{{ f1_score }}{% else%}0.7097
-                                {%endif%}</span>
+                            <span class="result-value" id="res-f1">
+                                {% if f1_score %}{{ f1_score }}{% else %}0.7097{% endif %}
+                            </span>
                         </div>
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-check-circle"></i> Recall</span>
-                            <span class="result-value" id="res-recall">{% if recall %}{{ recall }}{% else %}0.88
-                                {% endif%}</span>
+                            <span class="result-value" id="res-recall">
+                                {% if recall %}{{ recall }}{% else %}0.88{% endif %}
+                            </span>
                         </div>
                         <div class="result-row">
                             <span class="result-label"><i class="bi bi-clock"></i> Durée</span>
@@ -905,9 +894,7 @@
                             <i class="bi bi-bar-chart-fill" style="color:var(--accent); margin-right:6px;"></i>
                             Valeurs SHAP (Top Features)
                         </div>
-                        <div id="shap-values-list" style="max-height:200px; overflow-y:auto;">
-                            <!-- SHAP values will be populated here -->
-                        </div>
+                        <div id="shap-values-list" style="max-height:200px; overflow-y:auto;"></div>
                     </div>
 
                     <!-- RECOMMANDATIONS -->
@@ -919,9 +906,7 @@
                             <span id="nb-rec-badge"
                                 style="background:var(--warning); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px;">0</span>
                         </div>
-                        <div id="recommandations-list" style="max-height:200px; overflow-y:auto;">
-                            <!-- Recommandations will be populated here -->
-                        </div>
+                        <div id="recommandations-list" style="max-height:200px; overflow-y:auto;"></div>
                     </div>
 
                     <a href="/clients/" id="btn-voir-clients" class="btn-voir">
@@ -1006,16 +991,15 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script>
+        // ═══════════════════════════════════════════════════
+        // VARIABLES GLOBALES
+        // ═══════════════════════════════════════════════════
         let dataReady = false;
-        const clientsExist = {% if total_clients > 0 %}true{% else %}false{% endif %};
-        const ACCEPTED_EXTENSIONS = [
-            'csv', 'xlsx', 'xls', 'xlsm', 'xlsb', 'ods', 'txt', 'tsv', 'tab'
-        ];
-
+        const clientsExist = {% if total_clients > 0 %}true{% else %} false{% endif %};
+        const ACCEPTED_EXTENSIONS = ['csv', 'xlsx', 'xls', 'xlsm', 'xlsb', 'ods', 'txt', 'tsv', 'tab'];
         const FORMAT_ICONS = {
             csv: 'bi-filetype-csv',
             xlsx: 'bi-file-earmark-excel',
@@ -1028,21 +1012,44 @@
             tab: 'bi-table',
         };
 
-        /* ── SÉLECTION DE SOURCE ────────────────────────────── */
-        function selectMethod(method) {
-            ['upload', 'mock'].forEach(m => {
-                document.getElementById(`method-${m}`).classList.remove('active');
-                document.getElementById(`zone-${m}`).style.display = 'none';
-            });
-            document.getElementById(`method-${method}`).classList.add('active');
-            document.getElementById(`zone-${method}`).style.display = 'block';
+        const stepLabels = [
+            'Compréhension métier',
+            'Exploration des données',
+            'Préparation des données',
+            'Modélisation en cours',
+            'Évaluation du modèle',
+            'Déploiement terminé',
+        ];
 
-            if (method === 'mock') {
-                document.getElementById('btn-lancer').disabled = false;
+        // ═══════════════════════════════════════════════════
+        // SÉLECTION DE LA MÉTHODE
+        // ═══════════════════════════════════════════════════
+        function selectMethod(method) {
+            document.querySelectorAll('.src-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('method-' + method).classList.add('active');
+
+            if (method === 'upload') {
+                document.getElementById('zone-upload').style.display = 'block';
+                document.getElementById('zone-mock').style.display = 'none';
+                if (clientsExist) {
+                    activerLancement();
+                } else {
+                    dataReady = false;
+                    document.getElementById('btn-lancer').disabled = true;
+                    const alertEl = document.getElementById('alert-nodata');
+                    alertEl.classList.add('show');
+                    alertEl.style.display = 'flex';
+                }
+            } else {
+                document.getElementById('zone-upload').style.display = 'none';
+                document.getElementById('zone-mock').style.display = 'block';
+                activerLancement();
             }
         }
 
-        /* ── GESTION DRAG & DROP ────────────────────────────── */
+        // ═══════════════════════════════════════════════════
+        // DRAG & DROP
+        // ═══════════════════════════════════════════════════
         function handleDragOver(e) {
             e.preventDefault();
             document.getElementById('drop-zone').classList.add('dragover');
@@ -1059,12 +1066,13 @@
             if (file) traiterFichier(file);
         }
 
-        /* ── SÉLECTION VIA INPUT ────────────────────────────── */
         function handleFileUpload(input) {
             if (input.files.length > 0) traiterFichier(input.files[0]);
         }
 
-        /* ── TRAITEMENT DU FICHIER ──────────────────────────── */
+        // ═══════════════════════════════════════════════════
+        // TRAITEMENT FICHIER
+        // ═══════════════════════════════════════════════════
         function traiterFichier(file) {
             const ext = file.name.split('.').pop().toLowerCase();
 
@@ -1073,32 +1081,25 @@
                 return;
             }
 
-            const tailleOk = file.size <= 50 * 1024 * 1024;
-            if (!tailleOk) {
+            if (file.size > 50 * 1024 * 1024) {
                 afficherErreurFichier('Fichier trop volumineux (max 50 Mo).');
                 return;
             }
 
-            /* Afficher les infos fichier */
             const icon = FORMAT_ICONS[ext] || 'bi-file-earmark';
-            document.getElementById('file-name').innerHTML =
-                `<i class="bi ${icon}"></i> ${file.name}`;
-            document.getElementById('file-size').textContent =
-                file.size > 1024 * 1024
-                    ? `${(file.size / 1024 / 1024).toFixed(1)} Mo`
-                    : `${Math.round(file.size / 1024)} Ko`;
+            document.getElementById('file-name').innerHTML = `<i class="bi ${icon}"></i> ${file.name}`;
+            document.getElementById('file-size').textContent = file.size > 1024 * 1024
+                ? `${(file.size / 1024 / 1024).toFixed(1)} Mo`
+                : `${Math.round(file.size / 1024)} Ko`;
 
             const info = document.getElementById('file-info');
             info.style.display = 'flex';
-
-            /* Mettre à jour le label de la zone */
             document.getElementById('upload-label').textContent = 'Fichier chargé — cliquez pour en choisir un autre';
 
             activerLancement();
             log(`Fichier chargé : ${file.name} (${ext.toUpperCase()})`, 'done');
         }
 
-        /* ── RETIRER LE FICHIER ─────────────────────────────── */
         function retirerFichier() {
             document.getElementById('data-file').value = '';
             document.getElementById('file-info').style.display = 'none';
@@ -1108,32 +1109,29 @@
             alertEl.classList.add('show');
             alertEl.style.display = 'flex';
             dataReady = false;
-            console.log('[retirerFichier] File removed, alert shown');
         }
 
-        /* ── ERREUR FICHIER ─────────────────────────────────── */
         function afficherErreurFichier(msg) {
             const info = document.getElementById('file-info');
             info.style.background = 'var(--danger-bg)';
             info.style.borderColor = '#f5a0a0';
             info.style.color = '#8b0000';
             info.style.display = 'flex';
-            document.getElementById('file-name').innerHTML =
-                `<i class="bi bi-exclamation-triangle-fill"></i> ${msg}`;
+            document.getElementById('file-name').innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${msg}`;
             document.getElementById('file-size').textContent = '';
         }
 
-        /* ── ACTIVER LE BOUTON LANCER ───────────────────────── */
         function activerLancement() {
             dataReady = true;
             document.getElementById('btn-lancer').disabled = false;
             const alertEl = document.getElementById('alert-nodata');
             alertEl.classList.remove('show');
             alertEl.style.display = 'none';
-            console.log('[activerLancement] Alert hidden, button enabled');
         }
 
-        /* ── LOG ────────────────────────────────────────────── */
+        // ═══════════════════════════════════════════════════
+        // LOG
+        // ═══════════════════════════════════════════════════
         function log(msg, type = 'done') {
             const c = document.getElementById('console');
             const line = document.createElement('div');
@@ -1143,21 +1141,84 @@
             c.scrollTop = c.scrollHeight;
         }
 
-        /* ── ÉTAPES CRISP ───────────────────────────────────── */
-        const stepLabels = [
-            'Compréhension métier',
-            'Exploration des données',
-            'Préparation des données',
-            'Modélisation en cours',
-            'Évaluation du modèle',
-            'Déploiement terminé',
-        ];
+        // ═══════════════════════════════════════════════════
+        // AFFICHAGE DÉTAILS ANALYSE (SHAP + RECOMMANDATIONS)
+        // ═══════════════════════════════════════════════════
+        function afficherDetailsAnalyse(stats) {
+            if (!stats) return;
 
-        /* ── LANCER L'ANALYSE ───────────────────────────────── */
+            // --- SHAP VALUES ---
+            if (stats.shap_values && stats.shap_values.length > 0) {
+                document.getElementById('shap-section').style.display = 'block';
+                const shapList = document.getElementById('shap-values-list');
+
+                const shapByClient = {};
+                stats.shap_values.forEach(shap => {
+                    if (!shapByClient[shap.client_id]) {
+                        shapByClient[shap.client_id] = [];
+                    }
+                    shapByClient[shap.client_id].push(shap);
+                });
+
+                const allShapValues = stats.shap_values.map(s => Math.abs(s.shap_value));
+                const maxShap = Math.max(...allShapValues) || 1;
+
+                shapList.innerHTML = Object.entries(shapByClient).map(([clientId, features]) => `
+                    <div style="margin-bottom:20px; padding:15px; background:var(--brand-light); border-radius:var(--radius-md);">
+                        <div style="font-weight:700; color:var(--brand); margin-bottom:10px; font-size:14px;">
+                            Client : ${clientId}
+                        </div>
+                        ${features.map(shap => {
+                    const isPositive = shap.shap_value > 0;
+                    const widthPercent = Math.min((Math.abs(shap.shap_value) / maxShap) * 100, 100);
+                    return `
+                                <div style="margin-bottom:8px; padding:8px; background:white; border-radius:6px; border:1px solid var(--border);">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                        <div style="font-size:12px; font-weight:600; color:var(--text-main);">
+                                            ${shap.feature}
+                                        </div>
+                                        <div style="font-size:12px; font-weight:700; color:${isPositive ? 'var(--danger)' : 'var(--success)'};">
+                                            ${shap.shap_value > 0 ? '+' : ''}${Number(shap.shap_value).toFixed(4)}
+                                        </div>
+                                    </div>
+                                    <div style="position:relative; height:8px; background:#f0f0f0; border-radius:4px; overflow:hidden;">
+                                        ${isPositive
+                            ? `<div style="position:absolute; right:0; height:100%; background:linear-gradient(90deg,#ef4444,#b91c1c); width:${widthPercent}%; border-radius:0 4px 4px 0; min-width:8px;"></div>`
+                            : `<div style="position:absolute; left:0; height:100%; background:linear-gradient(90deg,#34d399,#059669); width:${widthPercent}%; border-radius:4px 0 0 4px; min-width:8px;"></div>`
+                        }
+                                    </div>
+                                </div>
+                            `;
+                }).join('')}
+                    </div>
+                `).join('');
+            }
+
+            // --- RECOMMANDATIONS ---
+            if (stats.recommandations && stats.recommandations.length > 0) {
+                document.getElementById('rec-section').style.display = 'block';
+                document.getElementById('nb-rec-badge').textContent = stats.nb_recommandations || stats.recommandations.length;
+                const recList = document.getElementById('recommandations-list');
+                recList.innerHTML = stats.recommandations.map(rec => `
+                    <div style="background:var(--brand-light); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; border-left:3px solid var(--accent);">
+                        <div style="font-size:12px; font-weight:700; color:var(--brand); margin-bottom:4px;">
+                            ${rec.client_nom || rec.client_id || 'Client'} — ${rec.type}
+                        </div>
+                        <div style="font-size:11px; color:var(--text-main);">${rec.message}</div>
+                        <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
+                            Priorité : <span style="font-weight:600; color:var(--warning);">${rec.priorite}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ═══════════════════════════════════════════════════
+        // LANCER L'ANALYSE
+        // ═══════════════════════════════════════════════════
         async function lancerAvecAnimation() {
             const activeMethod = document.querySelector('.src-btn.active').id.replace('method-', '');
             const algorithme = document.getElementById('model-select').value;
-            // nbClients sera mis à jour avec la vraie valeur du serveur
             let nbClients = activeMethod === 'mock' ? 50 : 0;
 
             document.getElementById('btn-lancer').disabled = true;
@@ -1165,7 +1226,6 @@
             const accuracy = (87 + Math.random() * 6).toFixed(1);
             const start = Date.now();
 
-            // Lancer la vraie analyse côté serveur en parallèle
             const formData = new FormData();
             const method = activeMethod === 'upload' ? 'csv' : 'mock';
             formData.append('methode', method);
@@ -1181,8 +1241,6 @@
                     document.getElementById('btn-lancer').disabled = false;
                     return;
                 }
-                // Si clientsExist est true mais pas de fichier sélectionné,
-                // on relance l'analyse sur les clients existants sans ré-uploader.
             }
 
             const analysePromise = fetch("{% url 'dashboard:lancer_analyse' %}", {
@@ -1193,30 +1251,23 @@
                 },
                 body: formData,
             }).then(async r => {
-                console.log('[Analyse] Réponse du serveur:', r.status, r.statusText);
                 if (r.ok) {
-                    const data = await r.json();
-                    console.log('[Analyse] Données reçues:', data);
-                    return data;
+                    return await r.json();
                 } else {
                     const errorText = await r.text();
-                    console.error('[Analyse] Erreur serveur:', r.status, errorText);
                     try {
                         const errorJson = JSON.parse(errorText);
-                        console.error('[Analyse] Erreur JSON:', errorJson);
-                        if (errorJson.redirect) {
-                            throw new Error('Redirection requise: ' + errorJson.error);
-                        }
                         throw new Error(errorJson.error || `Erreur serveur: ${r.status}`);
                     } catch (e) {
                         if (errorText.includes('<!DOCTYPE html>')) {
-                            throw new Error('Erreur de communication: réponse HTML reçue au lieu de JSON');
+                            throw new Error('Erreur de communication : réponse HTML reçue au lieu de JSON');
                         }
                         throw new Error(`Erreur serveur (${r.status}): ${errorText.substring(0, 200)}`);
                     }
                 }
             }).catch(err => {
-                console.error('[Analyse] Erreur réseau:', err);
+                console.error('[Analyse] Erreur :', err);
+                log('Erreur : ' + err.message, 'pending');
                 return null;
             });
 
@@ -1243,239 +1294,81 @@
                 if (i === 4) document.getElementById('kpi-accuracy').textContent = accuracy + '%';
             }
 
-            // Attendre les vrais résultats du serveur
             const stats = await analysePromise;
+            if (!stats) {
+                log('Analyse interrompue : aucune réponse exploitable du serveur.', 'pending');
+                document.getElementById('btn-lancer').disabled = false;
+                return;
+            }
 
             const duration = ((Date.now() - start) / 1000).toFixed(1);
             log(`Pipeline terminé en ${duration}s`, 'done');
 
-            // Afficher la zone résultats
-            const resultsEmptyEl = document.getElementById('results-empty');
-            const resultsContentEl = document.getElementById('results-content');
-            if (resultsEmptyEl) resultsEmptyEl.style.display = 'none';
-            if (resultsContentEl) resultsContentEl.style.display = 'block';
+            document.getElementById('results-empty').style.display = 'none';
+            document.getElementById('results-content').style.display = 'block';
 
-            // Persister la durée pour survivre au rechargement
             sessionStorage.setItem('lastDuration', duration);
+            sessionStorage.setItem('lastAnalyseStats', JSON.stringify(stats));
 
-            // Recharger la page pour mettre à jour tous les KPIs avec les données fraîches
             log('Mise à jour des données...', 'active');
-            setTimeout(() => {
-                location.reload();
-            }, 1500);
+            setTimeout(() => { location.reload(); }, 1500);
 
-            // Afficher les valeurs SHAP
-            if (stats.shap_values && stats.shap_values.length > 0) {
-                document.getElementById('shap-section').style.display = 'block';
-                const shapList = document.getElementById('shap-values-list');
-                shapList.innerHTML = stats.shap_values.map(shap => `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
-                            <div>
-                                <div style="font-size:12px; font-weight:600; color:var(--text-main);">${shap.feature}</div>
-                                <div style="font-size:10px; color:var(--text-muted);">Client: ${shap.client_id}</div>
-                            </div>
-                            <div style="text-align:right;">
-                                <div style="font-size:13px; font-weight:700; color:${shap.direction === 'vers_churn' ? 'var(--danger)' : 'var(--success)'};">
-                                    ${shap.shap_value > 0 ? '+' : ''}${shap.shap_value.toFixed(4)}
-                                </div>
-                                <div style="font-size:10px; color:${shap.direction === 'vers_churn' ? 'var(--danger)' : 'var(--success)'};">
-                                    ${shap.direction === 'vers_churn' ? '→ Churn' : '→ Rétention'}
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
-            }
-
-            // Afficher les recommandations
-            if (stats.recommandations && stats.recommandations.length > 0) {
-                document.getElementById('rec-section').style.display = 'block';
-                document.getElementById('nb-rec-badge').textContent = stats.nb_recommandations || stats.recommandations.length;
-                const recList = document.getElementById('recommandations-list');
-                recList.innerHTML = stats.recommandations.map(rec => `
-                        <div style="background:var(--brand-light); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; border-left:3px solid var(--accent);">
-                            <div style="font-size:12px; font-weight:700; color:var(--brand); margin-bottom:4px;">
-                                ${rec.client_nom || rec.client_id} — ${rec.type}
-                            </div>
-                            <div style="font-size:11px; color:var(--text-main);">${rec.message}</div>
-                            <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
-                                Priorité: <span style="font-weight:600; color:var(--warning);">${rec.priorite}</span>
-                            </div>
-                        </div>
-                    `).join('');
-            }
-
+            afficherDetailsAnalyse(stats);
             document.getElementById('res-duration').textContent = duration + 's';
-
             document.getElementById('kpi-section').classList.add('active');
             document.getElementById('btn-voir-clients').classList.add('show');
         }
 
-        /* ── MOCK SIMPLE ────────────────────────────────────── */
-        async function lancerMockSimple() {
-            log('Génération des données mock…', 'active');
-            try {
-                const res = await fetch("{% url 'dashboard:generer_mock' %}", {
-                    method: 'GET',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                });
-                if (res.ok) {
-                    log('50 clients mock générés avec succès.', 'done');
-                    log('Vous pouvez maintenant lancer l\'analyse.', 'done');
-                    activerLancement();
-                } else {
-                    try {
-                        const errorData = await res.json();
-                        if (errorData.redirect) {
-                            alert('Erreur : ' + errorData.error);
-                            if (errorData.redirect_url) {
-                                window.location.href = errorData.redirect_url;
-                            }
-                            return;
-                        }
-                        log('Erreur lors de la génération: ' + (errorData.error || 'Erreur inconnue'), 'pending');
-                    } catch (e) {
-                        log('Erreur lors de la génération.', 'pending');
-                    }
-                }
-            } catch {
-                log('Erreur de connexion au serveur.', 'pending');
-            }
-        }
-
-        /* ── ENTRAÎNER LES MODÈLES ML ───────────────────────── */
-        async function trainModels() {
-            const modelSelect = document.getElementById('model-select');
-            const selectedModel = modelSelect ? modelSelect.value : null;
-
-            if (!selectedModel) {
-                log('Erreur: Aucun modèle sélectionné', 'pending');
-                return;
-            }
-
-            log('Début de l\'entraînement du modèle: ' + selectedModel, 'active');
-
-            const trainStart = Date.now();
-
-            try {
-                const res = await fetch("{% url 'dashboard:train_models' %}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'Accept': 'application/json',
-                    },
-                    body: 'model_type=' + selectedModel
-                });
-
-                const data = await res.json();
-                const trainDuration = ((Date.now() - trainStart) / 1000).toFixed(1);
-
-                if (data.redirect) {
-                    alert('Erreur : ' + data.error);
-                    if (data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    }
-                    return;
-                }
-
-                if (data.success) {
-                    log('Entraînement terminé en ' + trainDuration + 's !', 'done');
-
-                    // Afficher les résultats du modèle
-                    if (data.models && data.models.length > 0) {
-                        const model = data.models[0]; // Un seul modèle entraîné
-                        const accPct = (model.accuracy * 100).toFixed(2) + '%';
-                        const precPct = (model.precision * 100).toFixed(2) + '%';
-                        const recPct = (model.recall * 100).toFixed(2) + '%';
-                        const aucPct = (model.auc * 100).toFixed(2) + '%';
-                        log(model.nom + ': Accuracy ' + accPct + ', Precision ' + precPct + ', Recall ' + recPct + ', AUC ' + aucPct, 'done');
-
-                        // Mettre à jour l'option dans la liste déroulante avec les nouvelles métriques
-                        const select = document.getElementById('model-select');
-                        const option = select.querySelector('option[value="' + selectedModel + '"]');
-                        if (option) {
-                            option.setAttribute('data-accuracy', model.accuracy);
-                            option.setAttribute('data-precision', model.precision);
-                            option.setAttribute('data-recall', model.recall);
-                            option.setAttribute('data-auc', model.auc);
-                        }
-
-                        log('Métriques du modèle mises à jour.', 'done');
-                    }
-                } else {
-                    log('Erreur: ' + data.error, 'pending');
-                }
-            } catch (error) {
-                log('Erreur de connexion: ' + error.message, 'pending');
-            }
-        }
-
-        /* ── RÉINITIALISATION ──────────────────────────────────── */
+        // ═══════════════════════════════════════════════════
+        // RÉINITIALISATION
+        // ═══════════════════════════════════════════════════
         function reinitialiser() {
-            if (confirm('Êtes-vous sûr de vouloir réinitialiser ?\n\nCette action va :\n- Effacer tous les clients de la liste\n- Réinitialiser le dashboard\n\nCette action est irréversible.')) {
-                fetch("{% url 'dashboard:reinitialiser' %}", {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
+            if (!confirm('Êtes-vous sûr de vouloir réinitialiser ?\n\nCette action va :\n- Effacer tous les clients de la liste\n- Effacer les recommandations et notifications\n- Conserver les analyses en base\n\nCette action est irréversible.')) return;
+
+            fetch("{% url 'dashboard:reinitialiser' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+                .then(async response => {
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json')) {
+                        throw new Error('Réponse non JSON reçue.');
+                    }
+                    return response.json();
                 })
-                    .then(async response => {
-                        const contentType = response.headers.get('content-type') || '';
-                        if (!contentType.includes('application/json')) {
-                            const text = await response.text();
-                            if (text.startsWith('<!DOCTYPE') || text.startsWith('<html')) {
-                                throw new Error('Réponse HTML reçue (URL invalide, redirection ou erreur serveur).');
-                            }
-                            throw new Error('Réponse non JSON reçue.');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.redirect) {
-                            // Redirection nécessaire (utilisateur sans agence)
-                            alert('Erreur : ' + data.error);
-                            if (data.redirect_url) {
-                                window.location.href = data.redirect_url;
-                            }
-                            return;
-                        }
-
-                        if (data.success) {
-                            // Réinitialiser l'interface
-                            document.getElementById('results-empty').style.display = 'block';
-                            document.getElementById('results-content').style.display = 'none';
-                            document.getElementById('kpi-total').textContent = '0';
-                            document.getElementById('kpi-churn').textContent = '—';
-                            document.getElementById('kpi-accuracy').textContent = '—';
-                            document.getElementById('kpi-steps').textContent = '0/6';
-                            document.getElementById('kpi-section').classList.remove('active');
-                            document.getElementById('btn-voir-clients').classList.remove('show');
-                            document.getElementById('console').innerHTML = '<div class="log-line pending"><div class="log-dot"></div><span>Système prêt — en attente de données</span></div>';
-                            document.getElementById('progress-bar').style.width = '0%';
-
-                            // Réinitialiser les résultats
-                            document.getElementById('res-total').textContent = '—';
-                            document.getElementById('res-churn').textContent = '—';
-                            document.getElementById('res-non-churn').textContent = '—';
-                            document.getElementById('res-seuil').textContent = '0.25';
-                            document.getElementById('res-auc').textContent = '0.8646';
-                            document.getElementById('res-f1').textContent = '0.7097';
-                            document.getElementById('res-recall').textContent = '0.88';
-                            document.getElementById('res-duration').textContent = '—';
-
-                            alert('Réinitialisation effectuée avec succès.');
-                        } else {
-                            alert('Erreur lors de la réinitialisation : ' + (data.error || 'Erreur inconnue'));
-                        }
-                    })
-                    .catch(error => {
-                        alert('Erreur de communication : ' + error);
-                    });
-            }
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('results-empty').style.display = 'block';
+                        document.getElementById('results-content').style.display = 'none';
+                        document.getElementById('kpi-total').textContent = '0';
+                        document.getElementById('kpi-churn').textContent = '—';
+                        document.getElementById('kpi-accuracy').textContent = '—';
+                        document.getElementById('kpi-steps').textContent = '0/6';
+                        document.getElementById('kpi-section').classList.remove('active');
+                        document.getElementById('btn-voir-clients').classList.remove('show');
+                        document.getElementById('console').innerHTML =
+                            '<div class="log-line pending"><div class="log-dot"></div><span>Système prêt — en attente de données</span></div>';
+                        document.getElementById('progress-bar').style.width = '0%';
+                        document.getElementById('res-total').textContent = '—';
+                        document.getElementById('res-churn').textContent = '—';
+                        document.getElementById('res-non-churn').textContent = '—';
+                        document.getElementById('res-seuil').textContent = '0.25';
+                        document.getElementById('res-auc').textContent = '0.8646';
+                        document.getElementById('res-f1').textContent = '0.7097';
+                        document.getElementById('res-recall').textContent = '0.88';
+                        document.getElementById('res-duration').textContent = '—';
+                        alert('Réinitialisation effectuée avec succès.');
+                    } else {
+                        alert('Erreur : ' + (data.error || 'Erreur inconnue'));
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur de communication : ' + error);
+                });
         }
 
         function getCookie(name) {
@@ -1493,15 +1386,23 @@
             return cookieValue;
         }
 
-        /* ── DRAG OVER CSS ──────────────────────────────────── */
+        // ═══════════════════════════════════════════════════
+        // INIT DOM
+        // ═══════════════════════════════════════════════════
         document.addEventListener('DOMContentLoaded', () => {
             const dz = document.getElementById('drop-zone');
             if (dz) {
-                dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = 'var(--brand)'; dz.style.background = 'var(--brand-light)'; });
-                dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; dz.style.background = ''; });
+                dz.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    dz.style.borderColor = 'var(--brand)';
+                    dz.style.background = 'var(--brand-light)';
+                });
+                dz.addEventListener('dragleave', () => {
+                    dz.style.borderColor = '';
+                    dz.style.background = '';
+                });
             }
 
-            // Restaurer l'état si des données existent déjà
             {% if total_clients > 0 %}
             dataReady = true;
             document.getElementById('btn-lancer').disabled = false;
@@ -1509,21 +1410,19 @@
             alertNodata.classList.remove('show');
             alertNodata.style.display = 'none';
             document.getElementById('upload-label').textContent = 'Données déjà chargées — cliquez pour en choisir un autre';
-            // Afficher un indicateur visuel que des données sont présentes
             const fileInfo = document.getElementById('file-info');
             fileInfo.style.display = 'flex';
             document.getElementById('file-name').innerHTML =
                 '<i class="bi bi-check-circle-fill"></i> Données en base ({{ total_clients }} clients)';
             document.getElementById('file-size').textContent = '';
-            console.log('[DOMContentLoaded] {{ total_clients }} clients found — UI restored');
-            {% else %}
-            console.log('[DOMContentLoaded] No clients in database');
             {% endif %}
+
             {% if has_session %}
             const resultsEmpty = document.getElementById('results-empty');
             const resultsContent = document.getElementById('results-content');
             if (resultsEmpty) resultsEmpty.style.display = 'none';
             if (resultsContent) resultsContent.style.display = 'block';
+
             {% if total_clients > 0 %}
             const resTotal = document.getElementById('res-total');
             const resChurn = document.getElementById('res-churn');
@@ -1538,31 +1437,37 @@
             if (kpiChurn) kpiChurn.textContent = '{{ taux_churn }}%';
             if (kpiSteps) kpiSteps.textContent = '6/6';
             {% endif %}
+
             const kpiAccuracy = document.getElementById('kpi-accuracy');
             if (kpiAccuracy) kpiAccuracy.textContent = '{{ recall|default:"0.92" }}';
+
             {% if seuil_optimal %}
             const resSeuil = document.getElementById('res-seuil');
             if (resSeuil) resSeuil.textContent = '{{ seuil_optimal }}';
             {% endif %}
+
             {% if auc_roc %}
             const resAuc = document.getElementById('res-auc');
             if (resAuc) resAuc.textContent = '{{ auc_roc }}';
             {% endif %}
+
             {% if f1_score %}
             const resF1 = document.getElementById('res-f1');
             if (resF1) resF1.textContent = '{{ f1_score }}';
             {% endif %}
+
             {% if recall %}
             const resRecall = document.getElementById('res-recall');
             if (resRecall) resRecall.textContent = '{{ recall }}';
             {% endif %}
+
             const kpiSection = document.getElementById('kpi-section');
             const btnVoirClients = document.getElementById('btn-voir-clients');
             if (kpiSection) kpiSection.classList.add('active');
             if (btnVoirClients) btnVoirClients.classList.add('show');
             {% endif %}
 
-            // Restaurer la durée de la dernière analyse (persistée via sessionStorage)
+            // Restaurer durée et stats depuis sessionStorage
             const lastDuration = sessionStorage.getItem('lastDuration');
             if (lastDuration) {
                 const resDuration = document.getElementById('res-duration');
@@ -1570,7 +1475,16 @@
                 sessionStorage.removeItem('lastDuration');
             }
 
-            // Initialiser la méthode par défaut
+            const lastAnalyseStats = sessionStorage.getItem('lastAnalyseStats');
+            if (lastAnalyseStats) {
+                try {
+                    afficherDetailsAnalyse(JSON.parse(lastAnalyseStats));
+                } finally {
+                    sessionStorage.removeItem('lastAnalyseStats');
+                }
+            }
+
+            // Méthode par défaut
             selectMethod('upload');
         });
     </script>
@@ -1579,8 +1493,3 @@
 </body>
 
 </html>
-
-
-
-
-

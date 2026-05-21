@@ -1,0 +1,262 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historique Agence — Tunisie Telecom</title>
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    <style>
+        :root {
+            --brand: #1e3a8a;
+            --brand-dark: #122659;
+            --brand-light: #e0e7ff;
+            --success: #059669;
+            --danger: #dc2626;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-400: #94a3b8;
+            --gray-700: #374151;
+            --radius-md: 16px;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.12);
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+            color: #111827;
+        }
+
+        .container-fluid {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 28px 24px;
+        }
+
+        .glass-card {
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--gray-400);
+            margin-bottom: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .stat-box {
+            border-radius: 16px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            background: var(--gray-50);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .4px;
+            color: var(--gray-500);
+            text-transform: uppercase;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .history-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--gray-500);
+            font-weight: 700;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .badge-method {
+            display: inline-flex;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .2px;
+        }
+
+        .method-mock {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .method-csv {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .method-api {
+            background: #ecfccb;
+            color: #375a18;
+        }
+
+        .diff-positive {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .diff-negative {
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 11px;
+        }
+
+        .diff-neutral {
+            color: var(--gray-400);
+            font-size: 11px;
+        }
+    </style>
+</head>
+
+<body>
+
+    {% include 'accounts/navbar.html' %}
+
+    <div class="container-fluid">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <h4 style="margin-bottom:8px; font-weight:800;">Historique de l'agence</h4>
+                <div style="color:#6b7280; font-size:14px;">{{ agence.nom }} — {{ agence.ville.nom }}</div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'dashboard:administration' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Retour administration
+                </a>
+                {% if is_super_admin %}
+                <a href="{% url 'dashboard:dashboard_global' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-title"><i class="bi bi-building"></i>Vue synthétique</div>
+            <div class="summary-grid">
+                <div class="stat-box">
+                    <div class="stat-value">{{ analyses|length }}</div>
+                    <div class="stat-label">Analyses enregistrées</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ total_clients }}</div>
+                    <div class="stat-label">Clients analysés</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ total_churn }}</div>
+                    <div class="stat-label">Churn total</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value">{{ moyenne_score }}%</div>
+                    <div class="stat-label">Score moyen</div>
+                </div>
+            </div>
+        </div>
+
+        {% if not has_data %}
+        <div class="glass-card" style="text-align:center; padding:40px;">
+            <i class="bi bi-inbox" style="font-size:42px; color:#94a3b8;"></i>
+            <p style="margin-top:18px; color:#374151; font-size:15px;">Aucune analyse enregistrée pour cette agence.</p>
+            <p style="color:#6b7280; font-size:13px;">Lancez une analyse depuis l'agence pour commencer à suivre
+                l'historique.</p>
+        </div>
+        {% else %}
+        <div class="glass-card">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Méthode</th>
+                        <th class="text-end">Clients</th>
+                        <th class="text-end">Churn</th>
+                        <th class="text-end">Non-churn</th>
+                        <th class="text-end">Score moyen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in analyses %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:700;">{{ item.analyse.date_analyse|date:"d/m/Y" }}</div>
+                            <div style="font-size:12px; color:#6b7280;">{{ item.analyse.date_analyse|date:"H:i" }}</div>
+                        </td>
+                        <td>
+                            {% if item.analyse.methode == "mock" %}
+                            <span class="badge-method method-mock">Mock</span>
+                            {% elif item.analyse.methode == "csv" %}
+                            <span class="badge-method method-csv">CSV</span>
+                            {% else %}
+                            <span class="badge-method method-api">API</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <strong>{{ item.analyse.nb_clients_total }}</strong>
+                        </td>
+                        <td class="text-end">
+                            <strong>{{ item.analyse.nb_clients_churn }}</strong>
+                        </td>
+                        <td class="text-end">
+                            <strong>{{ item.analyse.nb_clients_non_churn }}</strong>
+                        </td>
+                        <td class="text-end">
+                            <strong>{{ item.analyse.score_churn_moyen }}%</strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>

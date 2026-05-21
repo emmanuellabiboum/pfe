@@ -314,8 +314,12 @@
             <div>
                 <h1><i class="bi bi-people-fill me-2"></i>Liste des clients</h1>
                 <p>
+                    {% if selected_date %}
+                    <strong>Clients de l'analyse du {{ selected_date|date:"d/m/Y" }}</strong>
+                    {% else %}
                     {% if request.user.agence %}
                     <i class="bi bi-geo-alt me-1"></i>{{ request.user.agence.nom }} — {{ request.user.agence.ville }}
+                    {% endif %}
                     {% endif %}
                 </p>
             </div>
@@ -373,7 +377,7 @@
                     <button class="filter-btn churn" onclick="filtrer('churn')" id="f-churn">
                         <i class="bi bi-exclamation-triangle"></i> Churn
                     </button>
-                    <button class="filter-btn non-churn" onclick="filtrer('non_churn')" id="f-non-churn">
+                    <button class="filter-btn non-churn" onclick="filtrer('non-churn')" id="f-non-churn">
                         <i class="bi bi-check-circle"></i> Non-churn
                     </button>
                 </div>
@@ -421,7 +425,8 @@
             client_id: c.client_id,
             nom: c.nom,
             anciennete: Number(c.anciennete_mois_safe) || 0,
-            reclamations: Number(c.nb_reclamations_safe) || 0,
+            reclamations: c.nb_reclamations,
+            reclamationManquante: !!c.reclamation_manquante,
             score: Number(c.score_churn) || 0,
             churn_predit: !!c.churn_predit
         }));
@@ -441,7 +446,7 @@
         function filtrer(risque) {
             filtreActif = risque;
             pageActuelle = 1;
-            ['tous', 'churn', 'non_churn'].forEach(r => {
+            ['tous', 'churn', 'non-churn'].forEach(r => {
                 document.getElementById(`f-${r}`).classList.remove('active');
             });
             document.getElementById(`f-${risque}`).classList.add('active');
@@ -459,7 +464,7 @@
 
             if (filtreActif === 'churn') {
                 clients = clients.filter(c => c.churn_predit);
-            } else if (filtreActif === 'non_churn') {
+            } else if (filtreActif === 'non-churn') {
                 clients = clients.filter(c => !c.churn_predit);
             }
             if (recherche) {
@@ -488,8 +493,9 @@
                 tbody.innerHTML = page.map(c => {
                     const scoreColor = c.churn_predit ? 'var(--danger)' : 'var(--success)';
                     const badgeExtra = c.churn_predit ? 'badge-churn' : 'badge-non-churn';
-                    const statutLabel = c.churn_predit ? 'Churn' : 'Non-churn';
+                    const statutLabel = c.churn_predit ? 'Risque Élevé' : 'Risque Faible';
                     const url = FICHE_URL.replace('PLACEHOLDER', c.id);
+                    const reclamationsLabel = (c.reclamations === null || c.reclamations === undefined || c.reclamationManquante) ? '—' : Number(c.reclamations);
 
                     return `
             <tr onclick="window.location.href='${url}'" style="cursor:pointer;">
@@ -499,7 +505,7 @@
                 <td>
                     <span style="display:inline-flex; align-items:center; gap:4px;">
                         <i class="bi bi-chat-left-text" style="color:var(--text-faint); font-size:11px;"></i>
-                        <span style="font-weight:700;">${c.reclamations}</span>
+                        <span style="font-weight:700;">${reclamationsLabel}</span>
                     </span>
                 </td>
                 <td>

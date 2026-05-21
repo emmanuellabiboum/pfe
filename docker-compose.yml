@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: ${DB_NAME:-churn_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-0000}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code:cached
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    environment:
+      FASTAPI_BASE_URL: ${FASTAPI_BASE_URL:-http://fastapi:8000}
+
+  fastapi:
+    build:
+      context: ./pfe_final/churn_api
+      dockerfile: Dockerfile
+    volumes:
+      - ./pfe_final/churn_api:/app:cached
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000" ]
+
+volumes:
+  postgres_data:

@@ -12,7 +12,6 @@
         rel="stylesheet">
     <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             /* Règle 60-30-10 : 60% neutre, 30% primaire, 10% accent */
@@ -59,7 +58,7 @@
             border-radius: var(--radius);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--gray-200);
-            padding: 24px;
+            padding: 20px;
             height: 100%;
             transition: box-shadow 0.2s;
         }
@@ -85,7 +84,7 @@
         .kpi-card {
             background: white;
             border-radius: var(--radius);
-            padding: 24px;
+            padding: 20px;
             border: 1px solid var(--gray-200);
             transition: all 0.25s ease;
             position: relative;
@@ -366,6 +365,59 @@
             font-size: 11px;
             font-weight: 700;
         }
+
+        .client-shap-block {
+            padding: 14px;
+            border: 1px solid var(--gray-100);
+            border-radius: 12px;
+            background: var(--gray-50);
+        }
+
+        .client-shap-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .shap-row {
+            display: grid;
+            grid-template-columns: minmax(120px, 1fr) 90px 86px;
+            gap: 10px;
+            align-items: center;
+            padding: 7px 0;
+            border-top: 1px solid var(--gray-200);
+            font-size: 12px;
+        }
+
+        .shap-value-positive {
+            color: var(--danger);
+            font-weight: 800;
+        }
+
+        .shap-value-negative {
+            color: var(--success);
+            font-weight: 800;
+        }
+
+        .latest-rec {
+            display: block;
+            padding: 14px;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .latest-rec:hover {
+            background: white;
+            border-color: var(--gray-200);
+            color: inherit;
+            transform: translateY(-1px);
+        }
     </style>
     <link href="{% static 'css/common.css' %}" rel="stylesheet">
 </head>
@@ -455,66 +507,88 @@
                     <div class="kpi-label">Non-churn</div>
                 </div>
             </div>
-            <div class="col-6 col-md-4 col-lg-3">
-                <div class="kpi-card green">
-                    <div class="kpi-accent"></div>
-                    <div class="kpi-icon" style="background:var(--success-light);">
-                        <i class="bi bi-check-circle-fill" style="color:var(--success);"></i>
-                    </div>
-                    <div class="kpi-value" style="color:var(--success);">{{ score_moyen }}%</div>
-                    <div class="kpi-label">Score moyen</div>
-                </div>
-            </div>
         </div>
 
-        <!-- GRAPHIQUES PRINCIPAUX -->
-        <div class="row g-3 mb-4">
-            <!-- DONUT RISQUE -->
-            <div class="col-12 col-lg-6">
-                <div class="glass-card">
-                    <div class="section-title" style="color:var(--primary);">
-                        <i class="bi bi-pie-chart"></i> Répartition par risque
-                    </div>
-                    <canvas id="donutChart" height="220"></canvas>
-                    <div class="row g-2 mt-3">
-                        <div class="col-6 text-center">
-                            <div style="font-size:20px; font-weight:900; color:var(--danger);">{{ churn }}</div>
-                            <div style="font-size:10px; color:var(--gray-400); font-weight:700; letter-spacing:1px;">
-                                CHURN</div>
-                        </div>
-                        <div class="col-6 text-center">
-                            <div style="font-size:20px; font-weight:900; color:var(--success);">{{ non_churn }}</div>
-                            <div style="font-size:10px; color:var(--gray-400); font-weight:700; letter-spacing:1px;">
-                                NON-CHURN</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- SHAP GLOBAL - FEATURE IMPORTANCE -->
-            <div class="col-12 col-lg-6">
+        <!-- SHAP CLIENTS + RECOMMANDATIONS RECENTES -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-xl-7">
                 <div class="glass-card">
-                    <div class="section-title" style="color:var(--purple);">
-                        <i class="bi bi-lightning-charge"></i> Features influençant le churn
+                    <div class="section-title" style="color:var(--danger);">
+                        <i class="bi bi-bar-chart-steps"></i> Top SHAP par client à risque
                     </div>
-                    {% if shap_global %}
-                    <div class="d-flex flex-column gap-2">
-                        {% for feature in shap_global %}
-                        <div class="d-flex align-items-center gap-3" style="padding:12px; background:var(--gray-50); border-radius:10px;">
-                            <div style="font-weight:700; font-size:13px; color:var(--gray-900); flex:1;">{{ feature.feature }}</div>
-                            <div style="display:flex; align-items:center; gap:8px; min-width:120px;">
-                                <div class="progress-bar-bg" style="height:6px; width:80px;">
-                                    <div class="progress-bar-fill" data-width="{% widthratio feature.importance_moyenne 1 100 %}" data-impact="{{ feature.impact }}"></div>
+                    {% if shap_clients %}
+                    <div class="d-flex flex-column gap-3" style="max-height:520px; overflow-y:auto;">
+                        {% for item in shap_clients %}
+                        <div class="client-shap-block">
+                            <div class="client-shap-head">
+                                <div>
+                                    <div style="font-weight:800; font-size:14px; color:var(--gray-900);">
+                                        {{ item.client.nom|default:item.client.client_id }}
+                                    </div>
+                                    <div style="font-size:11px; color:var(--gray-500); font-family:'Courier New';">
+                                        Client: {{ item.client.client_id }}
+                                    </div>
                                 </div>
-                                <span class="feature-value" data-impact="{{ feature.impact }}">{{ feature.importance_moyenne|floatformat:3 }}</span>
+                                <a href="{% url 'dashboard:fiche_client' item.client.id %}" class="btn-voir">
+                                    <i class="bi bi-eye"></i> Fiche
+                                </a>
                             </div>
+                            {% for feature in item.features %}
+                            <div class="shap-row">
+                                <div style="font-weight:700; color:var(--gray-800); overflow-wrap:anywhere;">
+                                    {{ feature.feature }}
+                                </div>
+                                <div class="{% if feature.shap_value >= 0 %}shap-value-positive{% else %}shap-value-negative{% endif %}">
+                                    {% if feature.shap_value > 0 %}+{% endif %}{{ feature.shap_value|floatformat:4 }}
+                                </div>
+                                <div style="font-size:11px; font-weight:700; color:{% if feature.shap_value >= 0 %}var(--danger){% else %}var(--success){% endif %};">
+                                    {% if feature.shap_value >= 0 %}→ Churn{% else %}→ Rétention{% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
                         </div>
                         {% endfor %}
                     </div>
                     {% else %}
                     <div class="text-center py-4">
                         <i class="bi bi-info-circle" style="font-size:24px; color:var(--gray-400);"></i>
-                        <p style="color:var(--gray-400); font-size:13px; margin:8px 0 0;">Aucune donnée SHAP disponible</p>
+                        <p style="color:var(--gray-400); font-size:13px; margin:8px 0 0;">Aucun SHAP client disponible pour le moment</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-12 col-xl-5">
+                <div class="glass-card">
+                    <div class="section-title" style="color:var(--warning);">
+                        <i class="bi bi-lightbulb-fill"></i> Dernières recommandations
+                    </div>
+                    {% if recommandations_recentes %}
+                    <div class="d-flex flex-column gap-2" style="max-height:520px; overflow-y:auto;">
+                        {% for rec in recommandations_recentes %}
+                        <a href="{% url 'dashboard:fiche_client' rec.client.id %}#recommandations" class="latest-rec">
+                            <div style="display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom:6px;">
+                                <div>
+                                    <div style="font-weight:800; color:var(--gray-900); font-size:13px;">
+                                        {{ rec.client.nom|default:rec.client.client_id }} — {{ rec.get_type_recommandation_display_fr }}
+                                    </div>
+                                    <div style="font-size:11px; color:var(--gray-500); font-family:'Courier New';">
+                                        Client: {{ rec.client.client_id }}
+                                    </div>
+                                </div>
+                                <span class="segment-tag">{{ rec.statut }}</span>
+                            </div>
+                            <div style="font-size:12px; color:var(--gray-700); line-height:1.5;">
+                                {{ rec.contenu|truncatechars:180 }}
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-check-circle" style="font-size:24px; color:var(--gray-400);"></i>
+                        <p style="color:var(--gray-400); font-size:13px; margin:8px 0 0;">Aucune recommandation active</p>
                     </div>
                     {% endif %}
                 </div>
@@ -540,9 +614,7 @@
                             <thead>
                                 <tr>
                                     <th>Client</th>
-                                    <th>Segment</th>
                                     <th>Score churn</th>
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -558,9 +630,7 @@
                                             {% endif %}
                                         </div>
                                     </td>
-                                    <td>
-                                        <span class="segment-tag">{{ c.segment }}</span>
-                                    </td>
+
                                     <td>
                                         <div style="display:flex; align-items:center; gap:10px;">
                                             <span
@@ -569,11 +639,7 @@
                                             </span>
                                         </div>
                                     </td>
-                                    <td>
-                                        <a href="{% url 'dashboard:fiche_client' c.id %}" class="btn-voir">
-                                            <i class="bi bi-eye"></i> Voir
-                                        </a>
-                                    </td>
+
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -653,51 +719,6 @@
 
         {% endif %}
     </div>
-
-    <script>
-        const donutData = {{ donut_data|safe }};
-
-        // Appliquer les largeurs et couleurs dynamiques pour les barres SHAP
-        document.querySelectorAll('.progress-bar-fill[data-width]').forEach(fill => {
-            const width = fill.dataset.width;
-            if (width) {
-                fill.style.width = width + '%';
-            }
-        });
-
-        document.querySelectorAll('.feature-value[data-impact]').forEach(span => {
-            const impact = span.dataset.impact;
-            if (impact === 'positif') {
-                span.style.color = 'var(--success)';
-            } else {
-                span.style.color = 'var(--danger)';
-            }
-        });
-
-        // DONUT CHART
-        new Chart(document.getElementById('donutChart'), {
-            type: 'doughnut',
-            data: {
-                labels: donutData.labels,
-                datasets: [{
-                    data: donutData.data,
-                    backgroundColor: donutData.colors,
-                    borderWidth: 0,
-                    hoverOffset: 8,
-                }]
-            },
-            options: {
-                cutout: '72%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { font: { family: 'Inter', weight: '700', size: 11 }, padding: 16 }
-                    }
-                },
-                animation: { duration: 800 }
-            }
-        });
-    </script>
 
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </body>

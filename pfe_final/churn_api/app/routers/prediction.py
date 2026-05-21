@@ -19,28 +19,28 @@
 import io
 
 import logging
-import pandas as pd
+import pandas as pd 
+
 logger = logging.getLogger("uvicorn.error")
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 
 from app.ml.dependencies import get_artifacts
-from app.ml.loader       import MLArtifacts
-from app.ml.predictor    import (
+from app.ml.loader import MLArtifacts
+from app.ml.predictor import (
     predire_client,
     predire_batch,
     analyser_portefeuille,
 )
-from app.schemas         import (
+from app.schemas import (
     ClientFeatures,
     PredictionResponse,
     PredictionBatchResponse,
     AnalyseRapportResponse,
 )
 
-
 router = APIRouter(
-    prefix = "/api",
-    tags   = ["Prédiction"],
+    prefix="/api",
+    tags=["Prédiction"],
 )
 
 
@@ -48,11 +48,12 @@ router = APIRouter(
 # POST /api/predict — Prédiction individuelle + SHAP
 # =============================================================================
 
+
 @router.post(
     "/predict",
-    response_model = PredictionResponse,
-    summary        = "Prédiction churn d'un client + explications SHAP",
-    description    = (
+    response_model=PredictionResponse,
+    summary="Prédiction churn d'un client + explications SHAP",
+    description=(
         "Reçoit les features brutes d'un client (28 colonnes), applique "
         "le pipeline complet (encodage + imputation + prédiction RF + SHAP) "
         "et retourne la probabilité, la décision selon le seuil, le niveau "
@@ -84,8 +85,8 @@ def predict_single(
         # Catch-all pour ne PAS exposer la stack trace au frontend
         # (sécurité : éviter de leaker des détails d'implémentation)
         raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail      = f"Erreur de prédiction : {str(e)}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur de prédiction : {str(e)}",
         )
 
 
@@ -93,11 +94,12 @@ def predict_single(
 # POST /api/predict/batch — Prédiction batch sur CSV
 # =============================================================================
 
+
 @router.post(
     "/predict/batch",
-    response_model = PredictionBatchResponse,
-    summary        = "Prédiction churn sur un fichier CSV complet",
-    description    = (
+    response_model=PredictionBatchResponse,
+    summary="Prédiction churn sur un fichier CSV complet",
+    description=(
         "Reçoit un CSV contenant plusieurs clients, applique le pipeline "
         "de prédiction sur chaque ligne en mode vectoriel (rapide), et "
         "retourne le détail ligne par ligne. Le CSV doit avoir les mêmes "
@@ -105,7 +107,7 @@ def predict_single(
     ),
 )
 async def predict_batch_csv(
-    file: UploadFile      = File(..., description="CSV des clients à scorer"),
+    file: UploadFile = File(..., description="CSV des clients à scorer"),
     artefacts: MLArtifacts = Depends(get_artifacts),
 ) -> PredictionBatchResponse:
     """
@@ -126,26 +128,26 @@ async def predict_batch_csv(
     # ── 1. Validation du type de fichier ────────────────────────────────────
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            detail      = "Le fichier doit être au format CSV (extension .csv).",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le fichier doit être au format CSV (extension .csv).",
         )
 
     try:
         # ── 2. Lecture du CSV ───────────────────────────────────────────────
         contents = await file.read()
-        df_raw   = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        df_raw = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
         # ── 3. Vérification basique ─────────────────────────────────────────
         if df_raw.empty:
             raise HTTPException(
-                status_code = status.HTTP_400_BAD_REQUEST,
-                detail      = "Le CSV est vide.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le CSV est vide.",
             )
 
         if df_raw.shape[1] < 10:
             raise HTTPException(
-                status_code = status.HTTP_400_BAD_REQUEST,
-                detail      = (
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
                     f"CSV invalide : seulement {df_raw.shape[1]} colonnes "
                     "détectées. Au moins 10 colonnes du dataset original sont "
                     "attendues."
@@ -166,8 +168,8 @@ async def predict_batch_csv(
     except Exception as e:
         # Catch-all pour les erreurs inattendues (ex : encoding du CSV)
         raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail      = f"Erreur de traitement du fichier CSV : {str(e)}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur de traitement du fichier CSV : {str(e)}",
         )
 
 
@@ -175,19 +177,20 @@ async def predict_batch_csv(
 # POST /api/analyse — Analyse complète du portefeuille
 # =============================================================================
 
+
 @router.post(
     "/analyse",
-    response_model = AnalyseRapportResponse,
-    summary        = "Analyse churn du portefeuille — segmentation par risque",
-    description    = (
+    response_model=AnalyseRapportResponse,
+    summary="Analyse churn du portefeuille — segmentation par risque",
+    description=(
         "Reçoit un CSV, prédit le churn sur tous les clients et retourne "
-        "la segmentation par niveau de risque (haut / moyen / faible). "
+        "une synthèse binaire CHURN / NON-CHURN. "
         "Compatible avec le format attendu par le frontend Django sur "
         "/ml/lancer-analyse/."
     ),
 )
 async def lancer_analyse_portefeuille(
-    file: UploadFile      = File(..., description="CSV du portefeuille à analyser"),
+    file: UploadFile = File(..., description="CSV du portefeuille à analyser"),
     artefacts: MLArtifacts = Depends(get_artifacts),
 ) -> AnalyseRapportResponse:
     """
@@ -207,18 +210,18 @@ async def lancer_analyse_portefeuille(
     """
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(
-            status_code = status.HTTP_400_BAD_REQUEST,
-            detail      = "Format CSV requis.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Format CSV requis.",
         )
 
     try:
         contents = await file.read()
-        df_raw   = pd.read_csv(io.StringIO(contents.decode("utf-8")))
+        df_raw = pd.read_csv(io.StringIO(contents.decode("utf-8")))
 
         if df_raw.empty:
             raise HTTPException(
-                status_code = status.HTTP_400_BAD_REQUEST,
-                detail      = "Le CSV est vide.",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Le CSV est vide.",
             )
 
         if "churn" in df_raw.columns:
@@ -231,6 +234,6 @@ async def lancer_analyse_portefeuille(
         raise
     except Exception as e:
         raise HTTPException(
-            status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail      = f"Erreur d'analyse : {str(e)}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur d'analyse : {str(e)}",
         )

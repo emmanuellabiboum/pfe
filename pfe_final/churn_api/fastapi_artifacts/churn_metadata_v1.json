@@ -3,7 +3,7 @@
   "date_creation": "2026-05-07 07:06:31",
   "projet": "PFE Prédiction du Churn — Tunisie Télécom Agence Kairouan",
   "modele": {
-    "nom": "Random Forest optimisé (Optuna, Fβ=2, 100 essais)",
+    "nom": "Random Forest optimisé",
     "type": "RandomForestClassifier",
     "hyperparametres": {
       "n_estimators": 112,

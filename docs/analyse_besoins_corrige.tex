@@ -1,0 +1,1208 @@
+\chapter{ANALYSE DES BESOINS}
+
+\section{Introduction}
+
+La phase d'analyse des besoins constitue le socle sur lequel repose
+l'intégralité du processus de conception et de développement. Elle vise
+à recenser, formaliser et hiérarchiser l'ensemble des exigences
+auxquelles le système devra répondre, en tenant compte des contraintes
+organisationnelles propres à l'environnement d'accueil.
+
+Dans le contexte de ce projet, cette analyse prend une dimension
+particulière~: la plateforme est destinée à des acteurs aux profils
+et aux périmètres d'action hétérogènes, répartis selon une hiérarchie
+fonctionnelle stricte. Il est donc indispensable d'identifier avec
+précision les responsabilités de chaque intervenant, les
+fonctionnalités qui leur sont associées, ainsi que les contraintes
+non fonctionnelles qui encadrent l'ensemble du système.
+
+Ce chapitre s'articule autour de quatre axes~: l'identification des
+acteurs et de leurs rôles, la formalisation des besoins fonctionnels
+et non fonctionnels, la modélisation des cas d'utilisation sous forme
+de diagrammes UML, et enfin la traduction de l'ensemble en un
+backlog produit Scrum réparti sur six sprints.
+
+\section{Identification des acteurs}
+
+\subsection{Définition}
+
+Un acteur, au sens de la modélisation UML, désigne toute entité
+extérieure au système qui interagit avec lui, qu'il s'agisse d'un
+être humain, d'un autre système logiciel ou d'un processus
+automatisé. Dans le cadre de ce projet, les acteurs se déclinent en
+deux catégories~: les acteurs humains, représentant les différents
+profils d'utilisateurs de la plateforme, et un acteur système, le
+service de prédiction FastAPI, qui intervient de manière automatisée
+dans les flux d'analyse.
+
+\subsection{Acteurs humains}
+
+La plateforme est conçue pour être utilisée par cinq profils
+distincts, organisés selon une hiérarchie fonctionnelle à trois
+niveaux. Cette organisation conditionne directement le périmètre
+d'accès de chaque utilisateur aux données et aux fonctionnalités du
+système.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Acteurs humains et périmètres d'action}
+    \label{tab:acteurs}
+    \begin{tabular}{|p{3.2cm}|p{4.5cm}|p{6cm}|}
+        \hline
+        \textbf{Acteur} & \textbf{Niveau hiérarchique}
+        & \textbf{Périmètre d'action} \\
+        \hline
+        Super Admin
+        & Niveau 1~: administration globale
+        & Accès complet à l'ensemble du système~: gestion des
+          utilisateurs, réinitialisation de la base de données,
+          supervision multi-agences, vidage de tables. \\
+        \hline
+        Admin Ville
+        & Niveau 2~: administration territoriale
+        & Validation des inscriptions, supervision des agences
+          rattachées à sa ville, consultation des tableaux de bord
+          de son périmètre géographique. \\
+        \hline
+        Chef d'Agence
+        & Niveau 2~: supervision opérationnelle
+        & Validation des inscriptions des comptes de type 'agent marketing' et 'agent commercial'
+          rattachées à son agence, lancement
+d’analyses, génération de don-
+nées mock, validation ou rejet des recommandations soumises par les
+          agents de son agence, consultation des fiches clients et
+          des KPIs de son agence, accès au tableau de bord. \\
+        \hline
+        Agent Commercial
+        & Niveau 3~: exécution terrain
+        & Consultation des fiches clients, création de recommandations de type 'commercial', validation ou rejet des recommandations de type 'commercial'. \\
+        \hline
+        Agent Marketing
+        & Niveau 3~: exécution terrain
+        & Consultation des fiches clients, création de recommandations de type 'marketing', validation ou rejet des recommandations de type 'marketing'.\\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Acteur système}
+
+En complément des acteurs humains, le service \textbf{FastAPI}
+constitue un acteur système à part entière. Opérant sur le
+port~8000, ce service expose les endpoints d'inférence ML et est
+appelé automatiquement par l'application Django lors du lancement
+d'une analyse. Son rôle est d'exécuter les prédictions de churn sur
+l'ensemble du portefeuille clients et de retourner les résultats
+sous forme structurée.
+
+Sa particularité réside dans le fait que son indisponibilité ne
+bloque pas le fonctionnement de la plateforme~: un mécanisme de
+\textit{fallback} local, s'appuyant sur le pipeline ML chargé
+directement depuis le fichier \texttt{churn\_model\_v1.pkl}, prend
+automatiquement le relais afin d'assurer la continuité de service.
+
+\section{Besoins fonctionnels}
+
+Les besoins fonctionnels décrivent l'ensemble des fonctionnalités
+que le système doit offrir pour satisfaire les objectifs métier
+identifiés. Ils sont regroupés par module fonctionnel, chacun
+correspondant à une couche logicielle distincte de l'architecture.
+
+\subsection{Module Authentification et Gestion des Comptes}
+
+Ce module constitue le point d'entrée obligatoire de l'ensemble des
+utilisateurs. Il garantit la sécurité des accès et orchestre le
+cycle de vie des comptes au sein de la hiérarchie fonctionnelle.
+
+\begin{itemize}
+
+    \item \textbf{BF-01~— Inscription avec validation
+    hiérarchique}~: tout nouvel utilisateur doit pouvoir soumettre
+    une demande d'inscription en renseignant son identité, son rôle
+    souhaité et son agence de rattachement. Le compte est créé avec
+    un statut \textit{en attente} et ne devient actif qu'après
+    validation explicite par le supérieur hiérarchique compétent~:
+    un \textit{admin\_ville} pour les chefs d'agence, un
+    \textit{chef\_agence} pour les agents. Cette validation
+    s'effectue par email, ce qui implique la transmission
+    automatique d'une notification au supérieur dès la soumission
+    du formulaire.
+
+    \item \textbf{BF-02~— Authentification à double facteur}~:
+    l'accès à la plateforme repose sur un mécanisme
+    d'authentification en deux étapes successives. La première
+    consiste en la vérification classique des identifiants (nom
+    d'utilisateur et mot de passe). En cas de succès, un code OTP à
+    six chiffres est généré, doté d'une durée de validité de dix
+    minutes, et transmis à l'adresse email de l'utilisateur via le
+    service SendGrid. La session n'est ouverte qu'après saisie et
+    validation de ce code sur l'écran dédié.
+
+    \item \textbf{BF-02.1~— Gestion des sessions et déconnexion}~:
+    l'utilisateur doit pouvoir se déconnecter explicitement de la
+    plateforme via un bouton dédié, ce qui entraîne la destruction
+    immédiate de sa session côté serveur. Les sessions expirées
+    (inactivité prolongée ou expiration du token OTP) doivent être
+    automatiquement invalidées. Un mécanisme de timeout de session
+    doit être implémenté pour déconnecter automatiquement les
+    utilisateurs inactifs après une période d'inactivité configurable.
+
+    \item \textbf{BF-03~— Journalisation des connexions}~: chaque
+    connexion réussie doit être enregistrée dans la base de données
+    avec l'horodatage, l'adresse IP de la machine cliente et le
+    \textit{user-agent} du navigateur utilisé. Ces données
+    constituent un journal d'audit permettant de détecter toute
+    activité anormale.
+
+    \item \textbf{BF-04~— Réinitialisation du mot de passe}~: en
+    cas d'oubli, l'utilisateur doit pouvoir déclencher une
+    procédure de réinitialisation par email. Un lien sécurisé à
+    usage unique, assorti d'une durée de validité limitée, lui est
+    transmis pour lui permettre de définir un nouveau mot de passe.
+
+    \item \textbf{BF-05~— Gestion des comptes par
+    l'administration}~: les administrateurs disposent d'une
+    interface dédiée permettant d'activer, de désactiver ou de
+    supprimer un compte utilisateur, ainsi que de modifier son rôle
+    ou son agence de rattachement.
+
+    \item \textbf{BF-06~— Filtrage dynamique des rôles}~: lors de
+    l'inscription, les rôles proposés à l'utilisateur peuvent être
+    restreints dynamiquement selon la hiérarchie~: seuls les rôles
+    inférieurs ou équivalents à celui de l'utilisateur connecté
+    peuvent être attribués.
+
+    \item \textbf{BF-07~— Affectation d'agence}~: un formulaire
+    dédié permet d'associer un utilisateur à une agence valide
+    référencée en base. Cette affectation conditionne directement
+    la portée des données auxquelles l'utilisateur aura accès dans
+    l'ensemble de la plateforme.
+
+\end{itemize}
+
+\subsection{Module Gestion des Données Clients}
+
+Ce module gère l'ensemble du cycle de vie des données clients au
+sein de la plateforme, depuis l'import du jeu de données jusqu'au
+stockage structuré des résultats de prédiction.
+
+\begin{itemize}
+
+    \item \textbf{BF-08~— Import multi-formats}~: la plateforme
+    permet actuellement l'import de datasets clients au format CSV.
+    L'architecture du module d'import a cependant été conçue de
+    manière extensible afin d'autoriser l'ajout futur de formats
+    supplémentaires tels qu'Excel (\texttt{.xls}, \texttt{.xlsx}),
+    TXT ou TSV.
+
+    \item \textbf{BF-09~— Validation de la structure des
+    données}~: avant tout traitement, le fichier importé doit être
+    soumis à une validation automatique vérifiant la présence des
+    colonnes obligatoires, l'absence de doublons sur l'identifiant
+    client et la conformité des types de données. Toute anomalie
+    détectée est restituée à l'utilisateur sous forme de message
+    d'erreur explicite.
+
+    \item \textbf{BF-10~— Stockage du profil client complet}~:
+    chaque client est représenté par un enregistrement
+    \texttt{ClientChurn} centralisant l'ensemble de ses variables
+    comportementales et contractuelles pertinentes pour la
+    prédiction du churn, ainsi que les résultats calculés~: score
+    de churn et prédiction binaire.
+
+    \item \textbf{BF-11~— Génération de données simulées}~: un
+    générateur de données fictives (\texttt{core/mock\_data.py})
+    doit permettre de créer un dataset de clients simulés, dont les
+    caractéristiques respectent des distributions statistiques
+    réalistes. Cette fonctionnalité est accessible via l'endpoint
+    \texttt{/generer-mock/} et suit le même pipeline d'analyse que
+    les données réelles.
+
+    \item \textbf{BF-12~— Isolation des données par agence}~: les
+    données clients doivent être strictement isolées par agence. Un
+    utilisateur ne doit en aucun cas pouvoir consulter, modifier ou
+    analyser les données appartenant à une agence autre que la
+    sienne. Cette isolation est assurée à tous les niveaux~:
+    requêtes Django, vues et interface utilisateur.
+
+\end{itemize}
+
+\subsection{Module Analyse et Prédiction}
+
+Ce module constitue le cœur fonctionnel de la plateforme. Il
+orchestre l'ensemble du processus d'analyse, depuis le déclenchement
+par l'utilisateur jusqu'à la restitution des scores et des métriques.
+
+\begin{itemize}
+
+    \item \textbf{BF-13~— Lancement d'analyse par
+    l'utilisateur}~: l'agent marketing ou le super admin doit
+    pouvoir déclencher une analyse depuis l'interface web
+    (\texttt{/lancer-analyse/}), en choisissant entre l'import d'un
+    fichier CSV ou l'utilisation de données mock. L'analyse porte
+    sur l'ensemble du portefeuille clients de l'agence.
+
+    \item \textbf{BF-14~— Appel prioritaire au service
+    FastAPI}~: lors de chaque analyse, l'application Django doit
+    en priorité solliciter le service FastAPI via l'endpoint
+    \texttt{/api/predict/batch}. Ce service reçoit les données au
+    format CSV, exécute les prédictions sur l'ensemble du
+    portefeuille et retourne les résultats sous forme JSON,
+    comprenant notamment les scores individuels, les agrégats par
+    niveau de risque et le taux de churn global.
+
+    \item \textbf{BF-15~— Fallback sur le pipeline ML local}~: si
+    le service FastAPI est indisponible au moment du lancement de
+    l'analyse, l'application doit basculer automatiquement sur le
+    pipeline ML local (\texttt{core/ml\_service.py}), qui charge le
+    modèle depuis le fichier \texttt{.pkl} et produit les scores de
+    manière transparente pour l'utilisateur, sans message d'erreur
+    bloquant.
+
+    \item \textbf{BF-16~— Mise à jour des scores clients}~: à
+    l'issue de l'analyse, les champs \texttt{score\_churn} et
+    \texttt{churn\_predit} de chaque enregistrement
+    \texttt{ClientChurn} doivent être mis à jour en base de
+    données.
+
+    \item \textbf{BF-17~— Traçabilité des analyses}~: chaque
+    session d'analyse doit être enregistrée dans un enregistrement
+    \texttt{AnalyseSession} associant l'utilisateur déclencheur,
+    l'horodatage, le type d'analyse et les métriques globales
+    retournées. L'historique de ces sessions est consultable et
+    archivable depuis l'interface.
+
+    \item \textbf{BF-18~— Explications SHAP par client}~: pour
+    chaque client, la plateforme doit être en mesure de fournir une
+    explication de sa prédiction en termes de contribution de
+    chaque variable au score calculé, via la méthode SHAP
+    (\textit{SHapley Additive exPlanations}). Ces explications sont
+    stockées via le modèle \texttt{ShapValeur} et peuvent être
+    exploitées pour enrichir l'interprétabilité des prédictions au
+    niveau de la fiche client.
+
+\end{itemize}
+
+\subsection{Module Tableau de Bord et Interface de Visualisation}
+
+Ce module regroupe l'ensemble des fonctionnalités d'affichage, de
+consultation et d'interaction offertes aux différents profils
+d'utilisateurs.
+
+\begin{itemize}
+
+    \item \textbf{BF-19~— Tableau de bord avec KPIs}~: la page
+    d'accueil de la plateforme présente les indicateurs clés de
+    performance calculés à partir de la dernière analyse~: taux de
+    churn global, nombre de clients à risque élevé, nombre de
+    recommandations en attente de validation, et nombre de
+    notifications non lues. \textbf{Cette fonctionnalité est
+    réservée aux chefs d'agence, administrateurs de ville et super
+    administrateurs. Les agents (commercial et marketing) n'ont pas
+    accès au tableau de bord KPIs et sont redirigés vers une page
+    d'accueil restreinte.}
+
+    \item \textbf{BF-19.1~— Tableau de bord multi-agences pour
+    admin\_ville}~: l'administrateur de ville doit pouvoir accéder à
+    une vue consolidée présentant les agrégats de l'ensemble des
+    agences rattachées à sa ville (taux de churn par agence, nombre
+    de clients à risque par agence, comparatifs inter-agences). Les
+    droits différenciés entre chef\_agence (vue limitée à son agence)
+    et admin\_ville (vue multi-agences) doivent être explicitement
+    formalisés. Le super admin dispose quant à lui d'une vue globale
+    sur l'ensemble du système.
+
+    \item \textbf{BF-20~— Liste paginée des clients avec
+    filtres et tri}~: la plateforme doit proposer une vue tabulaire des
+    clients, paginée et filtrée selon les résultats de prédiction
+    et les critères de recherche disponibles. Les critères de tri
+    doivent être formalisés~: tri par score de churn (croissant ou
+    décroissant), tri par date de création, tri par nom du client,
+    et tri par niveau de risque (élevé/faible). L'affichage est
+    limité aux clients appartenant à l'agence de l'utilisateur
+    connecté.
+
+    \item \textbf{BF-21~— Fiche client détaillée}~: chaque client
+    doit disposer d'une fiche individuelle regroupant ses données
+    de profil, sa prédiction de churn, les informations
+    d'interprétation SHAP illustrant les facteurs contributifs à sa
+    prédiction, et l'historique des recommandations qui lui sont
+    associées.
+
+    \item \textbf{BF-21.1~— Consultation de l'historique des
+    recommandations par client}~: depuis la fiche client, l'utilisateur
+    doit pouvoir consulter l'historique complet des recommandations
+    associées à ce client, avec pour chaque recommandation~: le
+    type (commercial ou marketing), le statut courant, la date de
+    création, l'auteur de la recommandation, et le contenu. Cette
+    fonctionnalité permet de suivre l'évolution des actions de
+    rétention entreprises pour un client donné.
+
+    \item \textbf{BF-22~— Export PDF de la fiche client}~: depuis
+    la fiche client, l'utilisateur doit pouvoir générer et
+    télécharger un document PDF mettant en forme l'ensemble des
+    informations du client, y compris le score de churn. La
+    génération est assurée par l'outil \texttt{wkhtmltopdf} via la
+    bibliothèque \texttt{pdfkit}.
+
+    \item \textbf{BF-23~— Réinitialisation du tableau de bord}~:
+    un mécanisme de réinitialisation (\texttt{/reinitialiser/}) doit
+    permettre au chef d'agence de vider l'ensemble des données
+    clients, recommandations et sessions d'analyse associées à son
+    agence, afin de repartir d'un état initial pour une nouvelle
+    campagne d'analyse.
+
+\end{itemize}
+
+\subsection{Module Recommandations}
+
+Ce module formalise le processus de suivi des actions de rétention
+client, depuis leur création par les agents jusqu'à leur validation
+par la hiérarchie.
+
+\begin{itemize}
+
+    \item \textbf{BF-24~— Création de recommandation}~: un agent
+    commercial doit pouvoir, depuis la fiche d'un client identifié
+    comme étant à risque, rédiger et soumettre une recommandation
+    d'action commerciale. Celle-ci est enregistrée avec le statut
+    \textit{en attente} et déclenche immédiatement une notification
+    à destination du chef d'agence.
+
+    \item \textbf{BF-25~— Validation hiérarchique}~: le chef
+    d'agence reçoit une notification l'invitant à consulter les
+    recommandations en attente. Il dispose de deux options~:
+    valider la recommandation, ce qui la fait passer au statut
+    \textit{validée}, ou la rejeter en motivant sa décision, ce qui
+    génère un enregistrement \texttt{RejetRecommandation} et
+    notifie l'agent de l'issue.
+
+    \item \textbf{BF-26~— Suivi du cycle de vie}~: chaque
+    recommandation doit pouvoir être suivie tout au long de son
+    cycle de vie à travers quatre statuts successifs~:
+    \textit{pending}, \textit{validated}, \textit{rejected} et
+    \textit{completed}. L'horodatage de chaque transition est
+    conservé en base.
+
+\end{itemize}
+
+\subsection{Module Notifications}
+
+\begin{itemize}
+
+    \item \textbf{BF-27~— Génération automatique de
+    notifications}~: le système doit générer automatiquement des
+    notifications in-app à destination des utilisateurs concernés
+    lors des événements métier suivants~: soumission d'une nouvelle
+    recommandation, validation requise, rejet d'une recommandation
+    et alerte churn pour un client à risque élevé.
+
+    \item \textbf{BF-28~— Notification par email via SendGrid}~:
+    les notifications par email sont exclusivement réservées aux
+    événements liés au compte et à l'authentification~: création de
+    compte (validation hiérarchique), authentification OTP,
+    réinitialisation de mot de passe, et journalisation des
+    connexions. Les notifications liées aux analyses, aux
+    recommandations et aux alertes churn ne déclenchent PAS
+    d'envoi d'email, seule la notification in-app est utilisée.
+    L'envoi est effectué par \texttt{core/otp\_email\_service.py}
+    avec un gabarit HTML personnalisé, depuis l'adresse définie
+    dans la variable d'environnement \texttt{DEFAULT\_FROM\_EMAIL}.
+
+    \item \textbf{BF-29~— Gestion des notifications par
+    l'utilisateur}~: chaque utilisateur doit pouvoir consulter la
+    liste de ses notifications, les marquer comme lues
+    individuellement ou en masse, les archiver et les supprimer. Un
+    compteur de notifications non lues est affiché en permanence
+    dans l'interface.
+
+\end{itemize}
+
+\section{Besoins non fonctionnels}
+
+Les besoins non fonctionnels définissent les contraintes de qualité,
+de performance et de sécurité auxquelles le système doit se
+conformer, indépendamment des fonctionnalités qu'il offre. Ils
+conditionnent directement les choix d'architecture et
+d'implémentation.
+
+\subsection{Performance}
+
+\begin{itemize}
+
+    \item \textbf{BNF-01}~: les prédictions individuelles affichées
+    sur la fiche client doivent être restituées avec un temps de
+    réponse compatible avec une utilisation interactive fluide de
+    la plateforme, que le calcul soit effectué par le service
+    FastAPI ou par le pipeline local.
+
+    \item \textbf{BNF-02}~: en cas d'indisponibilité du service
+    FastAPI, le basculement sur le pipeline ML local doit être
+    transparent pour l'utilisateur et ne doit induire aucune
+    interruption de service ni message d'erreur bloquant.
+
+    \item \textbf{BNF-03}~: le tableau de bord principal doit se
+    charger en moins de trois secondes pour un portefeuille de
+    taille standard, ce qui implique une optimisation des requêtes
+    SQL et l'utilisation de \texttt{select\_related} sur les
+    relations de clés étrangères.
+
+\end{itemize}
+
+\subsection{Sécurité}
+
+\begin{itemize}
+
+    \item \textbf{BNF-04}~: l'ensemble des pages de la plateforme
+    doit être protégé par le décorateur \texttt{@login\_required}
+    de Django. Toute tentative d'accès sans session active doit
+    rediriger l'utilisateur vers la page de connexion.
+
+    \item \textbf{BNF-05}~: le mécanisme OTP doit garantir
+    l'unicité d'usage de chaque code~: un code utilisé ne peut plus
+    être réemployé, même s'il n'a pas encore expiré. Le service
+    \texttt{core/otp\_service.py} gère les statuts
+    \texttt{ACTIVE}, \texttt{USED}, \texttt{EXPIRED} et
+    \texttt{REVOKED}, ainsi que la limitation du nombre de
+    tentatives (trois tentatives maximum).
+
+    \item \textbf{BNF-06}~: les endpoints sensibles de
+    l'application doivent être protégés contre les attaques par
+    force brute grâce à un mécanisme de limitation du nombre de
+    requêtes par adresse IP, prévu pour être intégré au niveau des
+    endpoints sensibles.
+
+    \item \textbf{BNF-07}~: les mots de passe doivent être stockés
+    exclusivement sous forme de hachage selon l'algorithme PBKDF2
+    par défaut de Django. Aucun mot de passe en clair ne doit
+    transiter dans les logs applicatifs.
+
+    \item \textbf{BNF-08}~: l'isolation des données par agence doit
+    être appliquée à tous les niveaux de la pile applicative~: au
+    niveau des requêtes ORM (\texttt{filter(agence=...)}), au
+    niveau des vues Django, et au niveau de l'interface
+    utilisateur. Une violation de ce principe constituerait une
+    faille de sécurité majeure.
+
+    \item \textbf{BNF-09}~: l'ensemble des variables sensibles
+    (clé secrète Django, identifiants PostgreSQL, clé API SendGrid)
+    doit être externalisé dans un fichier \texttt{.env} chargé via
+    \texttt{python-decouple}. Ces variables ne doivent jamais
+    apparaître en clair dans le code source.
+
+\end{itemize}
+
+\subsection{Maintenabilité et évolutivité}
+
+\begin{itemize}
+
+    \item \textbf{BNF-10}~: l'architecture modulaire du projet,
+    organisée en quatre applications Django distinctes
+    (\texttt{accounts}, \texttt{core}, \texttt{dashboard},
+    \texttt{learning}), doit garantir l'indépendance des
+    composants. Une modification dans le module \texttt{learning}
+    ne doit pas nécessiter de changement dans \texttt{accounts}, et
+    vice versa.
+
+    \item \textbf{BNF-11}~: le service FastAPI doit pouvoir être
+    mis à jour, remplacé ou redéployé indépendamment de
+    l'application Django, sans modification du code métier. Le
+    contrat d'interface entre les deux services est formalisé par
+    les schémas Pydantic définis dans
+    \texttt{churn\_pfe/backend/app.py}.
+
+    \item \textbf{BNF-12}~: le code source doit être rédigé en
+    français, commenté et documenté au moyen de \textit{docstrings}
+    pour les fonctions critiques. Les messages de commit Git
+    doivent respecter la convention \texttt{[module] Description
+    courte de la modification}.
+
+\end{itemize}
+
+\subsection{Compatibilité et portabilité}
+
+\begin{itemize}
+
+    \item \textbf{BNF-13}~: l'interface web doit être
+    \textit{responsive} et compatible avec les navigateurs
+    modernes. Elle est construite sur Bootstrap~5, dont le système
+    de grille assure l'adaptation automatique de la mise en page
+    aux différentes résolutions d'écran.
+
+    \item \textbf{BNF-14}~: l'application est configurée
+    principalement pour utiliser PostgreSQL
+    (\texttt{django.db.backends.postgresql}) dans les environnements
+    de déploiement. Une base SQLite peut également être utilisée en
+    environnement local ou de développement afin de simplifier les
+    phases de test et de prototypage.
+
+    \item \textbf{BNF-15}~: le démarrage de l'ensemble de la pile
+    applicative (service FastAPI sur le port~8000 et serveur Django
+    sur le port~8080) est automatisé via le script PowerShell
+    \texttt{start\_all.ps1}, permettant une mise en route
+    reproductible en une seule commande.
+
+\end{itemize}
+
+\section{Modélisation des cas d'utilisation}
+
+\subsection{Diagramme global des cas d'utilisation}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\linewidth,height=9cm]{images/usercase.drawio.png}
+    \caption{Diagramme global des cas d'utilisation}
+    \label{fig:usercase_diag_global}
+\end{figure}
+
+Le diagramme global ci-dessus présente les interactions entre les
+différents acteurs et les principaux cas d'utilisation du système.
+Les acteurs de rang inférieur héritent des cas d'utilisation des
+acteurs de rang supérieur selon la hiérarchie fonctionnelle définie
+précédemment.
+
+\subsection{Description détaillée des cas d'utilisation principaux}
+
+\subsubsection{UC-01~— S'authentifier}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Description du cas d'utilisation UC-01~: S'authentifier}
+    \label{tab:uc01}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Identifiant} & UC-01 \\
+        \hline
+        \textbf{Nom} & S'authentifier \\
+        \hline
+        \textbf{Acteurs} & Tous les utilisateurs \\
+        \hline
+        \textbf{Préconditions} & Le compte de l'utilisateur est
+        actif (\texttt{status = active}). \\
+        \hline
+        \textbf{Scénario nominal} &
+        \begin{enumerate}
+            \item L'utilisateur accède à
+            \texttt{/accounts/login/} et saisit son nom
+            d'utilisateur et son mot de passe.
+            \item Le système vérifie les credentials en base.
+            \item En cas de succès, un code OTP à six chiffres
+            est généré avec une expiration à dix minutes et
+            transmis à l'adresse email de l'utilisateur via
+            SendGrid.
+            \item L'utilisateur est redirigé vers
+            \texttt{/accounts/verify-otp/} et saisit le code
+            reçu.
+            \item Le système valide le code, marque l'OTP comme
+            utilisé, ouvre la session et journalise la connexion
+            (IP, \textit{user-agent}, horodatage).
+            \item L'utilisateur est redirigé vers le tableau de
+            bord principal (ou vers la page d'accueil restreinte
+            s'il est un agent).
+        \end{enumerate} \\
+        \hline
+        \textbf{Scénarios alternatifs} &
+        \textbf{A1}~— Identifiants incorrects~: le système
+        affiche un message d'erreur générique sans préciser
+        lequel des deux champs est erroné. \\
+        & \textbf{A2}~— Compte en attente de validation~: l'accès
+        est refusé avec un message informant l'utilisateur que
+        son compte n'a pas encore été activé. \\
+        & \textbf{A3}~— Code OTP expiré ou invalide~: un message
+        d'erreur est affiché et l'utilisateur peut en demander
+        un nouveau. \\
+        \hline
+        \textbf{Postconditions} & Une session Django est ouverte.
+        Un enregistrement \texttt{LoginActivity} est créé. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\newpage
+
+\subsubsection{UC-02~— Lancer une analyse}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Description du cas d'utilisation UC-02~: Lancer une analyse}
+    \label{tab:uc02}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Identifiant} & UC-02 \\
+        \hline
+        \textbf{Nom} & Lancer une analyse de portefeuille \\
+        \hline
+        \textbf{Acteurs} & Agent Marketing, Super Admin \\
+        \hline
+        \textbf{Préconditions} & L'utilisateur est authentifié et
+        dispose du rôle \textit{agent\_marketing} ou
+        \textit{super\_admin}. \\
+        \hline
+        \textbf{Scénario nominal} &
+        \begin{enumerate}
+            \item L'utilisateur accède à
+            \texttt{/lancer-analyse/} et choisit une méthode
+            d'alimentation~: import d'un fichier CSV ou
+            génération de données mock.
+            \item Le système crée un enregistrement
+            \texttt{Dataset} traçant la source et charge les
+            clients dans la table \texttt{ClientChurn}.
+            \item Django interroge le service FastAPI via
+            \texttt{GET /health}. Si le service est disponible,
+            les données sont transmises à
+            \texttt{POST /api/predict/batch}.
+            \item FastAPI retourne les prédictions de churn et
+            les scores associés pour l'ensemble du portefeuille.
+            \item Les champs \texttt{score\_churn} et
+            \texttt{churn\_predit} de chaque \texttt{ClientChurn}
+            sont mis à jour.
+            \item Une \texttt{AnalyseSession} est créée avec les
+            métriques globales.
+            \item Des notifications d'alerte in-app sont générées pour
+            les clients identifiés comme étant à risque élevé.
+        \end{enumerate} \\
+        \hline
+        \textbf{Postconditions} & Les scores des clients sont mis
+        à jour. Une \texttt{AnalyseSession} est enregistrée. Des
+        notifications in-app sont créées. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{UC-03~— Consulter la fiche d'un client}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Description du cas d'utilisation UC-03~: Consulter la fiche client}
+    \label{tab:uc03}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Identifiant} & UC-03 \\
+        \hline
+        \textbf{Nom} & Consulter la fiche d'un client \\
+        \hline
+        \textbf{Acteurs} & Agent Commercial, Chef d'Agence, Agent
+        Marketing \\
+        \hline
+        \textbf{Préconditions} & L'utilisateur est authentifié.
+        Le client appartient à l'agence de l'utilisateur. \\
+        \hline
+        \textbf{Scénario nominal} &
+        \begin{enumerate}
+            \item L'utilisateur accède à la liste des clients
+            (\texttt{/clients/}) et applique les filtres de
+            recherche disponibles si nécessaire.
+            \item Il sélectionne un client. Le système charge
+            ses données depuis la base PostgreSQL.
+            \item La fiche affiche le profil complet du client,
+            son score de churn, sa prédiction binaire ainsi que
+            les données d'interprétation SHAP disponibles,
+            illustrant les variables les plus contributives à sa
+            prédiction.
+            \item Les recommandations existantes et leur statut
+            sont affichés en bas de la fiche.
+            \item L'utilisateur peut déclencher un export PDF de
+            la fiche (\texttt{/clients/<id>/pdf/}).
+        \end{enumerate} \\
+        \hline
+        \textbf{Postconditions} & La fiche est consultée. Un
+        export PDF peut être téléchargé. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{UC-04~— Gérer une recommandation}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Description du cas d'utilisation UC-04~: Gérer une recommandation}
+    \label{tab:uc04}
+    \begin{tabular}{|p{3.5cm}|p{10cm}|}
+        \hline
+        \textbf{Identifiant} & UC-04 \\
+        \hline
+        \textbf{Nom} & Gérer une recommandation \\
+        \hline
+        \textbf{Acteurs} & Agent Commercial (création), Chef
+        d'Agence (validation) \\
+        \hline
+        \textbf{Préconditions} & L'agent est authentifié avec le
+        rôle \textit{agent\_commercial}. Le client cible est
+        identifié dans son agence. \\
+        \hline
+        \textbf{Scénario nominal} &
+        \begin{enumerate}
+            \item L'agent rédige une recommandation depuis la
+            fiche client et la soumet. Le statut est défini à
+            \textit{pending}.
+            \item Le système crée un enregistrement
+            \texttt{Recommandation} et génère une notification
+            in-app à destination du chef d'agence.
+            \item Le chef d'agence consulte la recommandation et
+            choisit de la valider ou de la rejeter.
+            \item En cas de rejet, un motif est saisi et
+            enregistré dans \texttt{RejetRecommandation}.
+            \item Dans les deux cas, l'agent est notifié de
+            l'issue par notification in-app uniquement.
+        \end{enumerate} \\
+        \hline
+        \textbf{Postconditions} & La recommandation est en statut
+        \textit{validated} ou \textit{rejected}. Les deux acteurs
+        ont reçu leurs notifications in-app. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Matrice de couverture fonctionnelle}
+
+Le tableau suivant synthétise les fonctionnalités accessibles à
+chaque profil d'utilisateur, reflétant ainsi la politique de
+contrôle d'accès basée sur les rôles appliquée dans l'ensemble de
+la plateforme.
+
+\vspace{2cm}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Matrice de couverture fonctionnelle par rôle}
+    \label{tab:matrice_roles}
+    \begin{tabular}{|p{4.5cm}|c|c|c|c|c|}
+        \hline
+        \textbf{Fonctionnalité}
+        & \rotatebox{70}{\textbf{Super Admin}}
+        & \rotatebox{70}{\textbf{Admin Ville}}
+        & \rotatebox{70}{\textbf{Chef Agence}}
+        & \rotatebox{70}{\textbf{Ag. Commercial}}
+        & \rotatebox{70}{\textbf{Ag. Marketing}} \\
+        \hline
+        Gestion des comptes       & \checkmark & \checkmark &  \checkmark          &            &            \\
+        \hline
+        Authentification 2FA      & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+        \hline
+        Tableau de bord KPIs      & \checkmark & \checkmark & \checkmark &            &            \\
+        \hline
+        Liste clients             & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+        \hline
+        Fiche client + SHAP       & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+        \hline
+        Export PDF fiche client   & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+        \hline
+        Créer recommandation      &            &            &            & \checkmark &    \checkmark        \\
+        \hline
+        Valider recommandation    & \checkmark &            & \checkmark &            &            \\
+        \hline
+        Importer dataset          & \checkmark &            & \checkmark &            &            \\
+        \hline
+        Lancer analyse            & \checkmark &            & \checkmark &            &            \\
+        \hline
+        Générer données mock      & \checkmark &            & \checkmark &            &            \\
+        \hline
+        Réinitialiser dashboard   & \checkmark &            &            &            &            \\
+        \hline
+        Administration système    & \checkmark &            &            &            &            \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Backlog produit et planification des sprints}
+\label{sec:backlog}
+
+Conformément à la méthodologie Scrum retenue pour le volet
+applicatif et au processus CRISP-DM appliqué au volet data science,
+l'ensemble des fonctionnalités du projet a été formalisé sous forme
+de \textit{user stories} regroupées dans un \textbf{backlog produit}
+unique. Ce backlog a ensuite été découpé en \textbf{six sprints}
+successifs, dont les trois premiers correspondent aux phases data
+science du projet et les trois derniers à la conception et au
+développement de la plateforme web.
+
+\subsection{Conventions de notation}
+
+Chaque \textit{user story} est désignée par un identifiant unique
+de la forme \texttt{US-XX} et caractérisée par~:
+
+\begin{itemize}
+    \item un \textbf{intitulé} formulé selon le canevas standard~:
+    \og en tant que \textit{rôle}, je veux \textit{action}, afin
+    de \textit{bénéfice} \fg{}~;
+    \item une \textbf{priorité} sur trois niveaux~: \textbf{Haute},
+    \textbf{M}oyenne, \textbf{B}asse, reflétant la criticité de la
+    fonctionnalité pour la valeur métier du produit~;
+    \item une \textbf{estimation d'effort} en \textit{Story Points}
+    selon la suite de Fibonacci (1, 2, 3, 5, 8, 13), représentant
+    la complexité relative et non un nombre d'heures absolu.
+\end{itemize}
+
+\subsection{Backlog produit consolidé}
+
+Le tableau~\ref{tab:backlog_produit} présente l'intégralité du
+backlog produit, organisé par épopée fonctionnelle
+(\textit{Epic}). Cinquante \textit{user stories} composent ce
+backlog, couvrant à la fois le pipeline data science et la
+plateforme applicative.
+
+\begin{footnotesize}
+\begin{longtable}{|p{1.2cm}|p{8.5cm}|c|c|c|}
+\caption{Backlog produit consolidé}
+\label{tab:backlog_produit} \\
+\hline
+\textbf{ID} & \textbf{User Story} &
+\textbf{Prio.} & \textbf{SP} & \textbf{Sprint} \\
+\hline
+\endfirsthead
+\multicolumn{5}{c}{\textit{Suite du
+tableau~\ref{tab:backlog_produit}}} \\
+\hline
+\textbf{ID} & \textbf{User Story} &
+\textbf{Prio.} & \textbf{SP} & \textbf{Sprint} \\
+\hline
+\endhead
+\hline
+\endfoot
+
+\multicolumn{5}{|l|}{\cellcolor{gray!15}\textbf{Epic 1~:
+Construction du jeu de données synthétique}} \\
+\hline
+US-01 & En tant que data scientist, je veux concevoir un générateur
+de profils clients tunisiens, afin de disposer d'un dataset
+conforme au contexte de Tunisie Telecom.
+& H & 8 & S1 \\
+\hline
+US-02 & En tant que data scientist, je veux générer les événements
+CDR (appels, SMS, data), afin de modéliser l'usage télécom de
+chaque client.
+& H & 5 & S1 \\
+\hline
+US-03 & En tant que data scientist, je veux générer les sessions
+digitales (empreinte numérique MyTT), afin de modéliser
+l'engagement digital.
+& H & 5 & S1 \\
+\hline
+US-04 & En tant que data scientist, je veux générer les points de
+géolocalisation et la qualité de signal, afin de capter la
+dimension territoriale du churn.
+& M & 3 & S1 \\
+\hline
+US-05 & En tant que data scientist, je veux simuler des valeurs
+manquantes selon les mécanismes MCAR et MAR, afin de rapprocher le
+dataset des conditions réelles.
+& H & 3 & S1 \\
+\hline
+US-06 & En tant que data scientist, je veux générer l'historique
+des réclamations avec gradient de satisfaction, afin d'introduire
+un signal d'insatisfaction.
+& M & 3 & S1 \\
+\hline
+US-07 & En tant que data scientist, je veux définir et calculer la
+variable cible churn selon la règle RGS-90, afin de disposer d'une
+variable cible réglementairement ancrée.
+& H & 5 & S1 \\
+\hline
+US-08 & En tant que data scientist, je veux conduire un audit
+qualité du dataset (anomalies A, B, C, D), afin de garantir la
+cohérence métier des données.
+& H & 5 & S1 \\
+\hline
+US-09 & En tant que data scientist, je veux encapsuler toute la
+logique dans un module \texttt{generator.py} paramétrable, afin de
+pouvoir régénérer le dataset à la demande.
+& M & 3 & S1 \\
+\hline
+US-10 & En tant que data scientist, je veux valider statistiquement
+le dataset synthétique via SDV (KS, $\chi^2$), afin de m'assurer de
+sa cohérence distributionnelle.
+& M & 5 & S1 \\
+\hline
+
+\multicolumn{5}{|l|}{\cellcolor{gray!15}\textbf{Epic 2~: Analyse
+exploratoire et ingénierie des features}} \\
+\hline
+US-11 & En tant que data scientist, je veux détecter la
+multicolinéarité par le VIF, afin d'éliminer les variables
+redondantes avant la modélisation.
+& H & 3 & S2 \\
+\hline
+US-12 & En tant que data scientist, je veux calculer les
+statistiques univariées conditionnelles, afin de comprendre la
+structure du dataset par segment.
+& M & 3 & S2 \\
+\hline
+US-13 & En tant que data scientist, je veux conduire l'analyse
+bivariée par statut de churn, plan tarifaire et type d'abonnement,
+afin d'identifier les segments à risque.
+& H & 5 & S2 \\
+\hline
+US-14 & En tant que data scientist, je veux calculer la matrice de
+corrélation de Spearman, afin d'identifier les relations monotones
+entre features.
+& H & 3 & S2 \\
+\hline
+US-15 & En tant que data scientist, je veux construire quatre
+features composites (tendance data, ratios, score qualité zone,
+score frustration), afin d'enrichir la capacité prédictive du
+modèle.
+& H & 5 & S2 \\
+\hline
+US-16 & En tant que data scientist, je veux produire les
+visualisations exploratoires (countplots, histogrammes, boxplots,
+scatter), afin de documenter visuellement le phénomène du churn.
+& M & 5 & S2 \\
+\hline
+US-17 & En tant que data scientist, je veux arrêter définitivement
+la matrice de 28 features, afin de figer l'entrée du pipeline de
+modélisation.
+& H & 2 & S2 \\
+\hline
+
+\multicolumn{5}{|l|}{\cellcolor{gray!15}\textbf{Epic 3~:
+Modélisation prédictive et explicabilité}} \\
+\hline
+US-18 & En tant que data scientist, je veux préparer finalement les
+données (encodage, split stratifié, imputation différenciée), afin
+d'éviter toute fuite de données.
+& H & 5 & S3 \\
+\hline
+US-19 & En tant que data scientist, je veux entraîner trois modèles
+baseline (LR, RF, XGBoost) avec gestion du déséquilibre, afin de
+disposer d'un point de comparaison.
+& H & 5 & S3 \\
+\hline
+US-20 & En tant que data scientist, je veux optimiser les
+hyperparamètres par GridSearchCV avec scoring $F_{\beta=2}$, afin
+d'améliorer le rappel des modèles.
+& H & 8 & S3 \\
+\hline
+US-21 & En tant que data scientist, je veux conduire une
+optimisation bayésienne par Optuna, afin d'explorer plus finement
+l'espace des hyperparamètres.
+& H & 8 & S3 \\
+\hline
+US-22 & En tant que data scientist, je veux conduire une
+analyse économique des modèles candidats, afin de retenir celui qui
+minimise le coût métier total.
+& H & 5 & S3 \\
+\hline
+US-23 & En tant que data scientist, je veux implémenter
+l'explicabilité TreeSHAP (globale et individuelle), afin de
+produire des prédictions interprétables par les agents.
+& H & 5 & S3 \\
+\hline
+US-24 & En tant que data scientist, je veux sérialiser les
+artefacts ML (modèle, seuil, features, explainer), afin de
+permettre leur consommation par l'API.
+& H & 3 & S3 \\
+\hline
+
+\multicolumn{5}{|l|}{\cellcolor{gray!15}\textbf{Epic 4~: API
+d'inférence et sécurité applicative}} \\
+\hline
+US-25 & En tant qu'ingénieur backend, je veux concevoir l'API
+FastAPI avec pattern Lifespan, afin de charger les artefacts une
+seule fois au démarrage.
+& H & 5 & S4 \\
+\hline
+US-26 & En tant qu'ingénieur backend, je veux définir les schémas
+Pydantic d'entrée et de sortie, afin de garantir l'intégrité des
+requêtes.
+& H & 3 & S4 \\
+\hline
+US-27 & En tant qu'ingénieur backend, je veux implémenter les
+endpoints \texttt{/health} et \texttt{/api/model/info}, afin de
+superviser le service en production.
+& M & 2 & S4 \\
+\hline
+US-28 & En tant qu'agent, je veux pouvoir obtenir une prédiction
+individuelle expliquée pour un client, afin de comprendre le risque
+de churn.
+& H & 5 & S4 \\
+\hline
+US-29 & En tant qu'agent marketing, je veux pouvoir lancer une
+prédiction par lot triée par risque, afin de prioriser mes actions
+de rétention.
+& H & 5 & S4 \\
+\hline
+US-30 & En tant qu'utilisateur, je veux pouvoir m'inscrire et faire
+valider mon compte par mon supérieur hiérarchique, afin d'accéder à
+la plateforme.
+& H & 5 & S4 \\
+\hline
+US-31 & En tant qu'utilisateur, je veux m'authentifier en double
+facteur via OTP par email, afin de sécuriser l'accès à mon compte.
+& H & 8 & S4 \\
+\hline
+US-32 & En tant qu'utilisateur, je veux pouvoir réinitialiser mon
+mot de passe oublié, afin de récupérer l'accès à mon compte.
+& M & 3 & S4 \\
+\hline
+US-33 & En tant qu'administrateur, je veux que les endpoints
+sensibles soient protégés contre les attaques par force brute, afin
+de sécuriser la plateforme.
+& H & 3 & S4 \\
+\hline
+US-34 & En tant qu'administrateur, je veux que toutes les
+connexions soient journalisées (IP, user-agent, horodatage), afin
+de disposer d'un journal d'audit.
+& M & 2 & S4 \\
+\hline
+
+\multicolumn{5}{|l|}{\cellcolor{gray!15}\textbf{Epic 5~: Données
+clients et intégration ML}} \\
+\hline
+US-35 & En tant que chef d'agence, je veux pouvoir importer un
+dataset client au format CSV, afin d'alimenter la plateforme.
+& H & 5 & S5 \\
+\hline
+US-36 & En tant que chef d'agence, je veux que la structure du
+fichier soit validée automatiquement, afin d'être alerté
+immédiatement en cas d'anomalie.
+& H & 3 & S5 \\
+\hline
+US-37 & En tant que chef d'agence, je veux pouvoir générer un
+dataset de clients simulés, afin de tester la plateforme sans
+donnée réelle.
+& M & 3 & S5 \\
+\hline
+US-38 & En tant que chef d'agence, je veux pouvoir lancer une
+analyse de mon portefeuille, afin de produire les scores de churn
+pour tous mes clients.
+& H & 5 & S5 \\
+\hline
+US-39 & En tant qu'utilisateur, je veux que mon analyse bascule
+automatiquement sur le pipeline local si FastAPI est indisponible,
+afin d'assurer la continuité de service.
+& H & 5 & S5 \\
+\hline
+US-40 & En tant qu'utilisateur, je veux que les données de mon
+agence soient strictement isolées des autres, afin de garantir la
+confidentialité.
+& H & 5 & S5 \\
+\hline
+US-41 & En tant qu'utilisateur, je veux que chaque analyse soit
+historisée avec ses métriques globales, afin de suivre l'évolution
+dans le temps.
+& M & 3 & S5 \\
+\hline
+
+\multicolumn{5}{|l|}{\cellcolor{gray!15}\textbf{Epic 6~: Interface
+utilisateur et fonctionnalités métier}} \\
+\hline
+US-42 & En tant qu'utilisateur, je veux disposer d'un tableau de
+bord avec les KPIs clés du portefeuille, afin d'avoir une vision
+synthétique en un coup d'\oe il. \textit{(Réservé aux chefs d'agence et administrateurs)}
+& H & 5 & S6 \\
+\hline
+US-43 & En tant qu'utilisateur, je veux pouvoir consulter la liste
+paginée des clients avec filtres par risque, afin de naviguer
+efficacement dans mon portefeuille.
+& H & 3 & S6 \\
+\hline
+US-44 & En tant qu'utilisateur, je veux consulter la fiche
+détaillée d'un client avec son explication SHAP, afin de comprendre
+les facteurs de son risque.
+& H & 5 & S6 \\
+\hline
+US-45 & En tant qu'agent commercial, je veux pouvoir créer une
+recommandation pour un client à risque, afin de proposer une action
+de rétention.
+& H & 3 & S6 \\
+\hline
+US-46 & En tant que chef d'agence, je veux pouvoir valider ou
+rejeter les recommandations soumises par mes agents, afin de garder
+le contrôle sur les actions menées.
+& H & 5 & S6 \\
+\hline
+US-47 & En tant qu'utilisateur, je veux recevoir des notifications
+in-app pour les événements métier, afin d'être alerté en temps réel.
+\textit{(Les notifications par email sont réservées aux événements liés au compte et à l'authentification)}
+& H & 5 & S6 \\
+\hline
+US-48 & En tant qu'utilisateur, je veux pouvoir gérer mes
+notifications (lire, archiver, supprimer), afin de maintenir un
+centre de notifications propre.
+& M & 2 & S6 \\
+\hline
+US-49 & En tant qu'utilisateur, je veux pouvoir exporter la fiche
+d'un client en PDF, afin de la partager ou de l'archiver hors
+plateforme.
+& M & 3 & S6 \\
+\hline
+US-50 & En tant qu'administrateur, je veux que l'interface soit
+responsive et adaptée à tout type d'écran, afin que la plateforme
+soit utilisable depuis n'importe quel terminal.
+& M & 3 & S6 \\
+\hline
+\end{longtable}
+\end{footnotesize}
+
+\subsection{Récapitulatif des sprints}
+
+Les cinquante \textit{user stories} du backlog ont été réparties
+sur six sprints successifs d'une durée moyenne de deux à trois
+semaines. Le tableau~\ref{tab:recap_sprints} en présente la
+synthèse.
+
+\begin{table}[htbp]
+\centering
+\caption{Synthèse des six sprints du projet}
+\label{tab:recap_sprints}
+\small
+\begin{tabular}{|c|p{5.5cm}|c|c|p{3.5cm}|}
+\hline
+\textbf{Sprint} & \textbf{Objectif principal}
+& \textbf{Stories} & \textbf{Total SP}
+& \textbf{Livrable clé} \\
+\hline
+S1 & Construction du jeu de données synthétique
+& 10 & 45 & Dataset 300 clients validé \\
+\hline
+S2 & Analyse exploratoire et sélection des features
+& 7 & 26 & Matrice de 28 features \\
+\hline
+S3 & Modélisation prédictive et explicabilité
+& 7 & 39 & Modèle RF Optuna sérialisé \\
+\hline
+S4 & API FastAPI et sécurité applicative
+& 10 & 41 & Service FastAPI et auth OTP \\
+\hline
+S5 & Données clients et intégration ML
+& 7 & 29 & Pipeline d'import et d'analyse \\
+\hline
+S6 & Interface utilisateur et fonctionnalités métier
+& 9 & 34 & Plateforme web complète \\
+\hline
+\multicolumn{2}{|r|}{\textbf{Total}}
+& \textbf{50} & \textbf{214} & \\
+\hline
+\end{tabular}
+\end{table}
+
+Cette planification reflète la nature hybride du projet~: les
+trois premiers sprints couvrent intégralement le cycle CRISP-DM
+(compréhension, préparation, modélisation, évaluation), tandis que
+les trois suivants déploient les résultats au sein d'une plateforme
+applicative complète. Les détails de chaque sprint (objectif,
+\textit{Definition of Done} et stories retenues) sont présentés au
+fil des chapitres correspondants.
+
+\section{Conclusion}
+
+Ce chapitre a permis de formaliser avec précision l'ensemble des
+exigences auxquelles la plateforme devra répondre. L'identification
+des acteurs et de leurs périmètres respectifs a mis en évidence la
+complexité de la politique de contrôle d'accès à mettre en œuvre,
+tandis que la formalisation des besoins fonctionnels a révélé
+l'étendue des interactions entre les différents modules du système.
+
+La distinction entre les besoins fonctionnels et non fonctionnels
+s'avère particulièrement structurante~: les contraintes de
+sécurité (authentification double facteur, isolation par agence,
+limitation du nombre de requêtes) et les exigences de robustesse
+(mécanisme de \textit{fallback} ML, continuité de service)
+constituent des exigences de premier ordre qui influenceront
+directement les choix architecturaux et d'implémentation.
+
+L'ensemble de ces besoins a été traduit en un backlog produit de
+cinquante \textit{user stories} réparties sur six sprints, qui
+guideront l'organisation du travail tout au long du projet. Le
+chapitre suivant amorce la première phase opérationnelle~: la
+construction du jeu de données synthétique, qui constitue le
+socle de tout le pipeline prédictif.

@@ -16,22 +16,19 @@
 
 from typing import Any, Dict, List
 
-import numpy  as np
-import pandas as pd
+import numpy as np  
+import pandas as pd  
 
-from app.ml.loader          import MLArtifacts
-from app.ml.preprocessing   import pretraiter_client, pretraiter_dataframe
+from app.ml.loader import MLArtifacts
+from app.ml.preprocessing import pretraiter_client, pretraiter_dataframe
 from app.ml.interpretations import get_interpretation
-from app.config             import (
-    SEUIL_CHURN,
-    MODEL_VERSION,
-)
-from app.schemas.client     import ClientFeatures
-
+from app.config import MODEL_VERSION
+from app.schemas.client import ClientFeatures
 
 # =============================================================================
 # UTILITAIRES INTERNES
 # =============================================================================
+
 
 def _calculer_confiance(proba: float, seuil: float) -> str:
     """
@@ -55,12 +52,9 @@ def _calculer_confiance(proba: float, seuil: float) -> str:
         return "faible"
 
 
-
-
-
 def _extraire_top_features_shap(
-    shap_values: np.ndarray,
-    valeurs_features: np.ndarray,
+    shap_values: Any,
+    valeurs_features: Any,
     feature_names: List[str],
     top_n: int = 5,
 ) -> List[Dict[str, Any]]:
@@ -77,32 +71,61 @@ def _extraire_top_features_shap(
     Returns:
         Liste de dicts compatibles avec FeatureExplicative (Pydantic).
     """
+    import numpy as np
     indices_top = np.argsort(np.abs(shap_values))[::-1][:top_n]
 
     explications = []
     for idx in indices_top:
         feature_name = feature_names[idx]
-        shap_val     = float(shap_values[idx])
-        valeur       = float(valeurs_features[idx])
+        shap_val = float(shap_values[idx])
+        valeur = float(valeurs_features[idx])
 
         # Direction : positive → pousse vers churn, négative → pousse vers fidélité
         direction = "vers_churn" if shap_val > 0 else "vers_fidelite"
         interpretation = get_interpretation(feature_name, direction)
 
-        explications.append({
-            "feature"        : feature_name,
-            "valeur"         : round(valeur, 4),
-            "shap_value"     : round(shap_val, 4),
-            "direction"      : direction,
-            "interpretation" : interpretation,
-        })
+        explications.append(
+            {
+                "feature": feature_name,
+                "valeur": round(valeur, 4),
+                "shap_value": round(shap_val, 4),
+                "direction": direction,
+                "interpretation": interpretation,
+            }
+        )
 
     return explications
+
+
+def _extraire_shap_classe_churn(shap_explanation: Any) -> tuple[Any, float]:
+    import numpy as np
+    values = np.asarray(shap_explanation.values)
+    if values.ndim == 3:
+        if values.shape[-1] > 1:
+            shap_values_client = values[0, :, 1]
+        elif values.shape[0] > 1:
+            shap_values_client = values[1, 0, :]
+        else:
+            shap_values_client = values[0, :, 0]
+    elif values.ndim == 2:
+        shap_values_client = values[0]
+    else:
+        shap_values_client = values
+
+    base_values = np.asarray(shap_explanation.base_values)
+    if base_values.ndim >= 2 and base_values.shape[-1] > 1:
+        base_value = base_values[0, 1]
+    else:
+        flat_base = base_values.reshape(-1)
+        base_value = flat_base[1] if flat_base.size > 1 else flat_base[0]
+
+    return np.asarray(shap_values_client, dtype=float).reshape(-1), float(base_value)
 
 
 # =============================================================================
 # PRÉDICTION INDIVIDUELLE — pour POST /api/predict
 # =============================================================================
+
 
 def predire_client(
     client: ClientFeatures,
@@ -143,38 +166,35 @@ def predire_client(
     proba = float(artefacts.modele.predict_proba(X)[0, 1])
 
     # ── 3. Décision binaire ──────────────────────────────────────────────────
-    decision  = "CHURN" if proba >= artefacts.seuil else "NON-CHURN"
+    decision = "CHURN" if proba >= artefacts.seuil else "NON-CHURN"
     confiance = _calculer_confiance(proba, artefacts.seuil)
 
     # ── 4. Calcul SHAP en live ──────────────────────────────────────────────
     # Format moderne de SHAP : explainer(X) renvoie un objet Explanation
     shap_explanation = artefacts.explainer(X)
 
-    # Pour un RandomForestClassifier binaire, .values est de shape (1, 31, 2)
-    # On extrait les contributions de la classe 1 (churn) pour le 1er client
-    shap_values_client = shap_explanation.values[0, :, 1]
-    base_value         = float(shap_explanation.base_values[0, 1])
+    # Selon les versions SHAP / scikit-learn, les sorties peuvent Ãªtre 2D ou 3D.
+    shap_values_client, base_value = _extraire_shap_classe_churn(shap_explanation)
 
     # ── 5. Top N features ───────────────────────────────────────────────────
     valeurs_features = X.iloc[0].values
     explications = _extraire_top_features_shap(
-        shap_values      = shap_values_client,
-        valeurs_features = valeurs_features,
-        feature_names    = artefacts.feature_names,
-        top_n            = top_n,
+        shap_values=shap_values_client,
+        valeurs_features=valeurs_features,
+        feature_names=artefacts.feature_names,
+        top_n=top_n,
     )
 
     # ── 6. Construction de la réponse ───────────────────────────────────────
     return {
-        "probabilite_churn"     : round(proba, 4),
-        "decision"              : decision,
-        "seuil"                 : artefacts.seuil,
-        "confiance"             : confiance,
-        "valeur_base_shap"      : round(base_value, 4),
-        "features_explicatives" : explications,
-        "modele"                : artefacts.metadata.get("modele", {}).get(
-                                    "nom", "RF Optuna Fβ=2"),
-        "version"               : MODEL_VERSION,
+        "probabilite_churn": round(proba, 4),
+        "decision": decision,
+        "seuil": artefacts.seuil,
+        "confiance": confiance,
+        "valeur_base_shap": round(base_value, 4),
+        "features_explicatives": explications,
+        "modele": artefacts.metadata.get("modele", {}).get("nom", "RF Optuna Fβ=2"),
+        "version": MODEL_VERSION,
     }
 
 
@@ -182,8 +202,9 @@ def predire_client(
 # PRÉDICTION BATCH — pour POST /api/predict/batch et /api/analyse
 # =============================================================================
 
+
 def predire_batch(
-    df_raw: pd.DataFrame,
+    df_raw: Any,
     artefacts: MLArtifacts,
 ) -> Dict[str, Any]:
     """
@@ -192,6 +213,7 @@ def predire_batch(
     [Étape 8.2] Le log des transformations de modalités est inclus dans la
     réponse pour transparence.
     """
+    import pandas as pd
     log_transformations: List[str] = []
 
     try:
@@ -206,38 +228,40 @@ def predire_batch(
         # Mise en forme ligne par ligne
         predictions = []
         for idx, proba in enumerate(probas):
-            proba_f   = float(proba)
-            decision  = "CHURN" if proba_f >= artefacts.seuil else "NON-CHURN"
+            proba_f = float(proba)
+            decision = "CHURN" if proba_f >= artefacts.seuil else "NON-CHURN"
             confiance = _calculer_confiance(proba_f, artefacts.seuil)
 
-            predictions.append({
-                "index"             : idx,
-                "probabilite_churn" : round(proba_f, 4),
-                "decision"          : decision,
-                "confiance"         : confiance,
-            })
+            predictions.append(
+                {
+                    "index": idx,
+                    "probabilite_churn": round(proba_f, 4),
+                    "decision": decision,
+                    "confiance": confiance,
+                }
+            )
 
     except Exception as e:
         # Fallback : on rend une réponse même en cas d'erreur
         predictions = [
             {
-                "index"             : i,
-                "probabilite_churn" : -1.0,
-                "decision"          : "ERREUR",
-                "confiance"         : str(e)[:200],
+                "index": i,
+                "probabilite_churn": -1.0,
+                "decision": "ERREUR",
+                "confiance": str(e)[:200],
             }
             for i in range(len(df_raw))
         ]
 
     nb_churn = sum(1 for p in predictions if p["decision"] == "CHURN")
-    total    = len(predictions)
+    total = len(predictions)
 
     return {
-        "total"                      : total,
-        "nb_churn"                   : nb_churn,
-        "taux_churn_predit"          : round(nb_churn / total, 4) if total > 0 else 0.0,
-        "transformations_appliquees" : log_transformations,    # [Étape 8.2]
-        "predictions"                : predictions,
+        "total": total,
+        "nb_churn": nb_churn,
+        "taux_churn_predit": round(nb_churn / total, 4) if total > 0 else 0.0,
+        "transformations_appliquees": log_transformations,  # [Étape 8.2]
+        "predictions": predictions,
     }
 
 
@@ -245,8 +269,9 @@ def predire_batch(
 # ANALYSE DE PORTEFEUILLE — pour POST /api/analyse
 # =============================================================================
 
+
 def analyser_portefeuille(
-    df_raw: pd.DataFrame,
+    df_raw: Any,
     artefacts: MLArtifacts,
 ) -> Dict[str, Any]:
     """
@@ -258,28 +283,31 @@ def analyser_portefeuille(
       - taux_churn_predit   : % clients prédits CHURN
       - score_moyen         : moyenne des probabilités du portefeuille
     """
+    import numpy as np
     X_all, log_transformations = pretraiter_dataframe(
         df_raw, artefacts.preprocessing_params
     )
     probas = artefacts.modele.predict_proba(X_all)[:, 1]
 
-    # Comptage binaire
-    nb_churn = int(np.sum(probas >= SEUIL_CHURN))
-    nb_non_churn = int(np.sum(probas < SEUIL_CHURN))
-    total  = len(probas)
+    seuil = artefacts.seuil
 
-    score_moyen       = float(probas.mean()) if total > 0 else 0.0
+    # Comptage binaire
+    nb_churn = int(np.sum(probas >= seuil))
+    nb_non_churn = int(np.sum(probas < seuil))
+    total = len(probas)
+
+    score_moyen = float(probas.mean()) if total > 0 else 0.0
     taux_churn_predit = nb_churn / total if total > 0 else 0.0
 
     return {
-        "success"                    : True,
-        "total"                      : total,
-        "nb_churn"                   : nb_churn,
-        "nb_non_churn"               : nb_non_churn,
-        "score_moyen"                : round(score_moyen * 100, 1),
-        "taux_churn_predit"          : round(taux_churn_predit * 100, 1),
-        "nb_recommandations"         : nb_churn,
-        "transformations_appliquees" : log_transformations,
+        "success": True,
+        "total": total,
+        "nb_churn": nb_churn,
+        "nb_non_churn": nb_non_churn,
+        "score_moyen": round(score_moyen * 100, 1),
+        "taux_churn_predit": round(taux_churn_predit * 100, 1),
+        "nb_recommandations": nb_churn,
+        "transformations_appliquees": log_transformations,
     }
 
 
@@ -287,9 +315,10 @@ def analyser_portefeuille(
 # EXPLICATION SHAP D'UN CLIENT DU TEST SET — pour GET /api/shap/{client_id}
 # =============================================================================
 
+
 def expliquer_client_test_set(
     client_id: int,
-    shap_matrix: pd.DataFrame,
+    shap_matrix: Any,
     artefacts: MLArtifacts,
     top_n: int = 10,
 ) -> Dict[str, Any]:
@@ -318,6 +347,7 @@ def expliquer_client_test_set(
     Raises:
         IndexError : si client_id dépasse la taille de shap_matrix.
     """
+    import numpy as np
     if client_id < 0 or client_id >= len(shap_matrix):
         raise IndexError(
             f"client_id={client_id} hors bornes "
@@ -332,9 +362,7 @@ def expliquer_client_test_set(
     # ── Calcul de la proba via la base_value SHAP ──────────────────────────
     # Pour un RandomForest, somme(SHAP) + base_value ≈ proba prédite
     # C'est une propriété fondamentale de SHAP (additivité)
-    base_value = float(
-        artefacts.shap_meta.get("base_value", {}).get("valeur", 0.5)
-    )
+    base_value = float(artefacts.shap_meta.get("base_value", {}).get("valeur", 0.5))
     proba = float(base_value + np.sum(shap_values))
 
     # Borne par sécurité dans [0, 1] (peut légèrement dépasser à cause
@@ -349,23 +377,25 @@ def expliquer_client_test_set(
     features_waterfall = []
     for idx in indices_top:
         feat_name = feature_names[idx]
-        shap_val  = float(shap_values[idx])
+        shap_val = float(shap_values[idx])
         direction = "vers_churn" if shap_val > 0 else "vers_fidelite"
 
-        features_waterfall.append({
-            "nom"       : feat_name,
-            # On n'a pas la valeur brute de la feature dans shap_matrix.csv
-            # (seulement les SHAP). On met 0.0 par défaut.
-            # En production réelle, on stockerait aussi X_test.csv pour les retrouver.
-            "valeur"    : 0.0,
-            "shap"      : round(shap_val, 4),
-            "direction" : direction,
-        })
+        features_waterfall.append(
+            {
+                "nom": feat_name,
+                # On n'a pas la valeur brute de la feature dans shap_matrix.csv
+                # (seulement les SHAP). On met 0.0 par défaut.
+                # En production réelle, on stockerait aussi X_test.csv pour les retrouver.
+                "valeur": 0.0,
+                "shap": round(shap_val, 4),
+                "direction": direction,
+            }
+        )
 
     return {
-        "client_id"         : client_id,
-        "probabilite_churn" : round(proba, 4),
-        "decision"          : decision,
-        "valeur_base"       : round(base_value, 4),
-        "features"          : features_waterfall,
+        "client_id": client_id,
+        "probabilite_churn": round(proba, 4),
+        "decision": decision,
+        "valeur_base": round(base_value, 4),
+        "features": features_waterfall,
     }

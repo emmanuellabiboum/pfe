@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="fr">
 
 <head>
@@ -240,22 +241,13 @@
             <div>
                 <h1 class="fw-bold" style="color:#082281; margin:0;">Gestion des comptes</h1>
                 <p class="text-muted mb-0" style="font-size:13px;">
-                    {% if is_super_admin %}Super admin : gestion des comptes admin ville et chefs d'agence
+                    {% if is_super_admin %} Super admin : gestion des comptes admin ville et chefs d'agence
                     {% elif is_admin %}Ville : {{ admin_ville.nom }}
-                    {% elif is_chef %}{% if chef_agence %}Agence : {{ chef_agence }}{% else %}Aucune agence assignée{% endif %}{% endif %}
+                    {% elif is_chef %}{% if chef_agence %}Agence : {{ chef_agence }}{% else %}Aucune agence assignée
+                    {% endif %}{% endif %}
                 </p>
             </div>
-            <div style="display:flex; gap:8px;">
-                {% if request.user.role == 'admin' or request.user.role == 'super_admin' %}
-                <a href="{% url 'dashboard:administration' %}" class="btn-action btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Retour
-                </a>
-                {% else %}
-                <a href="{% url 'dashboard:accueil' %}" class="btn-action btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Retour
-                </a>
-                {% endif %}
-            </div>
+            <!-- Utiliser la navbar pour la navigation principale -->
         </div>
         <div class="row g-3 mb-5">
             <div class="col-6 col-md-3">

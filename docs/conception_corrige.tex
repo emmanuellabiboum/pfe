@@ -1,0 +1,1238 @@
+\chapter{Conception}
+
+\section{Introduction}
+
+La phase de conception constitue le pont entre l'analyse des besoins
+formalisée dans le chapitre 2 et la réalisation technique du
+système. Son rôle est de traduire les exigences fonctionnelles et non
+fonctionnelles en un ensemble cohérent de modèles et de décisions
+architecturales qui guideront l'ensemble du développement.
+
+Dans le contexte de ce projet, la conception revêt une importance
+particulière en raison de la nature hybride du système à produire :
+une application web Django intégrant un service de prédiction externe
+FastAPI, un pipeline de Machine Learning reposant sur un modèle
+d'ensemble, et un mécanisme de fallback local garantissant la continuité
+de service. Ces trois composants doivent interagir de manière fluide
+tout en restant suffisamment découplés pour évoluer indépendamment.
+
+La conception présentée dans ce chapitre suit une approche
+orientée composants, combinant modélisation UML,
+architecture en couches et séparation des responsabilités
+afin d'assurer la maintenabilité, l'évolutivité et
+la résilience du système.
+
+Ce chapitre présente successivement l'architecture globale du système
+et les motivations des choix effectués, la conception de la base de
+données, la modélisation des classes métier, les diagrammes de séquence
+des flux principaux, la conception de l'interface utilisateur, et enfin
+la justification des choix technologiques retenus.
+
+
+\section{Architecture générale du système}
+
+
+\subsection{Vue d'ensemble}
+
+Le système adopte une architecture hybride à trois niveaux enrichie
+d'un micro-service d'inférence ML externe. Cette organisation découple
+explicitement la logique métier, la persistance des données et le
+traitement ML en trois couches aux responsabilités bien délimitées.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=9cm]{images/architecture globale.png}
+    \caption{Architecture globale du système}
+    \label{fig:architecture_globale}
+\end{figure}
+
+Le flux de traitement principal suit le cheminement suivant : le
+navigateur de l'utilisateur émet des requêtes HTTP vers l'application
+Django, qui s'exécute sur le port 8080. Django orchestre l'ensemble
+de la logique métier, persiste les données dans la base PostgreSQL
+via son ORM, et délègue les opérations d'inférence ML au service
+FastAPI qui tourne sur le port 8000. En cas d'indisponibilité de ce
+dernier, un pipeline ML local prend automatiquement le relais, assurant
+ainsi la continuité de service sans intervention de l'utilisateur.
+
+\subsection{Justification des choix architecturaux}
+
+\subsubsection{Séparation Django et FastAPI}
+
+Le moteur de prédiction ML est isolé dans un micro-service FastAPI
+indépendant plutôt qu'intégré directement dans Django. Ce choix
+repose sur plusieurs motivations complémentaires.
+
+D'un point de vue technique, FastAPI est construit sur ASGI
+(\textit{Asynchronous Server Gateway Interface}) et offre des
+performances nativement asynchrones particulièrement adaptées aux
+opérations de prédiction batch, qui peuvent mobiliser plusieurs
+centaines de millisecondes pour un portefeuille de taille importante.
+Django, dont l'architecture est historiquement synchrone, aurait
+bloqué le processus serveur pendant toute la durée du calcul.
+
+D'un point de vue de maintenabilité, l'isolation du service ML permet
+de faire évoluer, remplacer ou réentraîner le modèle de prédiction
+sans toucher à l'application Django. Le contrat d'interface entre les deux services est formalisé par les schémas Pydantic définis dans le service FastAPI (\texttt{churn\_api}) et les routers FastAPI du service ML, constituant une frontière
+explicite et vérifiable.
+
+Enfin, cette architecture ouvre la voie à un déploiement différencié :
+le service FastAPI peut être hébergé sur un serveur disposant de
+ressources matérielles adaptées aux calculs ML, tandis que Django
+reste sur une infrastructure web standard.
+
+\subsubsection{Mécanisme de fallback local}
+
+Afin d'améliorer la résilience du système, un pipeline ML local est intégré directement dans Django via le module \texttt{core/ml\_service.py}. Ce pipeline charge le modèle depuis le fichier \texttt{churn\_model\_v1.pkl} au démarrage de l'application et peut être utilisé dans certains traitements locaux, notamment pour des calculs complémentaires et certaines fonctionnalités d'explicabilité.
+
+La fonction \texttt{check\_fastapi\_health()} du module \texttt{core/fastapi\_service.py} vérifie la disponibilité du service FastAPI avant le lancement des analyses. Lorsque le service est indisponible, certaines opérations locales peuvent être maintenues, mais l'analyse batch principale dépend majoritairement du service FastAPI dans l'implémentation actuelle
+
+\subsubsection{Organisation modulaire de l'application Django}
+
+L'application Django est décomposée en quatre modules autonomes,
+chacun portant un périmètre fonctionnel clairement défini:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Responsabilités des modules Django}
+    \label{tab:modules_django}
+    \begin{tabular}{|p{2.8cm}|p{4cm}|p{6.5cm}|}
+        \hline
+        \textbf{Module} & \textbf{Couche applicative}
+        & \textbf{Responsabilité principale} \\
+        \hline
+        \texttt{accounts}
+        & Authentification
+        & Gestion du cycle de vie des comptes utilisateurs,
+          authentification à double facteur (OTP), workflow
+          d'inscription et de validation hiérarchique,
+          journalisation des connexions. \\
+        \hline
+        \texttt{core}
+        & Services partagés
+        & Service OTP centralisé, moteur de notifications,
+          pipeline ML local (fallback), client HTTP vers
+          FastAPI, modèles géographiques Ville/Agence,
+          middleware et context processors. \\
+        \hline
+        \texttt{dashboard}
+        & Interface et métier
+        & Tableau de bord, gestion des recommandations et
+          de leur workflow de validation, notifications
+          in-app, historique des analyses, export PDF,
+          réinitialisation du dashboard. \\
+        \hline
+        \texttt{learning}
+        & Données clients
+        & Modèles \texttt{Dataset} et \texttt{ClientChurn},
+          import CSV, générateur de données mock, commande de gestion
+          \texttt{import\_dataset}. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Conception détaillée de l'API d'inférence FastAPI}
+
+Une API (\textit{Application Programming Interface}) est un ensemble
+de règles et de protocoles permettant à deux logiciels de communiquer.
+Elle agit comme un contrat définissant comment un client (application
+demandeuse) et un serveur (application répondante) échangent des
+données via des requêtes et réponses structurées.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth]{images/api (1).png}
+    \caption{Principe de communication via API}
+    \label{fig:api_illustration}
+\end{figure}
+
+\subsubsection{Choix du framework}
+
+Plusieurs frameworks Python permettent de développer une API. Le
+tableau\ref{tab:frameworks} compare les trois solutions les plus
+courantes selon les critères pertinents pour ce projet.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparaison des frameworks API Python}
+\label{tab:frameworks}
+\small
+\begin{tabular}{|l|p{3.3cm}|p{3.3cm}|p{3.3cm}|}
+\hline
+\textbf{Caractéristique} & \textbf{Flask} & \textbf{Django}
+& \textbf{FastAPI} \\
+\hline
+Philosophie
+& Micro-framework minimaliste
+& \textit{Batteries-included}
+& Micro-framework moderne et performant \\
+\hline
+Performance
+& Moyenne
+& Moyenne
+& Très élevée (comparable à Node.js / Go) \\
+\hline
+Asynchrone (\texttt{async/await})
+& Support limité
+& Support partiel
+& Natif et central \\
+\hline
+Validation des données
+& Manuelle ou via extensions
+& Django Forms / DRF
+& Automatique via Pydantic \\
+\hline
+Documentation
+& Manuelle (Swagger)
+& Via Django REST Framework
+& Automatique (Swagger UI et ReDoc) \\
+\hline
+Courbe d'apprentissage
+& Facile
+& Difficile
+& Modérée \\
+\hline
+Usage typique
+& Prototypes, petites applications
+& Gros projets, CMS
+& Microservices, APIs ML \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{FastAPI} a été retenu pour trois raisons déterminantes.
+Premièrement, ses performances : reposant sur Starlette et Uvicorn,
+il est l'un des frameworks Python les plus rapides. Deuxièmement, sa
+validation automatique : en exploitant les \textit{type hints}
+natifs de Python, Pydantic valide les données entrantes sans code
+supplémentaire  toute donnée mal typée déclenche une erreur
+explicite avant même d'atteindre le modèle. Troisièmement, sa
+documentation automatique : FastAPI génère une interface Swagger UI
+interactive sans configuration manuelle, facilitant les tests et
+l'intégration avec le frontend.
+
+\subsubsection{Architecture du projet et artefacts ML}
+
+L'architecture de l'API est organisée selon une séparation stricte
+entre les artefacts de modélisation et le code de production :
+
+\begin{figure}[htbp]
+\centering
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+churn_pfe/
+|
+|-- modelisation.ipynb           <- Pipeline ML (Optuna, SHAP)
+|
+|-- fastapi_artifacts/
+|   |-- churn_model_v1.pkl       <- Modele serialise
+|   |-- churn_threshold_v1.pkl   <- Seuil optimal (0,32)
+|   |-- feature_names_v1.json    <- Ordre des features (critique)
+|   |-- churn_metadata_v1.json   <- Metriques et metadonnees
+|   |-- shap_explainer_v1.pkl    <- Explainer TreeSHAP
+|   |-- shap_importance_v1.csv   <- Importances globales
+|   `-- shap_meta_v1.json        <- Metadonnees SHAP
+|
+`-- backend/
+    |-- main.py                  <- Application FastAPI
+    |-- models.py                <- Schemas Pydantic (I/O)
+    |-- predictor.py             <- Logique metier
+    `-- requirements.txt
+\end{lstlisting}
+\caption{Structure du projet backend}
+\label{fig:archi_projet}
+\end{figure}
+
+Trois décisions d'architecture méritent d'être soulignées. Le
+notebook \texttt{modelisation.ipynb} centralise l'intégralité de
+l'intelligence ML nettoyage, optimisation Optuna, calcul des
+valeurs SHAP  sans polluer le code de production. Le dossier
+\texttt{fastapi\_artifacts/} constitue le pont entre la science
+des données et l'ingénierie logicielle : le versionnage des
+artefacts (\texttt{\_v1}) permet de déployer une version améliorée
+du modèle sans interrompre le service existant. Enfin, le fichier
+\texttt{feature\_names\_v1.json} est le point le plus critique de
+l'architecture : sans l'ordre exact des colonnes, le modèle lirait
+par exemple la variable \texttt{tenure\_mois} à la place de
+\texttt{facture\_moyenne\_mensuelle}, produisant des prédictions
+absurdes en production.
+
+\subsubsection{Gestion du cycle de vie du pattern Lifespan}
+
+L'efficacité d'une API de machine learning repose sur sa capacité
+à répondre instantanément sans recalculer à chaque requête. Le
+service FastAPI est initié dans \texttt{main.py} via le
+\textbf{pattern Lifespan}, norme actuelle de FastAPI pour la
+gestion du cycle de vie de l'application. Contrairement aux
+anciennes méthodes (\texttt{@app.on\_event}), ce pattern offre un
+contrôle total sur l'initialisation et la libération des ressources.
+
+Les artefacts lourds du  modèle sérialisé et explainer TreeSHAP 
+sont chargés \textit{une seule fois} au lancement du serveur et
+stockés dans un dictionnaire global \texttt{artefacts} accessible
+par tous les endpoints. Ce mécanisme présente deux avantages :
+l'accessibilité (tous les endpoints puisent dans la même mémoire
+partagée) et l'intégrité (si un artefact est absent ou corrompu,
+l'API s'arrête immédiatement au démarrage plutôt que de fournir
+des résultats erronés en production), garantissant une scalabilité
+quasi optimale.
+
+\subsubsection{Validation des données de Pydantic}
+
+Dans le fichier \texttt{models.py}, le schéma \texttt{ClientInput}
+garantit l'intégrité de chaque requête entrante. Pydantic vérifie
+automatiquement les types et les contraintes logiques sans code de
+validation manuel :
+
+\begin{itemize}
+    \item \texttt{Field(..., ge=0)} : le préfixe \texttt{...}
+    indique un champ obligatoire ; \texttt{ge=0} (\textit{greater
+    or equal}) impose que la valeur soit positive ou nulle,
+    empêchant des données absurdes (ancienneté négative, etc.)
+    d'atteindre le modèle.
+
+    \item \texttt{Field(..., ge=1, le=5)} : pour
+    \texttt{satisfaction\_client}, la plage est contrainte à
+    l'échelle de l'enquête originale (1 à 5). Toute valeur hors
+    plage déclenche automatiquement une erreur
+    \texttt{422 Unprocessable Entity}, détaillant exactement quel
+    champ pose problème.
+\end{itemize}
+
+Le schéma de sortie \texttt{PredictionOutput} définit le contrat
+entre l'API et les applications consommatrices. Il retourne un
+objet structuré contenant : la probabilité de churn, la décision
+binaire basée sur le seuil métier de 0,32, et une liste
+d'explications SHAP individuelles. L'interprétabilité locale est
+ainsi directement intégrée dans le format JSON de sortie, sans
+appel supplémentaire.
+
+\subsubsection{Description détaillée des endpoints}
+
+Un \textit{endpoint} est le point d'entrée d'un canal de
+communication de l'API en pratique, une URL à laquelle l'API
+répond à un type de requête spécifique. Le service expose plusieurs
+endpoints regroupés en trois familles fonctionnelles.
+
+\paragraph{\texttt{GET /health} monitoring du système.}
+Point d'entrée pour les administrateurs système. Il vérifie non
+seulement que l'API est active, mais également que l'ensemble des
+artefacts sont correctement chargés en mémoire. Un retour d'état
+dégradé signale qu'un artefact est manquant ou corrompu avant
+qu'une prédiction erronée ne soit servie. Cet endpoint est
+sollicité par Django avant chaque analyse via la fonction
+\texttt{check\_fastapi\_health()} pour décider du basculement vers
+le pipeline local en mode fallback.
+
+\paragraph{\texttt{GET /api/model/info} gouvernance ML.}
+Cet endpoint expose les métadonnées du modèle déployé (version,
+AUC-ROC, Recall, seuil optimal, date d'entraînement) ainsi que la
+liste ordonnée des features attendues. Il permet au département
+marketing ou à un auditeur de vérifier les performances du modèle
+en production sans accès au code source, répondant aux exigences
+de traçabilité des systèmes d'aide à la décision.
+
+\paragraph{\texttt{POST /api/predict} prédiction individuelle.}
+Endpoint central pour l'inférence unitaire avec explication SHAP.
+Il suit un flux de traitement en trois étapes :
+
+\begin{itemize}
+    \item \textbf{Alignement des features} : les données soumises
+    sont réordonnées selon l'ordre exact attendu par le modèle, tel
+    que défini dans \texttt{feature\_names
+    \_v1.json}. C'est l'étape
+    techniquement la plus critique de tout le pipeline.
+
+    \item \textbf{Décision économique} : le seuil de décision retenu
+    est 0,32, valeur optimisée lors de la modélisation plutôt
+    que le seuil par défaut de 0,50. L'API est ainsi calibrée pour
+    être sensible au risque de perte, conformément au ratio de
+    criticité métier de 42 contre 1 démontré au chapitre précédent.
+
+    \item \textbf{Explicabilité en temps réel} : les valeurs SHAP
+    sont calculées instantanément via TreeSHAP. Le top 5 des
+    variables les plus influentes est extrait et traduit en langage
+    métier (\texttt{direction = "vers\_churn"} ou
+    \texttt{"vers\_fidelite"}), permettant à l'agent commercial de
+    comprendre la raison du risque et d'adapter son action.
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/api_predict.png}
+    \caption{Interface Swagger UI de l'endpoint
+    \texttt{/api/predict}}
+    \label{fig:api_predict}
+\end{figure}
+
+\paragraph{\texttt{POST /api/predict/batch} scoring par lot.}
+Outil de pilotage stratégique de l'agence. L'API reçoit une liste
+de clients au format JSON ou fichier tabulaire (nécessitant
+\texttt{python-multipart}) et traite l'ensemble en une seule
+requête, retournant notamment la valeur \texttt{probabilite\_churn}
+pour chaque client analysé, triée par ordre décroissant. Ce tri
+constitue la fonctionnalité opérationnelle principale : il produit
+automatiquement une liste de priorités d'intervention pour
+l'équipe commerciale, permettant de concentrer les actions de
+rétention sur les clients présentant le risque le plus élevé.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\linewidth]{images/api_batch.png}
+    \caption{Interface Swagger UI de l'endpoint
+    \texttt{/api/predict/batch}}
+    \label{fig:api_batch}
+\end{figure}
+
+\paragraph{\texttt{POST /api/analyse}: agrégats globaux.}
+Endpoint complémentaire au scoring batch, retournant les
+indicateurs synthétiques d'une analyse : nombre de clients en
+\texttt{haut\_risque}, nombre de clients en \texttt{faible\_risque}
+et taux de churn global du portefeuille. Ces agrégats alimentent
+directement les indicateurs du tableau de bord Django.
+
+\paragraph{\texttt{GET /api/shap/\{client\_id\}} : consultation des
+fiches historiques.}
+Endpoint dédié à l'analyse approfondie d'un client déjà scoré.
+Contrairement à \texttt{/api/predict}, il n'effectue aucun calcul
+en temps réel : il interroge la matrice SHAP précalculée chargée
+en mémoire au démarrage. La réponse est instantanée et ne sollicite
+pas le modèle, permettant une consultation fluide depuis l'interface
+web.
+
+\paragraph{\texttt{GET /api/clients}: listing scoré.}
+Liste les clients déjà scorés avec filtrage par niveau de risque
+et pagination. Cet endpoint sert d'alternative légère à une
+interrogation directe de la base PostgreSQL côté Django,
+particulièrement utile pour les tests d'intégration et la
+consultation rapide de l'état du portefeuille via Swagger UI.
+
+\medskip
+L'ensemble de ces endpoints couvre les besoins de monitoring, de
+gouvernance et d'exploitation opérationnelle de la plateforme,
+conformément aux exigences fonctionnelles formalisées au
+chapitre 2.
+
+
+\section{Conception de la base de données}
+
+\subsection{Système de gestion de base de données retenu}
+
+La base de données utilisée est \textbf{PostgreSQL}, configurée
+via le moteur \texttt{django.db.backends.postgresql} dans
+\texttt{config/settings.py}. La base \texttt{churn\_db} est
+accessible sur \texttt{localhost:5432}. Ce choix s'applique
+aussi bien en développement qu'en production, garantissant
+l'homogénéité des comportements entre les deux environnements
+et évitant les régressions liées à des différences de dialectes SQL.
+
+Les paramètres de connexion sont externalisés dans le fichier
+\texttt{.env} et chargés via \texttt{python-decouple}: aucune
+information sensible n'apparaît en clair dans le code source.
+
+\subsection{Diagramme entité-association}
+
+Le modèle de données s'articule autour de l'entité centrale
+\texttt{ClientChurn}, vers laquelle convergent les entités
+\texttt{Recommandation}, \texttt{ShapValeur} et les événements métier. L'entité \texttt{Dataset} assure la traçabilité de chaque chargement de données.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.72\linewidth, height=13cm]{images/ea glob.drawio.png}
+    \caption{Diagramme entité-association global}
+    \label{fig:diagramme_ea}
+\end{figure}
+
+\subsection{Description détaillée des entités}
+
+\subsubsection{Entité \texttt{User} (module \texttt{accounts})}
+
+L'entité \texttt{User} hérite du modèle \texttt{AbstractUser}
+fourni par Django, bénéficiant ainsi de l'ensemble des mécanismes
+d'authentification natifs (hashage des mots de passe, gestion des
+sessions, permissions). Elle est étendue par les attributs métier
+suivants:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Attributs de l'entité \texttt{User}}
+    \label{tab:entite_user}
+    \begin{tabular}{|p{3cm}|p{3cm}|p{7.3cm}|}
+        \hline
+        \textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+        \hline
+        \texttt{role} & \texttt{CharField}
+        & Énumération: \texttt{super\_admin},
+          \texttt{admin\_ville}, \texttt{chef\_agence},
+          \texttt{agent\_commercial},
+          \texttt{agent\_marketing}. Conditionne le périmètre
+          d'accès aux données et aux fonctionnalités. \\
+        \hline
+        \texttt{ville} & \texttt{FK → Ville}
+        & Ville de rattachement. Utilisé par les
+          \textit{admin\_ville} pour filtrer les agences
+          de leur périmètre géographique. \\
+        \hline
+        \texttt{agence} & \texttt{FK → Agence}
+        & Agence de rattachement. Condition d'isolation
+          des données: toutes les requêtes sont filtrées
+          sur cette valeur pour les agents et chefs d'agence. \\
+        \hline
+        \texttt{statut} & \texttt{CharField}
+    & Cycle de vie du compte:
+    \texttt{en\_attente}
+    (compte en attente de validation),
+    \texttt{actif}
+    (compte opérationnel),
+    \texttt{inactif}
+    (compte désactivé). \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{Entités \texttt{Ville} et \texttt{Agence}
+(module \texttt{core})}
+ 
+\begin{table}[htbp]
+    \centering
+    \caption{Attributs des entités \texttt{Ville} et \texttt{Agence}}
+    \label{tab:entites_geo}
+    \begin{tabular}{|p{2cm}|p{3cm}|p{3cm}|p{5.3cm}|}
+        \hline
+        \textbf{Entité} & \textbf{Attribut} & \textbf{Type}
+        & \textbf{Description} \\
+        \hline
+        \texttt{Ville} & \texttt{nom} & \texttt{CharField}
+        & Dénomination de la ville. \\
+        \cline{2-4}
+        & \texttt{code\_postal} & \texttt{CharField}
+        & Code postal. \\
+        \cline{2-4}
+        & \texttt{region} & \texttt{CharField}
+        & Région administrative de rattachement. \\
+        \hline
+        \texttt{Agence} & \texttt{nom} & \texttt{CharField}
+        & Dénomination de l'agence. \\
+        \cline{2-4}
+        & \texttt{adresse} & \texttt{TextField}
+        & Adresse physique. \\
+        \cline{2-4}
+        & \texttt{telephone} & \texttt{CharField}
+        & Numéro de contact. \\
+        \cline{2-4}
+        & \texttt{ville} & \texttt{FK → Ville}
+        & Ville de rattachement. \\
+        \hline
+    \end{tabular}
+\end{table}
+Ces deux entités constituent le référentiel géographique hiérarchique
+du système. Une \texttt{Ville} regroupe plusieurs \texttt{Agence}s,
+et chaque agence est le point d'ancrage de l'ensemble des données
+clients et des utilisateurs. Cette structure en deux niveaux permet
+d'implémenter la politique d'isolation des données décrite dans
+les besoins non fonctionnels.
+
+
+\subsubsection{Entité \texttt{Dataset} (module \texttt{learning})}
+
+L'entité \texttt{Dataset} joue un rôle de traçabilité: elle
+enregistre chaque chargement de données, qu'il s'agisse d'un
+import de fichier CSV ou d'une génération de données simulées.
+Chaque \texttt{ClientChurn} créé dans la foulée est relié à ce
+dataset par une clé étrangère nullable, permettant de retrouver
+l'origine de chaque enregistrement client.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Attributs de l'entité \texttt{Dataset}}
+    \label{tab:entite_dataset}
+    \begin{tabular}{|p{3cm}|p{3cm}|p{7.3cm}|}
+        \hline
+        \textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+        \hline
+        \texttt{methode} & \texttt{CharField}
+        & Origine du chargement: \texttt{csv} ou \texttt{mock}. \\
+        \hline
+        \texttt{agence} & \texttt{FK → Agence}
+        & Agence propriétaire du dataset. Propagé
+          automatiquement aux \texttt{ClientChurn} via
+          la surcharge de \texttt{save()}. \\
+        \hline
+        \texttt{nb\_clients} & \texttt{IntegerField}
+        & Nombre d'enregistrements clients chargés. \\
+        \hline
+        \texttt{fichier} & \texttt{FileField}
+        & Fichier source uploadé (null pour les datasets mock). \\
+        \hline
+        \texttt{created\_at} & \texttt{DateTimeField}
+        & Horodatage automatique de la création. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{Entité \texttt{ClientChurn} (module \texttt{learning})}
+
+Il s'agit de l'entité centrale du système de données. Elle concentre
+le profil comportemental et contractuel complet de chaque client, ainsi que les résultats calculés par le moteur de prédiction.
+
+Un point d'implémentation notable concerne la méthode \texttt{save()}
+surchargée: si un \texttt{ClientChurn} est créé sans que le champ
+\texttt{agence} soit renseigné explicitement mais qu'il est relié à
+un \texttt{Dataset}, l'agence est automatiquement héritée de ce
+dataset. Cette surcharge garantit la cohérence du référentiel
+géographique sans imposer de contrainte à l'appelant.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Attributs principaux de l'entité \texttt{ClientChurn}}
+    \label{tab:entite_clientchurn}
+    \begin{tabular}{|p{3.5cm}|p{3cm}|p{6.8cm}|}
+        \hline
+        \texttt{id\_client} & \texttt{CharField (unique)}
+        & Identifiant unique du client dans le système de
+          l'opérateur. Contrainte d'unicité en base. \\
+        \hline
+        \texttt{score\_churn} & \texttt{FloatField}
+        & Probabilité de churn calculée, comprise entre 0 et 1. \\
+        \hline
+        \texttt{churn\_predit} & \texttt{BooleanField}
+        & Résultat de la classification binaire obtenu en
+          appliquant le seuil optimal (\texttt{metadata.json})
+          au \texttt{score\_churn}. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\vspace{2 cm}
+        \begin{table}[htbp]
+    \centering
+    \begin{tabular}{|p{3.5cm}|p{3cm}|p{6.8cm}|}
+        \hline
+        \texttt{agence} & \texttt{FK → Agence}
+        & Agence gestionnaire. Auto-aligné depuis
+          \texttt{dataset.agence} via \texttt{save()} si absent. \\
+        \hline
+        \texttt{dataset} & \texttt{FK → Dataset (nullable)}
+        & Dataset d'origine (null si client créé hors import). \\
+        \hline
+        \textit{(variables télécom)} & \textit{FloatField, IntField,
+        BooleanField} & Variables comportementales et contractuelles
+        utilisées comme \textit{features} d'entrée du modèle ML
+        (ancienneté, facture moyenne, abonnements souscrits,
+        réclamations, interactions, etc.). \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsubsection{Entité \texttt{Recommandation} (module \texttt{dashboard})}
+
+Cette entité matérialise une action de rétention proposée par un
+agent commercial ou marketing pour un client identifié comme étant à risque.
+Elle est au cœur du workflow de validation hiérarchique.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Attributs de l'entité \texttt{Recommandation}}
+    \label{tab:entite_recommandation}
+    \begin{tabular}{|p{3.5cm}|p{3cm}|p{6.8cm}|}
+        \hline
+        \textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+        \hline
+        \texttt{client} & \texttt{FK → ClientChurn}
+        & Client faisant l'objet de la recommandation. \\
+        \hline
+        \texttt{agent} & \texttt{FK → User}
+        & Agent ayant créé la recommandation (commercial ou marketing). \\
+        \hline
+        \texttt{contenu} & \texttt{TextField}
+        & Description de l'action proposée
+          (offre de fidélisation, contact téléphonique, etc.). \\
+        \hline
+        \texttt{statut} & \texttt{CharField}
+& État courant de la recommandation :
+  \texttt{active},
+  \texttt{completee\_agent},
+  \texttt{en\_attente\_validation},
+  \texttt{completee},
+  \texttt{retiree}
+  ou \texttt{expiree}. Chaque transition
+  peut déclencher une notification métier. \\
+        \hline
+        \texttt{created\_at} & \texttt{DateTimeField}
+        & Horodatage de création (auto). \\
+        \hline
+        \texttt{updated\_at} & \texttt{DateTimeField}
+        & Horodatage de dernière modification (auto). \\
+        \hline
+    \end{tabular}
+\end{table}
+
+En cas de rejet, un enregistrement \texttt{RejetRecommandation}
+est créé en parallèle, conservant le motif du rejet et l'identité
+du rejeteur. Cette traçabilité permet à l'agent de comprendre
+les raisons du refus et d'ajuster sa prochaine proposition.
+
+\subsubsection{Entité \texttt{AnalyseSession} (module \texttt{dashboard})}
+
+Chaque analyse lancée depuis l'interface donne lieu à la création
+d'un enregistrement \texttt{AnalyseSession}, qui conserve les
+métriques globales retournées par FastAPI (ou le pipeline local
+en mode fallback): total de clients analysés, répartition par
+niveau de risque, taux de churn global. Ces données alimentent
+l'historique consultable depuis l'interface et permettent de
+suivre l'évolution du portefeuille client dans le temps.
+
+\subsubsection{Entité \texttt{Notification} (module \texttt{dashboard})}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Attributs de l'entité \texttt{Notification}}
+    \label{tab:entite_notification}
+    \begin{tabular}{|p{3cm}|p{3cm}|p{7.3cm}|}
+        \hline
+        \textbf{Attribut} & \textbf{Type} & \textbf{Description} \\
+        \hline
+        \texttt{user} & \texttt{FK → User}
+        & Destinataire de la notification. \\
+        \hline
+        \texttt{message} & \texttt{TextField}
+        & Contenu de la notification. \\
+        \hline
+        \texttt{type} & \texttt{CharField}
+        & Catégorie: \texttt{nouvelle\_recommandation},
+          \texttt{validation\_requise}, \texttt{alerte\_churn}. \\
+        \hline
+        \texttt{is\_read} & \texttt{BooleanField}
+        & Indique si la notification a été lue. Par défaut
+          \texttt{False}. Contribue au compteur de notifications
+          non lues affiché dans l'interface. \\
+        \hline
+        \texttt{created\_at} & \texttt{DateTimeField}
+        & Horodatage de création (auto). \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Diagrammes de classes}
+
+Un diagramme de classes est une représentation statique de la
+structure du système. Il décrit les entités métier, leurs attributs,
+leurs méthodes ainsi que les relations qui les unissent. Dans le cadre
+de ce projet, les classes métier correspondent directement aux modèles
+Django qui seront persistés en base de données PostgreSQL, conformément
+au paradigme ORM (\textit{Object-Relational Mapping}).
+
+Nous présentons ci-après les diagrammes de classes des trois modules
+principaux de l'application: \texttt{accounts}, \texttt{learning}
+et \texttt{dashboard}.
+
+\subsection{Diagramme de classes du module \texttt{accounts}}
+
+Le module \texttt{accounts} regroupe l'ensemble des classes liées
+à la gestion des utilisateurs et à la sécurité des accès. La classe
+centrale est \texttt{User}, qui hérite de \texttt{AbstractUser}
+fourni par Django et qui est étendue par les attributs métier du
+projet: le rôle, la ville et l'agence de rattachement, ainsi que le
+statut du compte. Elle expose la méthode \texttt{has\_role()},
+utilisée dans l'ensemble des vues pour contrôler les droits d'accès
+de manière uniforme.
+
+La classe \texttt{OTPCode} est associée à \texttt{User} par une
+relation de composition: chaque code OTP est généré pour un
+utilisateur précis, doté d'une date d'expiration et d'un indicateur
+d'utilisation garantissant son unicité d'usage. La classe
+\texttt{LoginActivity} enregistre quant à elle chaque connexion
+réussie avec l'horodatage, l'adresse IP et le navigateur utilisé,
+constituant ainsi un journal d'audit des accès à la plateforme.
+Enfin, la classe \texttt{AdminVille} matérialise le lien
+administratif entre un utilisateur de rôle \texttt{admin\_ville}
+et la ville dont il a la charge.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=8cm]{images/class user.drawio.png}
+    \caption{Diagramme de classes du module \texttt{accounts}}
+    \label{fig:dc_accounts}
+\end{figure}
+
+\subsection{Diagramme de classes du module \texttt{learning}}
+
+Le module \texttt{learning} concentre les classes liées aux données
+clients et au pipeline de prédiction. La classe \texttt{Dataset}
+joue un rôle de traçabilité: elle enregistre chaque chargement de
+données en conservant la méthode d'import utilisée, l'agence
+propriétaire, le nombre de clients importés et le fichier source.
+Elle est reliée à la classe \texttt{ClientChurn} par une association
+de composition, un dataset regroupant potentiellement plusieurs
+centaines d'enregistrements clients.
+
+La classe \texttt{ClientChurn} constitue l'entité centrale du
+système de données. Elle concentre le profil comportemental et
+contractuel complet de chaque client télécom, ainsi que les résultats
+calculés par le moteur de prédiction: le score de churn et la
+prédiction binaire. Sa méthode \texttt{save()}
+est surchargée afin d'assurer l'alignement automatique de l'agence
+depuis le dataset parent lorsque ce champ n'est pas renseigné
+explicitement. La méthode \texttt{to\_feature\_dict()} sérialise les
+variables du client en dictionnaire, dans le format attendu par le
+pipeline ML local. La classe \texttt{ShapValeur} est associée à
+\texttt{ClientChurn} et stocke, pour chaque variable d'entrée du
+modèle, la valeur SHAP correspondante ainsi que le sens de son
+impact sur la prédiction.
+
+\vspace{4 cm}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.85\linewidth,height=8cm]{images/class learn.drawio.png}
+    \caption{Diagramme de classes du module \texttt{learning}}
+    \label{fig:dc_learning}
+\end{figure}
+\subsection{Diagramme de classes du module \texttt{dashboard}}
+
+Le module \texttt{dashboard} regroupe les classes qui pilotent la
+logique métier de la plateforme au quotidien. La classe
+\texttt{Recommandation} matérialise une action de rétention proposée
+par un agent commercial ou marketing pour un client à risque. Elle est reliée à
+\texttt{ClientChurn} par une clé étrangère et à \texttt{User} par
+deux associations distinctes: l'une désignant l'agent créateur et
+l'autre, portée par la classe \texttt{RejetRecommandation}, désignant
+le chef d'agence ayant éventuellement rejeté la recommandation. Cette
+séparation permet de conserver le motif du rejet de manière
+indépendante, sans alourdir la classe principale. Le cycle de vie
+d'une recommandation est modélisé par l'attribut \texttt{status},
+dont les valeurs successives sont \texttt{pending},
+\texttt{validated}, \texttt{rejected} et \texttt{completed}.
+
+La classe \texttt{Notification} est associée à \texttt{User} et
+supporte les trois types d'événements déclenchant une alerte:
+\texttt{nouvelle\_recommandation}, \texttt{validation\_requise} et
+\texttt{alerte\_churn}. L'attribut \texttt{is\_read} alimente le
+compteur de notifications non lues affiché en permanence dans
+l'interface. La classe \texttt{AnalyseSession} enregistre chaque
+session d'analyse lancée par un utilisateur, en conservant les
+métriques globales retournées par le service FastAPI ou par le
+pipeline local en mode fallback. Ces données constituent l'historique
+consultable depuis l'interface et permettent de suivre l'évolution
+du portefeuille client dans le temps.
+
+ \vspace{4 cm}
+ 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth, height=10cm]{images/class dash.drawio.png}
+    \caption{Diagramme de classe du module }
+    \label{fig:dc_dashboard}
+\end{figure}
+
+
+\section{Diagrammes de séquence}
+
+Les diagrammes de séquence ci-après modélisent les flux
+d'interaction entre les composants du système pour chacun
+des scénarios principaux identifiés lors de l'analyse des besoins.
+
+\subsection{Flux 1 : Authentification à double facteur}
+
+Ce flux mobilise quatre composants: la vue Django \texttt{login\_view},
+la base de données PostgreSQL, le service OTP centralisé
+(\texttt{core/otp\_service.py}) et le service d'envoi email
+(\texttt{core/otp\_email\_service.py}) qui transmet le code
+via l'API SendGrid en SMTP.
+
+Le déroulement est le suivant: l'utilisateur soumet ses identifiants
+via \texttt{POST /accounts/login/}. La vue vérifie les credentials
+en base; en cas de succès, un code OTP à six chiffres est généré
+par \texttt{otp\_service.py} avec une expiration à dix minutes
+et persisté dans un enregistrement \texttt{OTPCode} contenant le code généré, sa date d'expiration et son indicateur d'utilisation. Le code est transmis à l'utilisateur par email
+via \texttt{otp\_email\_service.py} (SendGrid, gabarit HTML
+personnalisé). L'utilisateur est redirigé vers
+\texttt{/accounts/verify-otp/} où il saisit le code reçu. La vue
+\texttt{verify\_otp\_view} interroge la base: si un code correspondant est trouvé, qu'il n'a pas déjà été utilisé et que sa date d'expiration est encore valide; le code est alors invalidé après utilisation, la session est ouverte, et une
+entrée \texttt{LoginActivity} est créée.
+
+\vspace{3 cm}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=9cm]{images/ds 2FA.drawio.png}
+    \caption{Diagramme de séquence de l'authentification à double facteur}
+    \label{fig: ds Authentification 2FA}
+\end{figure}
+
+
+\subsection{Flux 2 : Analyse sur données réelles avec FastAPI}
+
+Ce flux constitue le scénario nominal de prédiction. Il mobilise
+cinq composants: la vue Django \texttt{lancer\_analyse}, la base
+PostgreSQL, le module \texttt{core/fastapi\_service.py}, le service
+FastAPI (port 8000) et le moteur de notifications in-app.
+
+\begin{figure}[htbp]
+    \centering
+\includegraphics[width=0.7\linewidth,height=11cm]{images/ds analyse.drawio.png}
+\caption{Diagramme de séquence de l'analyse sur données réelles}
+\label{fig:ds analyse dtst réel}
+\end{figure}
+
+Le workflow principal d'analyse est le suivant :
+
+\begin{enumerate}
+    \item Le chef d'agence charge un fichier CSV ou utilise une génération mock ;
+    \item Django crée un objet \texttt{Dataset} et des enregistrements \texttt{ClientChurn} associés ;
+    \item Le contrôleur vérifie d'abord la disponibilité du service FastAPI via \texttt{check\_fastapi\_health()} dans \texttt{core/fastapi\_service.py} ;
+    \item Si FastAPI est disponible, les données sont envoyées en batch à \texttt{/api/predict/batch} ;
+    \item En cas d'échec de l'appel batch, l'application retente un appel unitaire pour chaque client via \texttt{/api/predict} ;
+    \item Si FastAPI est indisponible, l'analyse batch peut être interrompue selon le contexte d'exécution actuel ; certaines fonctionnalités locales restent néanmoins disponibles via \texttt{core/ml\_service.py}.
+\end{enumerate}
+
+Ce comportement est implémenté côté Django dans \texttt{dashboard/views.py} et montre que l'architecture réelle privilégie FastAPI pour le scoring, tout en conservant un pipeline local pour la résilience et la cohérence des pages.
+
+\subsection{Flux 3 : Analyse en mode fallback (FastAPI indisponible)}
+
+Ce flux est déclenché automatiquement lorsque
+\texttt{check\_fastapi\_health()} détecte que le service
+FastAPI ne répond pas. Il mobilise le pipeline ML local
+du module \texttt{core/ml\_service.py}.
+
+Lorsque le service FastAPI est indisponible, certaines fonctionnalités locales du module \texttt{core/ml\_service.py} peuvent être sollicitées afin d'assurer des traitements complémentaires ou des calculs unitaires. Le modèle \texttt{churn\_model\_v1.pkl} ainsi que le fichier \texttt{metadata.json} sont chargés localement au démarrage de l'application via \texttt{load\_ml\_model()}.
+
+Toutefois, dans l'implémentation actuelle, le pipeline local ne remplace pas intégralement le service FastAPI pour toutes les analyses batch du portefeuille client. Certaines opérations d'analyse restent dépendantes du micro-service FastAPI.
+
+\vspace{ 3cm}
+
+\begin{figure}[htbp]
+    \centering\includegraphics[width=0.7\linewidth,height=9cm]{images/ds fallback.drawio.png}
+\caption{Diagramme de séquence de l'analyse en mode fallback
+(FastAPI indisponible)}
+\label{fig:ds_fallback}
+\end{figure}
+
+\subsection{Flux 4 : Génération de données mock et analyse}
+Le chef d'agence déclenche la génération mock depuis l'interface.
+Le module \texttt{core/mock\_data.py} crée un \texttt{Dataset}
+au statut \texttt{methode="mock"} et génère les enregistrements
+\texttt{ClientChurn} avec des distributions statistiques réalistes
+via \texttt{bulk\_create}. 
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=7 cm]{images/ds mock.drawio.png}
+\caption{Diagramme de séquence de la génération de données Mocks
+et analyse}
+\label{fig:ds_mock}
+\end{figure}
+Le pipeline d'analyse est ensuite
+identique au flux nominal: vérification de la disponibilité de
+FastAPI, prédiction batch via FastAPI, avec possibilité d'utilisation de traitements locaux complémentaires selon le contexte d'exécution, mise à jour des scores
+et création de l'\texttt{AnalyseSession}.
+
+\subsection{Flux 5 : Workflow de recommandation}
+
+Ce flux implique trois acteurs et quatre composants: l'agent
+commercial ou marketing, le chef d'agence, la vue Django, la base de données
+et le moteur de notifications in-app.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=9cm]{images/ds recommandation.drawio.png}
+\caption{Diagramme de séquence du Workflow de recommandation}
+\label{fig:workflow recommandation}
+\end{figure}
+
+L'agent soumet une recommandation depuis la fiche client.
+Un enregistrement \texttt{Recommandation} est créé au statut
+\texttt{pending}. Le moteur de notifications crée une
+\texttt{Notification} de type \texttt{validation\_requise}
+à destination du chef d'agence. Ce dernier consulte ensuite la recommandation
+et peut l'activer ou la retirer. Chaque changement
+de statut est historisé et déclenche une notification in-app
+destinée aux acteurs concernés.
+
+\subsection{Flux 6 : Export PDF de la fiche client}
+
+L'utilisateur accède à \texttt{/clients/<id>/pdf/}. La vue
+\texttt{fiche\_client\_pdf} récupère le \texttt{ClientChurn}
+et les \texttt{ShapValeur} associées depuis PostgreSQL.
+Le template \texttt{fiche\_pdf.html} est rendu en HTML
+via \texttt{render\_to\_string}, puis transmis à
+\texttt{pdfkit.from\_string()} qui délègue la conversion
+à \texttt{wkhtmltopdf}. Le PDF résultant est retourné
+à l'utilisateur sous forme de \texttt{HttpResponse}
+avec le type MIME \texttt{application/pdf}.
+
+ \vspace{3cm}
+ 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=9cm]{images/ds export.drawio(1).png}
+\caption{Diagramme de séquence de l'export PDF de la fiche client}
+\label{fig:ds export PDF}
+\end{figure}
+
+\section{Conception de l'interface utilisateur}
+
+\subsection{Principes directeurs}
+
+L'interface est construite sur le framework Bootstrap 5 et
+respecte les principes directeurs suivants :
+
+\begin{itemize}
+
+    \item \textbf{Codage couleur du risque} : un code couleur
+    cohérent est appliqué à l'ensemble de l'interface pour
+    signaler le niveau de risque des clients. Le rouge indique
+    un risque élevé (score $\geq 0{,}32$) et le vert un
+    risque faible (score $< 0{,}32$). Ces codes apparaissent
+    sur les badges de la liste clients, les en-têtes de fiches
+    et les indicateurs du tableau de bord.
+
+    \item \textbf{Navigation contextuelle par rôle} : le menu
+    latéral et les actions disponibles sont filtrés
+    dynamiquement en fonction du rôle de l'utilisateur
+    connecté. Un agent commercial ne voit pas les fonctions
+    d'administration; un chef d'agence ne voit pas les
+    contrôles de réinitialisation. Les agents (commercial et marketing)
+    n'ont pas accès au tableau de bord KPIs.
+
+    \item \textbf{Isolation visuelle par agence} : seules les
+    données appartenant à l'agence de l'utilisateur connecté
+    sont affichées dans toutes les vues. Cette contrainte est
+    appliquée à la fois au niveau des requêtes ORM et au
+    niveau de l'interface, sans possibilité de contournement.
+
+    \item \textbf{Retour immédiat sur les opérations longues} :
+    le lancement d'une analyse, qui peut mobiliser plusieurs
+    secondes selon la taille du portefeuille, s'accompagne
+    d'un indicateur de progression afin de prévenir toute
+    soumission multiple par impatience de l'utilisateur.
+
+\end{itemize}
+
+\vspace{1 cm}
+
+\subsection{Arborescence des URLs}
+
+L'application est organisée autour de deux préfixes racines:
+\texttt{/accounts/} pour tout ce qui concerne l'authentification
+et la gestion des comptes, et \texttt{/} pour l'ensemble des
+fonctionnalités métier du dashboard. Cette séparation reflète
+directement la partition en modules Django et facilite la
+maintenance des règles de routage.
+
+La figure ci-après présente l'arborescence complète des URLs
+exposées par l'application, regroupées par module fonctionnel.
+
+\begin{figure}[htbp]
+    \centering    \includegraphics[width=0.7\linewidth,height=15cm]{images/urls.drawio(1).png}
+    \caption{Arborescence des URLs de l'application Django}
+    \label{fig:arborescence_urls}
+\end{figure}
+
+\subsection{Maquettes des interfaces principales}
+
+L'interface utilisateur de la plateforme a été conçue selon une
+logique de clarté et de hiérarchie visuelle, en plaçant les
+informations les plus critiques, les indicateurs de risque et
+les alertes en attente au premier plan de chaque écran.
+Nous présentons ci-après les quatre interfaces principales de
+l'application.
+
+\subsubsection{Tableau de bord principal}
+
+Le tableau de bord synthétise en un coup d'œil l'état du portefeuille client de
+l'agence à l'issue de l'analyse ainsi que l'historique des sessions d'analyse précédentes,
+permettant à l'utilisateur de suivre l'évolution du portefeuille
+dans le temps. \textit{Cette interface est réservée aux chefs d'agence et aux administrateurs.}
+
+\begin{figure}[htbp]
+    \centering    \includegraphics[width=0.7\linewidth,height=9cm]{images/dashboard.jpeg}
+    \caption{Tableau de bord principal après analyse}
+    \label{fig:screen_dashboard}
+\end{figure}
+
+\subsubsection{Liste des clients}
+
+La vue liste présente l'ensemble des clients de l'agence sous
+forme de tableau paginé par score de churn décroissant afin de faire remonter naturellement
+les profils les plus à risque. Chaque ligne
+affiche les informations essentielles du client ainsi qu'un badge
+coloré indiquant son niveau de risque, reprenant le code couleur
+unifié de l'interface. Un clic sur une ligne redirige vers la
+fiche détaillée du client concerné.
+
+\vspace{4cm}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=8cm]{images/liste_clients.jpeg}
+    \caption{Liste clients paginée avec filtre par niveau de risque}
+    \label{fig:liste_clients}
+\end{figure}
+
+\subsubsection{Fiche client}
+
+La fiche client regroupe sur un seul écran l'ensemble des
+informations nécessaires à la prise de décision commerciale.
+La partie supérieure affiche le profil contractuel et
+comportemental du client ainsi que son score de churn mis en
+évidence par un indicateur visuel coloré. La partie centrale
+présente le graphique SHAP, qui illustre la contribution de
+chaque variable à la prédiction: les barres orientées vers la
+droite représentent les facteurs aggravant le risque de départ,
+tandis que celles orientées vers la gauche représentent les
+facteurs protecteurs.
+
+\begin{figure}[htbp]
+    \centering
+\includegraphics[width=0.7\linewidth,height=7 cm]{images/fiche_client.jpeg}
+\caption{Fiche client avec score de churn et explication SHAP}
+\label{fig:interface_fiche_client}
+\end{figure}
+ L'onget suivant liste l'historique
+des recommandations créées pour ce client, avec leur statut
+courant. Les agents disposent également d'un formulaire
+permettant de créer une nouvelle recommandation et d'un
+lien vers l'export PDF de la fiche.
+
+\subsubsection{Centre de notifications}
+
+Le centre de notifications regroupe l'ensemble des alertes
+destinées à l'utilisateur connecté. Chaque notification est
+présentée avec son type, son contenu et son horodatage.
+Un badge de notifications non lues est affiché dans la barre de navigation, signalant à l'utilisateur toute
+action en attente dès son arrivée sur la plateforme. Des actions
+rapides permettent de marquer une notification comme lue,
+de l'archiver ou de la supprimer, individuellement ou en masse.
+\textit{Les notifications par email sont réservées aux événements liés au compte et à l'authentification (création de compte, OTP, réinitialisation de mot de passe, journalisation des connexions).}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=7cm]{images/notif_alerte.jpeg}
+    \caption{Centre de notifications in-app}
+    \label{fig:interface_notifications}
+\end{figure}
+
+\section{Choix technologiques}
+
+\subsection{Tableau récapitulatif}
+
+Dans le tableau ci contre, nous détaillons l'ensemble de nos technologie et les versions utilisées.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Technologies retenues et justifications}
+    \label{tab:technologies}
+    \begin{tabular}{|p{3cm}|p{2.5cm}|p{7.8cm}|}
+        \hline
+        \textbf{Technologie} & \textbf{Version installée}
+        & \textbf{Justification du choix} \\
+        \hline
+        Django
+        & 4.2.30
+        & Framework web Python mature; ORM puissant,
+          système de permissions natif, interface d'administration,
+          gestion des migrations et des sessions intégrées.\\
+        \hline
+        FastAPI
+        & 0.136.1
+        & Architecture ASGI asynchrone adaptée aux opérations
+          ML batch; génération automatique de la documentation
+          OpenAPI; validation des schémas via Pydantic.\\
+        \hline 
+    \end{tabular}
+\end{table}
+\begin{table}[htbp]
+ \centering
+    \begin{tabular}{|p{3cm}|p{2.5cm}|p{7.8cm}|}
+        \hline
+        PostgreSQL
+        & & Base de données relationnelle robuste; support natif
+          du type \texttt{JSONField} pour les résultats d'analyse;
+          cohérence entre environnements de développement
+          et de production.\\
+        \hline
+        XGBoost
+        & 3.2.0
+        & Algorithme de référence pour la classification sur
+          données tabulaires; hautes performances sur des
+          variables mixtes (numériques, booléennes);
+          nativement compatible avec SHAP.\\
+        \hline
+        SHAP
+        & 0.51.0
+        & Explicabilité locale des prédictions; le
+          \texttt{TreeExplainer} est spécifiquement optimisé
+          pour les modèles à base d'arbres (XGBoost);
+          valeurs SHAP directement interprétables par les agents. \\
+        \hline
+        scikit-learn
+        & 1.8.0
+        & Prétraitement standardisé (scaler, encodeur);
+          pipeline de transformation reproductible;
+          métriques d'évaluation du modèle. \\
+        \hline
+    
+        pandas
+        & 3.0.2
+        & Manipulation des datasets CSV;
+          lecture CSV via une API unifiée;
+          préparation des données pour l'inférence batch. \\
+        \hline
+        httpx
+        & 0.28.1
+        & Client HTTP asynchrone pour les appels
+          Django $\rightarrow$ FastAPI; gestion native
+          des timeouts et des erreurs de connexion,
+          utilisée pour détecter l'indisponibilité
+          de FastAPI et déclencher le fallback. \\
+        \hline
+        SendGrid
+        & 6.9.x
+        & Envoi d'emails transactionnels (OTP, réinitialisation mot de passe, validation compte)
+          via SMTP; gabarit HTML personnalisé par email;
+          clé API externalisée dans le fichier \texttt{.env}. \\
+        \hline
+        pdfkit + wkhtmltopdf
+        & 
+        & Génération de fiches client PDF directement depuis
+          les templates HTML Django existants, sans nécessiter
+          de bibliothèque de rendu PDF supplémentaire. \\
+        \hline
+        python-decouple
+        & 3.8
+        & Externalisation des variables d'environnement
+          sensibles dans le fichier \texttt{.env};
+          aucune information confidentielle dans le code source. \\
+        \hline
+        Bootstrap
+        & 5.x
+        & Composants UI responsives prêts à l'emploi;
+          système de grille adaptatif; intégration native
+          avec les templates Django. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+
+\section{Conclusion}
+
+
+Ce chapitre a présenté la conception complète du système de
+gestion du churn, depuis les décisions architecturales jusqu'aux
+détails des entités de données et des flux d'interaction.
+
+L'architecture hybride Django + FastAPI avec mécanisme de fallback
+local constitue le choix structurant de ce projet: elle permet
+de séparer clairement la logique métier de l'inférence ML,
+d'améliorer la résilience du système face à l'indisponibilité éventuelle du service de prédiction, et d'ouvrir la voie à une évolution
+indépendante des deux composants.
+
+La modélisation des données autour de l'entité centrale
+\texttt{ClientChurn}, reliée à son \texttt{Dataset} d'origine
+et à l'entité géographique \texttt{Agence}, reflète fidèlement
+les contraintes métier identifiées en phase d'analyse:
+traçabilité des chargements, isolation par agence, et
+cohérence du référentiel hiérarchique.
+
+Les six diagrammes de séquence détaillent les interactions
+entre les composants du système pour l'ensemble des scénarios
+nominaux et alternatifs, constituant ainsi une référence formelle
+pour la phase de développement présentée dans le chapitre suivant.

@@ -19,8 +19,8 @@ Développé pour Tunisie Telecom — Agence de Kairouan
 ```bash
 git clone <repository-url>
 cd CHURN
-python -m venv venv
-venv\Scripts\activate
+py -3.11 -m venv .venv
+.venv\Scripts\Activate.ps1  # PowerShell
 pip install -r requirements.txt
 ```
 
@@ -80,7 +80,26 @@ DEFAULT_FROM_EMAIL=churn@tunisietelecom.tn
 ```
 
 ---
+## Docker
 
+1. Copier `.env.example` en `.env` et adapter les valeurs.
+2. Construire et démarrer les services :
+
+```bash
+docker compose up --build
+```
+
+3. Accéder aux services :
+   - Django : `http://localhost:8000`
+   - FastAPI : `http://localhost:8001/docs`
+
+4. Arrêter les services :
+
+```bash
+docker compose down
+```
+
+---
 ## Utilisation
 
 1. Créer une agence via l'admin Django (`/admin`)

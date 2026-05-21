@@ -1,35 +1,6 @@
-# =============================================================================
-# app/main.py — Point d'entrée FastAPI
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# JUSTIFICATION ARCHITECTURALE :
-# Ce fichier est volontairement MINIMAL : il ne contient PAS de logique
-# métier. Son rôle se limite à :
-#   1. Définir le lifespan qui charge les artefacts au démarrage
-#   2. Configurer CORS pour permettre les requêtes depuis React
-#   3. Assembler les 5 routers en une seule application FastAPI
-#
-# Toute la logique ML est dans app/ml/, toutes les routes dans app/routers/.
-# Cette séparation permet :
-#   - Démarrer rapidement (lifespan = 1 seule passe de chargement)
-#   - Tester la logique sans serveur (cf. tests_manuels/)
-#   - Maintenir facilement (un bug se localise vite)
-#
-# Pour lancer le serveur :
-#   uvicorn app.main:app --reload --port 8000
-#
-# Documentation interactive (Swagger UI) :
-#   http://localhost:8000/docs
-#
-# Documentation alternative (ReDoc) :
-#   http://localhost:8000/redoc
-
 from contextlib import asynccontextmanager
-
-from fastapi                 import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 import logging
 
 logger = logging.getLogger(__name__)
@@ -52,7 +23,6 @@ from app.ml.dependencies import (
 # Routers — un par domaine fonctionnel
 from app.routers import system, model, prediction, shap, clients
 
-
 # =============================================================================
 # LIFESPAN — chargement des artefacts au démarrage / cleanup à l'arrêt
 # =============================================================================
@@ -62,6 +32,7 @@ from app.routers import system, model, prediction, shap, clients
 #
 # C'est la façon moderne et recommandée par FastAPI (depuis 0.93) de gérer
 # les ressources globales comme les modèles ML, les connexions DB, etc.
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -123,21 +94,25 @@ async def lifespan(app: FastAPI):
 # =============================================================================
 
 app = FastAPI(
-    title       = API_TITLE,
-    description = API_DESCRIPTION,
-    version     = API_VERSION,
-    lifespan    = lifespan,
+    title=API_TITLE,
+    description=API_DESCRIPTION,
+    version=API_VERSION,
+    lifespan=lifespan,
 )
 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc: RequestValidationError):
     logger.error(f"Validation error for {request.url}: {exc.errors()}")
     return JSONResponse(
         status_code=422,
-        content={"detail": exc.errors(), "message": "Payload invalide – vérifiez les champs requis."},
+        content={
+            "detail": exc.errors(),
+            "message": "Payload invalide – vérifiez les champs requis.",
+        },
     )
 
 
@@ -155,10 +130,10 @@ async def validation_exception_handler(request, exc: RequestValidationError):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins     = CORS_ORIGINS,
-    allow_credentials = True,
-    allow_methods     = ["*"],          # GET, POST, PUT, DELETE, OPTIONS
-    allow_headers     = ["*"],          # Authorization, Content-Type, etc.
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],  # GET, POST, PUT, DELETE, OPTIONS
+    allow_headers=["*"],  # Authorization, Content-Type, etc.
 )
 
 
@@ -169,11 +144,13 @@ app.add_middleware(
 # principale. Les préfixes et tags sont déjà définis dans chaque routeur,
 # donc on n'a rien à ajouter ici.
 
-app.include_router(system.router)       # GET  /health
-app.include_router(model.router)        # GET  /api/model/info, POST /api/train
-app.include_router(prediction.router)   # POST /api/predict, /api/predict/batch, /api/analyse
-app.include_router(shap.router)         # GET  /api/shap/{client_id}
-app.include_router(clients.router)      # GET  /api/clients
+app.include_router(system.router)  # GET  /health
+app.include_router(model.router)  # GET  /api/model/info, POST /api/train
+app.include_router(
+    prediction.router
+)  # POST /api/predict, /api/predict/batch, /api/analyse
+app.include_router(shap.router)  # GET  /api/shap/{client_id}
+app.include_router(clients.router)  # GET  /api/clients
 
 
 # =============================================================================
@@ -182,26 +159,27 @@ app.include_router(clients.router)      # GET  /api/clients
 # Si quelqu'un visite http://localhost:8000/ (sans /docs), on lui propose
 # directement Swagger UI plutôt qu'une 404.
 
+
 @app.get(
     "/",
-    tags    = ["Système"],
-    summary = "Page d'accueil — informations sur l'API",
-    include_in_schema = False,        # ne pollue pas la doc avec ça
+    tags=["Système"],
+    summary="Page d'accueil — informations sur l'API",
+    include_in_schema=False,  # ne pollue pas la doc avec ça
 )
 def racine() -> dict:
     """Page d'accueil de l'API — pointe vers Swagger UI."""
     return {
-        "message" : "Bienvenue sur l'API de Prédiction du Churn — Tunisie Télécom Kairouan",
-        "version" : API_VERSION,
+        "message": "Bienvenue sur l'API de Prédiction du Churn — Tunisie Télécom Kairouan",
+        "version": API_VERSION,
         "documentation": {
-            "swagger" : "/docs",
-            "redoc"   : "/redoc",
+            "swagger": "/docs",
+            "redoc": "/redoc",
         },
         "endpoints_principaux": {
-            "health"     : "GET  /health",
-            "predict"    : "POST /api/predict",
-            "model_info" : "GET  /api/model/info",
-            "shap"       : "GET  /api/shap/{client_id}",
-            "clients"    : "GET  /api/clients",
+            "health": "GET  /health",
+            "predict": "POST /api/predict",
+            "model_info": "GET  /api/model/info",
+            "shap": "GET  /api/shap/{client_id}",
+            "clients": "GET  /api/clients",
         },
     }

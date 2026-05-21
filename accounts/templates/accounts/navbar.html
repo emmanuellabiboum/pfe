@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -13,17 +13,23 @@
     <style>
         :root {
             /* Couleurs Tunisie Telecom */
-            --brand: #004595;         /* Bleu TT */
+            --brand: #004595;
+            /* Bleu TT */
             --brand-light: #e6f0ff;
             --brand-dark: #002d62;
-            --accent: #ed1c24;        /* Rouge TT */
-            --accent-purple: #92278f; /* Violet TT */
-            --accent-cyan: #00aeef;   /* Cyan TT */
-            --success: #8cc63f;       /* Vert TT */
+            --accent: #ed1c24;
+            /* Rouge TT */
+            --accent-purple: #92278f;
+            /* Violet TT */
+            --accent-cyan: #00aeef;
+            /* Cyan TT */
+            --success: #8cc63f;
+            /* Vert TT */
             --success-bg: #f4fae9;
             --danger: #dc2626;
             --danger-bg: #fef2f2;
-            --warning: #f7941d;       /* Orange TT */
+            --warning: #f7941d;
+            /* Orange TT */
             --warning-bg: #fff8f0;
             --neutral: #f8f9fa;
             --neutral-dark: #e9ecef;
@@ -56,7 +62,7 @@
             left: 0;
             right: 0;
             z-index: 9999;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border-bottom: 3px solid var(--brand);
         }
 
@@ -365,7 +371,6 @@
         }
     </style>
 
-    {# ThÃ¨me global (permet d'aligner aussi les pages qui incluent cette navbar) #}
     <link href="{% static 'css/common.css' %}" rel="stylesheet">
 </head>
 
@@ -468,7 +473,7 @@
                     </a>
                     <div class="dd-separator"></div>
                     <a href="{% url 'accounts:login' %}" class="dd-menu-item danger">
-                        <i class="bi bi-box-arrow-right"></i> DÃ©connexion
+                        <i class="bi bi-box-arrow-right"></i> Déconnexion
                     </a>
                 </div>
             </div>
@@ -483,17 +488,17 @@
                         <i class="bi bi-house"></i> Accueil
                     </a>
                     {% endif %}
-                    {% if request.user.role == 'chef_agence' or request.user.is_superuser %}
+                    {% if request.user.role == 'chef_agence' %}
                     <a href="{% url 'dashboard:dashboard_global' %}" class="dd-menu-item">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                     {% endif %}
-                    {% if request.user.role == 'chef_agence' or request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
+                    {% if request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
                     <a href="{% url 'dashboard:administration' %}" class="dd-menu-item">
                         <i class="bi bi-gear"></i> Administration
                     </a>
                     {% endif %}
-                    {% if request.user.role == 'chef_agence' %}
+                    {% if request.user.role == 'chef_agence' or request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
                     <a href="{% url 'accounts:gestion_comptes' %}" class="dd-menu-item">
                         <i class="bi bi-shield-lock"></i> Gestion des comptes
                     </a>
@@ -525,42 +530,9 @@
         });
 
         let lastNotificationCount = {{ nb_notifications }};
-
-        // Notifications API check disabled - FastAPI service not running
-        // async function checkNotifications() {
-        //     try {
-        //         const response = await fetch("{% url 'dashboard:notifications_api' %}");
-        //         const data = await response.json();
-
-        //         const badge = document.querySelector('.notif-badge');
-        //         if (badge) {
-        //             if (data.nb_notifications > 0) {
-        //                 badge.style.display = 'flex';
-        //             } else {
-        //                 badge.style.display = 'none';
-        //             }
-        //         }
-
-        //         const dropdown = document.getElementById('dd-notif');
-        //         if (dropdown && dropdown.classList.contains('open')) {
-        //             const notifList = dropdown.querySelector('.dd-panel');
-        //             if (notifList && data.nb_notifications !== lastNotificationCount) {
-        //                 location.reload();
-        //             }
-        //         }
-
-        //         lastNotificationCount = data.nb_notifications;
-        //     } catch (error) {
-        //         console.error('Erreur lors du check des notifications:', error);
-        //     }
-        // }
-
-        // setInterval(checkNotifications, 30000);
     </script>
 
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </body>
 
 </html>
-
-

@@ -16,7 +16,8 @@
 # Pour un NOUVEAU client (non présent dans le test set), il faut utiliser
 # /api/predict qui recalcule les SHAP en live via le TreeExplainer.
 
-import pandas as pd
+import pandas as pd  
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from app.ml.dependencies import get_artifacts, get_shap_matrix
@@ -53,7 +54,7 @@ def get_shap_explanation(
         description = "Index du client dans le test set (0 à 89)",
     ),
     artefacts  : MLArtifacts    = Depends(get_artifacts),
-    shap_matrix: pd.DataFrame   = Depends(get_shap_matrix),
+    shap_matrix: Any            = Depends(get_shap_matrix),
 ) -> ShapWaterfallResponse:
     """
     Endpoint de récupération du waterfall SHAP pour un client du test set.

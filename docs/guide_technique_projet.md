@@ -15,7 +15,7 @@ Le workflow principal :
 1. Import d'un dataset reel (CSV/Excel/TXT/TSV) ou generation mock.
 2. Creation/mise a jour des `Dataset` et `ClientChurn`.
 3. Lancement d'analyse via Django (`/lancer-analyse/`).
-4. Appel prioritaire de FastAPI (`/api/predict/batch`) avec fallback local.
+4. Appel prioritaire de FastAPI (`/api/predict/batch`). Si l'API FastAPI est indisponible, l'analyse est interrompue par l'endpoint Django.
 5. Sauvegarde des scores, calcul KPI, generation recommandations/notifications.
 
 ---
@@ -82,7 +82,7 @@ Django porte la logique metier et les ecrans :
 
 ## 3.2 FastAPI (service de prediction)
 
-FastAPI expose les endpoints ML dans `churn_pfe/backend/app.py` :
+FastAPI expose les endpoints ML dans `pfe_final/churn_api/app/main.py` :
 
 - health check,
 - informations modele,
@@ -90,6 +90,8 @@ FastAPI expose les endpoints ML dans `churn_pfe/backend/app.py` :
 - prediction batch CSV,
 - analyse portefeuille,
 - endpoint SHAP et listing clients scores.
+
+Note : le service FastAPI retourne une segmentation binaire CHURN / NON-CHURN pour les prédictions et l'analyse de portefeuille. Il n'expose pas de segmentation explicite `moyen` dans le flux actuel.
 
 `python-multipart` est requis pour les endpoints `UploadFile`.
 
@@ -124,7 +126,7 @@ Le projet n'est pas decoupe en microservices deployes independamment (type Kuber
 
 ### Service 1 — Inference API (FastAPI)
 
-- Fichier: `churn_pfe/backend/app.py`
+- Fichier: `pfe_final/churn_api/app/main.py`
 - Role: servir les predictions ML via HTTP (`/api/predict`, `/api/predict/batch`, `/api/analyse`).
 - Consommateur: Django, via `core/fastapi_service.py`.
 - Valeur: permet de separer le moteur de prediction de l'interface metier.
@@ -201,7 +203,7 @@ powershell -ExecutionPolicy Bypass -File .\start_all.ps1
 
 ## 5) Endpoints FastAPI (service ML)
 
-Source: `churn_pfe/backend/app.py`
+Source: `pfe_final/churn_api/app/main.py`
 
 ## 5.1 Systeme
 
@@ -225,7 +227,7 @@ Source: `churn_pfe/backend/app.py`
   Prediction batch via upload CSV.
 
 - `POST /api/analyse`  
-  Analyse portefeuille et agregats (`haut_risque`, `moyen_risque`, etc.).
+  Analyse portefeuille et agregats (`haut_risque`, `faible_risque`).
 
 - `GET /api/shap/{client_id}`  
   Explication SHAP detaillee d'un client.
@@ -296,15 +298,17 @@ Sous prefixe `/accounts/`:
 2. Django lit le fichier et cree `Dataset` + `ClientChurn`.
 3. Django teste FastAPI (`/health`).
 4. Si OK → envoi batch a `/api/predict/batch`.
-5. Mapping des predictions vers `score_churn`, `churn_predit`, `niveau_risque`.
+5. Mapping des predictions vers `score_churn` et `churn_predit`.
 6. Calcul KPI, creation `AnalyseSession`.
 7. Generation recommandations + notifications.
+
+> Si FastAPI n'est pas disponible, le flux est interrompu et l'utilisateur reçoit une erreur 503. En cas de succès du service FastAPI mais d'erreur batch, Django retente la prédiction via `/api/predict` unitaire.
 
 ## 7.2 Flux B — Donnees mock
 
 1. UI declenche generation mock (`/generer-mock/` ou chemin interne).
 2. `core/mock_data.py` cree un dataset `methode="mock"` et clients simules.
-3. Analyse ensuite identique (FastAPI prioritaire, fallback local sinon).
+3. Analyse ensuite identique (FastAPI prioritaire ; pas de fallback local automatique dans `/lancer-analyse/`).
 
 ## 7.3 Flux C — Reinitialisation dashboard
 
@@ -329,7 +333,7 @@ Role :
 Role :
 
 - centraliser attributs client telecom (usage, contrat, engagement),
-- stocker sortie prediction (`score_churn`, `churn_predit`, `niveau_risque`),
+- stocker sortie prediction (`score_churn`, `churn_predit`),
 - maintenir la coherence agence/dataset.
 
 Points importants :
@@ -385,7 +389,7 @@ Verifie la compilation de:
 
 - `core/fastapi_service.py`
 - `dashboard/views.py`
-- `churn_pfe/backend/app.py`
+- `pfe_final/churn_api/app/main.py`
 
 Commande :
 
@@ -456,7 +460,7 @@ python manage.py import_dataset --file datasets/dataset_pfe_brut.csv --agence "A
    Les noms de champs doivent etre convertis explicitement si les schemas different.
 
 3. **Niveaux de risque**  
-   Respecter les valeurs autorisees Django (`faible`, `moyen`, `eleve`).
+   Respecter les valeurs autorisees Django (`faible`, `eleve`).
 
 4. **Dependances upload FastAPI**  
    `python-multipart` obligatoire pour `UploadFile`.

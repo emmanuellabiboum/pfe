@@ -1,5 +1,4 @@
-{% load static %}
-{% load humanize %}
+{% load static humanize dashboard_extras %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -517,6 +516,53 @@
     .direction-badge.up   { background: var(--danger-bg);  color: var(--danger); }
     .direction-badge.down { background: var(--success-bg); color: var(--success); }
 
+    /* ── SHAP VISUAL PDF ── */
+    .shap-summary-pdf {
+        background: #f1f5f9;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 15px;
+        overflow: hidden;
+    }
+    .ss-item { width: 50%; float: left; text-align: center; }
+    .ss-label { font-size: 8px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 2px; }
+    .ss-val { font-size: 15px; font-weight: 800; color: var(--brand); }
+
+    .shap-chart-visual { margin-bottom: 20px; clear: both; }
+    .shap-visual-row { margin-bottom: 12px; border-bottom: 1px solid #f8fafc; padding-bottom: 6px; overflow: hidden; }
+    .svr-info { margin-bottom: 4px; overflow: hidden; }
+    .svr-name { float: left; font-size: 10px; font-weight: 700; color: var(--brand); }
+    .svr-val { float: right; font-size: 9px; font-weight: 800; }
+    .svr-val.pos { color: var(--danger); }
+    .svr-val.neg { color: var(--success); }
+
+    .svr-axis-container { 
+        height: 14px; 
+        background: #f1f5f9; 
+        border-radius: 3px; 
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        clear: both;
+    }
+    .svr-axis-half { width: 50%; float: left; height: 100%; position: relative; }
+    .svr-axis-mid { 
+        position: absolute; 
+        left: 50%; 
+        top: 0; 
+        bottom: 0; 
+        width: 1px; 
+        background: #cbd5e1; 
+        z-index: 10; 
+    }
+    .svr-bar { height: 100%; position: absolute; top: 0; }
+    .svr-bar.pos { left: 0; background: #dc2626; border-radius: 0 3px 3px 0; }
+    .svr-bar.neg { right: 0; background: #059669; border-radius: 3px 0 0 3px; }
+    
+    .svr-labels { margin-top: 2px; overflow: hidden; }
+    .svr-label-left { float: left; font-size: 7.5px; color: var(--faint); font-weight: 600; }
+    .svr-label-right { float: right; font-size: 7.5px; color: var(--faint); font-weight: 600; }
+
     /* ── RECOMMANDATIONS ── */
     .rec-item {
       border: 1px solid var(--border);
@@ -668,20 +714,19 @@
           <span class="client-id-badge">{{ client.client_id }}</span>
           <div class="client-name">{{ client.nom }}</div>
           <div class="hero-tags">
-            <span class="hero-tag"><i class="bi bi-tag-fill"></i> {{ client.segment }}</span>
             <span class="hero-tag"><i class="bi bi-telephone-fill"></i> {{ client.telephone }}</span>
             <span class="hero-tag"><i class="bi bi-calendar3"></i> {{ client.anciennete_mois }} mois d'ancienneté</span>
           </div>
         </div>
         <div class="hero-score">
           <div class="score-circle"
-               style="background:{% if score_pct >= 70 %}#fef2f2{% elif score_pct >= 40 %}#fffbeb{% else %}#ecfdf5{% endif %};
-                      color:{% if score_pct >= 70 %}var(--danger){% elif score_pct >= 40 %}var(--warning){% else %}var(--success){% endif %};">
+               style="background:{% if score_pct >= 32 %}#fef2f2{% else %}#ecfdf5{% endif %};
+                      color:{% if score_pct >= 32 %}var(--danger){% else %}var(--success){% endif %};">
             <svg class="ring" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
               <circle cx="33" cy="33" r="27" fill="none" stroke="#e2e8f0" stroke-width="5"/>
               <circle cx="33" cy="33" r="27"
                       fill="none"
-                      stroke="{% if score_pct >= 70 %}#dc2626{% elif score_pct >= 40 %}#d97706{% else %}#059669{% endif %}"
+                      stroke="{% if score_pct >= 32 %}#dc2626{% else %}#059669{% endif %}"
                       stroke-width="5"
                       stroke-linecap="round"
                       stroke-dasharray="169.6"
@@ -691,9 +736,9 @@
             <span class="score-lbl">churn</span>
           </div>
           <span class="risk-pill"
-                style="{% if score_pct >= 70 %}background:var(--danger-bg);color:var(--danger);{% elif score_pct >= 40 %}background:var(--warning-bg);color:var(--warning);{% else %}background:var(--success-bg);color:var(--success);{% endif %}">
-            <i class="bi bi-{% if score_pct >= 70 %}exclamation-triangle-fill{% elif score_pct >= 40 %}dash-circle-fill{% else %}shield-check{% endif %}"></i>
-            Risque {{ risque_label }}
+                style="{% if score_pct >= 32 %}background:var(--danger-bg);color:var(--danger);{% else %}background:var(--success-bg);color:var(--success);{% endif %}">
+            <i class="bi bi-{% if score_pct >= 32 %}exclamation-triangle-fill{% else %}shield-check{% endif %}"></i>
+            {{ risque_label }}
           </span>
         </div>
       </div>
@@ -706,10 +751,7 @@
             <span class="s-title">Informations client</span>
           </div>
           <div class="info-card">
-            <div class="info-row">
-              <span class="ir-label"><i class="bi bi-layers"></i> Segment</span>
-              <span class="ir-val">{{ client.segment }}</span>
-            </div>
+
             <div class="info-row">
               <span class="ir-label"><i class="bi bi-calendar3"></i> Ancienneté</span>
               <span class="ir-val">{{ client.anciennete_mois }} mois</span>
@@ -750,13 +792,13 @@
           <div class="score-bar-wrap">
             <div class="score-bar-label">Probabilité de résiliation</div>
             <div class="score-big"
-                 style="color:{% if score_pct >= 70 %}var(--danger){% elif score_pct >= 40 %}var(--warning){% else %}var(--success){% endif %};">
+                 style="color:{% if score_pct >= 32 %}var(--danger){% else %}var(--success){% endif %};">
               {{ score_pct }}%
             </div>
             <div class="score-bar-track">
               <div class="score-bar-fill"
                    style="width:{{ score_pct }}%;
-                          background:{% if score_pct >= 70 %}var(--danger){% elif score_pct >= 40 %}var(--warning){% else %}var(--success){% endif %};"></div>
+                          background:{% if score_pct >= 32 %}var(--danger){% else %}var(--success){% endif %};"></div>
             </div>
           </div>
 
@@ -821,6 +863,70 @@
     <div class="confidential-stamp">Confidentiel</div>
 
     <div class="page-body">
+
+      <div class="section-head">
+        <div class="s-icon"><i class="bi bi-bar-chart-fill"></i></div>
+        <span class="s-title">Analyse des facteurs de risque (SHAP)</span>
+        <span class="s-sub">Impact des caractéristiques sur le score de churn</span>
+      </div>
+
+      <div class="shap-intro">
+        <div class="si-icon"><i class="bi bi-cpu-fill"></i></div>
+        <div class="si-info">
+          <div class="si-title">Modèle d'Intelligence Artificielle</div>
+          <div class="si-body">
+            L'analyse SHAP explique comment chaque donnée client influence la prédiction finale. 
+            Les valeurs indiquent une contribution additive au risque de churn.
+          </div>
+        </div>
+        <div class="si-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--danger);"></div> Augmente le risque</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div> Réduit le risque</div>
+        </div>
+      </div>
+
+      <div class="shap-summary-pdf mb-3">
+        <div class="ss-item">
+          <div class="ss-label">Risque moyen (Base)</div>
+          <div class="ss-val">{{ shap_meta.base_value|mul:100|floatformat:1 }}%</div>
+        </div>
+        <div class="ss-item" style="border-left: 2px solid var(--border);">
+          <div class="ss-label">Score final calculé</div>
+          <div class="ss-val" style="color:{% if score_pct >= 32 %}var(--danger){% else %}var(--success){% endif %};">{{ score_pct }}%</div>
+        </div>
+      </div>
+
+      <div class="shap-chart-visual">
+        {% for shap in shap_features %}
+        <div class="shap-visual-row">
+            <div class="svr-info">
+                <span class="svr-name">{{ shap.feature }}</span>
+                <span class="svr-val {% if shap.valeur > 0 %}pos{% else %}neg{% endif %}">
+                    {% if shap.valeur > 0 %}+{% endif %}{{ shap.valeur|floatformat:4 }}
+                </span>
+            </div>
+            <div class="svr-axis-container">
+                <div class="svr-axis-half left">
+                    {% if shap.valeur < 0 %}
+                    <div class="svr-bar neg" style="width: {{ shap.width_percent }}%;"></div>
+                    {% endif %}
+                </div>
+                <div class="svr-axis-mid"></div>
+                <div class="svr-axis-half right">
+                    {% if shap.valeur > 0 %}
+                    <div class="svr-bar pos" style="width: {{ shap.width_percent }}%;"></div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="svr-labels">
+                <span>Réduit le risque</span>
+                <span>Augmente le risque</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-3 text-muted">Aucune donnée d'analyse détaillée disponible.</div>
+        {% endfor %}
+      </div>
 
       <div class="section-head">
         <div class="s-icon"><i class="bi bi-lightbulb-fill"></i></div>

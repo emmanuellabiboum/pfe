@@ -119,12 +119,9 @@
                             </p>
 
                             <div class="mb-4">
-                                <div id="otp-timer-display" 
-                                     data-otp-timer="600"
-                                     data-otp-warning="60"
-                                     data-otp-danger="30"
-                                     data-otp-format="MM:SS"
-                                     style="font-size: 28px; font-weight: 700; font-family: 'Courier New', monospace;
+                                <div id="otp-timer-display" data-otp-timer="300" data-otp-warning="60"
+                                    data-otp-danger="30" data-otp-format="MM:SS"
+                                    style="font-size: 28px; font-weight: 700; font-family: 'Courier New', monospace;
                                             color: #082281; padding: 12px; background: #f1f3f9; border-radius: 8px; display: inline-block;">
                                     --:--
                                 </div>
@@ -173,14 +170,51 @@
         </div>
     </div>
 
-    <script src="{% static 'js/otp-countdown.js' %}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        class OTPTimer {
+            constructor(elementId, options) {
+                this.element = document.getElementById(elementId);
+                this.duration = options.durationSeconds || 600;
+                this.warning = options.warningThreshold || 60;
+                this.danger = options.dangerThreshold || 30;
+                this.onExpire = options.onExpire;
+
+                this.remaining = this.duration;
+                this.updateDisplay();
+
+                this.interval = setInterval(() => {
+                    this.remaining--;
+                    if (this.remaining <= 0) {
+                        clearInterval(this.interval);
+                        this.remaining = 0;
+                        this.updateDisplay();
+                        this.element.style.color = "#dc3545"; // danger
+                        if (this.onExpire) this.onExpire();
+                    } else {
+                        this.updateDisplay();
+                        if (this.remaining <= this.danger) {
+                            this.element.style.color = "#dc3545"; // danger
+                        } else if (this.remaining <= this.warning) {
+                            this.element.style.color = "#f7941d"; // warning
+                        }
+                    }
+                }, 1000);
+            }
+
+            updateDisplay() {
+                const m = Math.floor(this.remaining / 60).toString().padStart(2, '0');
+                const s = (this.remaining % 60).toString().padStart(2, '0');
+                this.element.textContent = `${m}:${s}`;
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
             new OTPTimer('otp-timer-display', {
-                durationSeconds: 600,
+                durationSeconds: 300,
                 warningThreshold: 60,
                 dangerThreshold: 30,
-                onExpire: function() {
+                onExpire: function () {
                     const inputs = document.querySelectorAll('.otp-input');
                     inputs.forEach(input => input.disabled = true);
                     const btn = document.querySelector('.btn-verify');

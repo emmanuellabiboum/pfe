@@ -25,8 +25,8 @@
 import unicodedata
 from typing import Any, Dict, List, Tuple
 
-import numpy  as np
-import pandas as pd
+import numpy  as np  
+import pandas as pd 
 
 from app.schemas import ClientFeatures
 
@@ -96,7 +96,7 @@ def nettoyer_modalite(s: Any) -> Any:
     return s_clean
 
 
-def nettoyer_modalites_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+def nettoyer_modalites_dataframe(df: object) -> Tuple[object, List[str]]:
     """
     Applique le nettoyage à toutes les colonnes nominales d'un DataFrame
     et retourne le DataFrame nettoyé + la liste des transformations
@@ -116,6 +116,7 @@ def nettoyer_modalites_dataframe(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[s
     transformations ont été appliquées à ses données — c'est de la
     transparence essentielle pour un système ML en production.
     """
+    import pandas as pd
     df_clean = df.copy()
     log: List[str] = []
 
@@ -202,11 +203,12 @@ def _verifier_modalite(
 # Pas de nettoyage ici car les Enums Pydantic garantissent déjà des
 # modalités propres (sans accents, avec underscores).
 
-def pretraiter_client(client: ClientFeatures, params: Dict[str, Any]) -> pd.DataFrame:
+def pretraiter_client(client: ClientFeatures, params: Dict[str, Any]):
     """
     Transforme un ClientFeatures (Pydantic) en DataFrame d'une ligne
     avec les 31 colonnes attendues par le modèle Random Forest.
     """
+    import pandas as pd
     ordinal_mapping        = params["ordinal_mapping"]
     ohe_columns            = params["ohe_columns"]
     nominal_info           = params["nominal_info"]
@@ -282,9 +284,9 @@ def pretraiter_client(client: ClientFeatures, params: Dict[str, Any]) -> pd.Data
 #   - L'ancienne signature reste accessible via pretraiter_dataframe_simple
 
 def pretraiter_dataframe(
-    df_raw: pd.DataFrame,
+    df_raw: Any,
     params: Dict[str, Any],
-) -> Tuple[pd.DataFrame, List[str]]:
+) -> Tuple[Any, List[str]]:
     """
     Transforme un DataFrame brut en DataFrame encodé prêt pour le modèle.
 
@@ -314,6 +316,7 @@ def pretraiter_dataframe(
     Raises:
         ValueError : si le DataFrame est vide.
     """
+    import pandas as pd
     if df_raw.empty:
         raise ValueError("Le DataFrame fourni est vide")
 

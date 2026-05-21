@@ -26,8 +26,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "dashboard",
-    "accounts",
     "core",
+    "accounts",
     "learning",
 ]
 
@@ -57,7 +57,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [os.path.join(BASE_DIR, "templates")],
-        "APP_DIRS": False,
+        "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
@@ -65,22 +65,21 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "core.context_processors.notifications",
             ],
-            "loaders": [
-                ("django.template.loaders.filesystem.Loader",),
-                ("django.template.loaders.app_directories.Loader",),
-            ],
         },
     },
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": config("DB_NAME", default="churn_db"),
         "USER": config("DB_USER", default="postgres"),
-        "PASSWORD": config("DB_PASSWORD", default="0000"),
+        "PASSWORD": config("DB_PASSWORD", default=""),
         "HOST": config("DB_HOST", default="localhost"),
         "PORT": config("DB_PORT", default="5432"),
     }
@@ -147,9 +146,6 @@ SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True if not DEBUG else False
 SECURE_HSTS_PRELOAD = True if not DEBUG else False
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
 def find_wkhtmltopdf():
     system = platform.system()
     chemins_bundle = {
@@ -166,9 +162,15 @@ def find_wkhtmltopdf():
     return shutil.which("wkhtmltopdf")
 
 
+# PDFKIT configuration (déplacé ou désactivé pour éviter les blocages au démarrage)
 wkhtmltopdf_path = find_wkhtmltopdf()
-PDFKIT_CONFIG = (
-    pdfkit.configuration(wkhtmltopdf=wkhtmltopdf_path) if wkhtmltopdf_path else None
-)
+PDFKIT_CONFIG = None
+if wkhtmltopdf_path:
+    try:
+        # On ne configure que si nécessaire, idéalement à la demande
+        # Mais ici on le met à None par défaut comme demandé
+        pass
+    except Exception:
+        pass
 
 from churn_project.logging_config import LOGGING

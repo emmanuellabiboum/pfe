@@ -1,19 +1,25 @@
-﻿/* CSS Commun - IdentitÃ© Visuelle Tunisie Telecom Churn Detection */
+/* CSS Commun - IdentitÃ© Visuelle Tunisie Telecom Churn Detection */
 /* BasÃ© sur accueil.html */
 
 :root {
     /* Couleurs Tunisie Telecom */
-    --brand: #004595;         /* Bleu TT */
+    --brand: #004595;
+    /* Bleu TT */
     --brand-light: #e6f0ff;
     --brand-dark: #002d62;
-    --accent: #ed1c24;        /* Rouge TT */
-    --accent-purple: #92278f; /* Violet TT */
-    --accent-cyan: #00aeef;   /* Cyan TT */
-    --success: #8cc63f;       /* Vert TT */
+    --accent: #ed1c24;
+    /* Rouge TT */
+    --accent-purple: #92278f;
+    /* Violet TT */
+    --accent-cyan: #00aeef;
+    /* Cyan TT */
+    --success: #8cc63f;
+    /* Vert TT */
     --success-bg: #f4fae9;
     --danger: #dc2626;
     --danger-bg: #fef2f2;
-    --warning: #f7941d;       /* Orange TT */
+    --warning: #f7941d;
+    /* Orange TT */
     --warning-bg: #fff8f0;
     --neutral: #f8f9fa;
     --neutral-dark: #e9ecef;
@@ -66,13 +72,12 @@ body {
     padding: 24px 20px 40px;
 }
 
-/* â”€â”€ CARTE DE BASE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .card {
     position: relative;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), #ffffff);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(17, 41, 84, 0.08);
-    padding: 24px;
+    padding: 20px;
     box-shadow: var(--shadow-sm);
     overflow: hidden;
     margin-bottom: 16px;
@@ -88,7 +93,7 @@ body {
     background: var(--gradient-brand);
 }
 
-.card > * {
+.card>* {
     position: relative;
     z-index: 1;
 }
@@ -124,12 +129,12 @@ body {
     background: var(--gradient-brand);
 }
 
-.tt-card > *,
-.glass-card > *,
-.kpi-card > *,
-.card-section > *,
-.notification-card > *,
-.periode-card > * {
+.tt-card>*,
+.glass-card>*,
+.kpi-card>*,
+.card-section>*,
+.notification-card>*,
+.periode-card>* {
     position: relative;
     z-index: 1;
 }
@@ -141,6 +146,14 @@ body {
 .notification-card:hover,
 .periode-card:hover {
     box-shadow: var(--shadow-md);
+}
+
+/* Gestion tab uniform card sizing with scrollbars */
+.card-section {
+    max-height: 400px;
+    /* Fixed height */
+    overflow-y: auto;
+    /* Scrollbar when content exceeds height */
 }
 
 /* â”€â”€ Boutons (Bootstrap) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -425,11 +438,11 @@ body {
     border-radius: 5px;
 }
 
-.shap-positive {
+.shap-fill.positive {
     background: var(--danger);
 }
 
-.shap-negative {
+.shap-fill.negative {
     background: var(--success);
 }
 
@@ -560,4 +573,3 @@ body {
 .table-custom tr:hover {
     background: var(--neutral);
 }
-

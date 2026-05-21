@@ -20,7 +20,7 @@
 
 from typing import Optional
 
-import pandas as pd
+import pandas as pd 
 
 from app.ml.loader import MLArtifacts, charger_tous_artefacts
 from app.config    import SHAP_MATRIX_PATH
@@ -33,7 +33,7 @@ from app.config    import SHAP_MATRIX_PATH
 # Le `Optional` est important : avant le démarrage, ces variables sont None.
 
 _artefacts: Optional[MLArtifacts]   = None
-_shap_matrix: Optional[pd.DataFrame] = None
+_shap_matrix: Optional[object] = None
 
 
 # =============================================================================
@@ -57,7 +57,7 @@ def initialiser_artefacts() -> MLArtifacts:
     return _artefacts
 
 
-def initialiser_shap_matrix() -> pd.DataFrame:
+def initialiser_shap_matrix():
     """
     Charge la matrice SHAP du test set en mémoire.
     Utilisée par les endpoints /api/shap/{client_id} et /api/clients
@@ -69,6 +69,7 @@ def initialiser_shap_matrix() -> pd.DataFrame:
     Raises:
         FileNotFoundError : si shap_matrix_v1.csv est absent.
     """
+    import pandas as pd
     global _shap_matrix
     if not SHAP_MATRIX_PATH.exists():
         raise FileNotFoundError(
@@ -109,7 +110,7 @@ def get_artifacts() -> MLArtifacts:
     return _artefacts
 
 
-def get_shap_matrix() -> pd.DataFrame:
+def get_shap_matrix() -> object:
     """
     Dépendance FastAPI : retourne la matrice SHAP du test set.
 

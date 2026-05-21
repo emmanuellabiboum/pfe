@@ -10,3 +10,12 @@ def sub(value, arg):
         return float(value) - float(arg)
     except:
         return 0
+
+
+@register.filter
+def mul(value, arg):
+    """Multiplication template"""
+    try:
+        return float(value) * float(arg)
+    except:
+        return 0

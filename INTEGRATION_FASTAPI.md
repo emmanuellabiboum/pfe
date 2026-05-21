@@ -111,7 +111,6 @@ Input:  CSV file avec colonnes de features
 Output: {
     "total": int,
     "haut_risque": int,
-    "moyen_risque": int,
     "faible_risque": int,
     "score_moyen": float,
     "taux_churn": float,
@@ -132,17 +131,13 @@ Output: {
 
 Pour démarrer l'API :
 ```bash
-cd churn_api
-python -m uvicorn app.main:app --reload --port 8000
-```
-
-Ou depuis la racine du projet :
-```bash
-python -m uvicorn churn_api.app.main:app --reload --port 8000
+.\.venv\Scripts\Activate.ps1
+python -m uvicorn pfe_final.churn_api.app.main:app --reload --port 8000
 ```
 
 Pour Django (sur un port différent) :
 ```bash
+.\.venv\Scripts\Activate.ps1
 python manage.py runserver 8080
 ```
 

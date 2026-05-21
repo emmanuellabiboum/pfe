@@ -1,9 +1,11 @@
-import pandas as pd
+# import pandas as pd  # Déplacé dans les fonctions
 from django.core.files.uploadedfile import UploadedFile
 from learning.models import Dataset, ClientChurn
 
 
 def _parse_bool(value, default=False):
+    import pandas as pd
+
     if pd.isna(value):
         return default
     if isinstance(value, bool):
@@ -13,6 +15,8 @@ def _parse_bool(value, default=False):
 
 
 def _parse_int(value, default=0):
+    import pandas as pd
+
     if pd.isna(value):
         return default
     try:
@@ -22,6 +26,8 @@ def _parse_int(value, default=0):
 
 
 def _parse_float(value, default=0.0):
+    import pandas as pd
+
     if pd.isna(value):
         return default
     try:
@@ -30,7 +36,55 @@ def _parse_float(value, default=0.0):
         return default
 
 
+def _first_present(row, *names, default=None):
+    import pandas as pd
+
+    for name in names:
+        if name in row and pd.notna(row.get(name)):
+            return row.get(name)
+    return default
+
+
+def _parse_name(row, idx):
+    value = _first_present(row, "nom_client", "nom", "client_nom", "name")
+    if value is None or str(value).strip() == "":
+        client_id = _first_present(row, "client_id", "id_client", "id", default=idx + 1)
+        return f"Client_{client_id}"
+    return str(value).strip()
+
+
+def _parse_nb_reclamations(row):
+    import pandas as pd
+
+    value = _first_present(
+        row,
+        "nb_reclamations",
+        "nombre_reclamations",
+        "reclamations",
+        "nb_reclamation",
+    )
+    if value is not None:
+        return _parse_int(value)
+
+    if _parse_bool(row.get("reclamation_manquante", False), default=False):
+        return None
+
+    score_frustration = _first_present(row, "score_frustration")
+    satisfaction = _first_present(row, "satisfaction_client")
+    if score_frustration is not None and satisfaction is not None:
+        satisfaction_f = _parse_float(satisfaction, default=0)
+        denom = 6 - satisfaction_f
+        if denom > 0:
+            return max(
+                0, int(round(_parse_float(score_frustration, default=0) / denom))
+            )
+
+    return None
+
+
 def _parse_date(value):
+    import pandas as pd
+
     if pd.isna(value) or value is None:
         return None
     try:
@@ -40,24 +94,13 @@ def _parse_date(value):
 
 
 def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile = None):
+    import pandas as pd
+
     if uploaded_file is not None:
         uploaded_file.seek(0)
 
-    # Supprimer les clients existants de l'agence avant d'en créer de nouveaux
-    # pour éviter l'accumulation
-    from django.db.models import Q
-    from dashboard.models import Recommandation, Notification
-
-    # Supprimer les clients associés à des datasets CSV de cette agence
-    existing_clients = ClientChurn.objects.filter(
-        Q(dataset__isnull=False) & Q(dataset__methode="csv"), dataset__agence=agence
-    )
-    client_ids = list(existing_clients.values_list("id", flat=True))
-
-    if client_ids:
-        Recommandation.objects.filter(client_id__in=client_ids).delete()
-        Notification.objects.filter(client_id__in=client_ids).delete()
-        existing_clients.delete()
+    # Conserver les anciens datasets CSV historiques en les désactivant.
+    Dataset.objects.filter(agence=agence, methode="csv", actif=True).update(actif=False)
 
     dataset = Dataset.objects.create(
         nom=f"Dataset uploadé - {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}",
@@ -86,8 +129,12 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
 
             client = ClientChurn.objects.create(
                 dataset=dataset,
-                client_id=str(row.get("client_id", f"client_{idx}")),
-                nom=row.get("nom_client", ""),
+                client_id=str(
+                    _first_present(
+                        row, "client_id", "id_client", "id", default=f"client_{idx}"
+                    )
+                ),
+                nom=_parse_name(row, idx),
                 genre_client=row.get("genre_client", ""),
                 date_naissance=date_naissance,
                 telephone=str(row.get("num_tel_mobile", "")),
@@ -117,7 +164,10 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
                     row.get("duree_appel_moyenne_sec", 0)
                 ),
                 sms_total=_parse_int(row.get("sms_total", 0)),
-                data_totale_mb=_parse_float(row.get("data_moyenne_gb", 0)) * 1024,
+                data_totale_mb=_parse_float(
+                    row.get("data_totale_gb", row.get("data_moyenne_gb", 0))
+                )
+                * 1024,
                 nb_evenements_data_cdr=_parse_int(row.get("nb_evenements_total", 0)),
                 data_mois_M=(
                     _parse_float(row.get("data_mois_M", None))
@@ -149,11 +199,7 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
                     else None
                 ),
                 score_frustration=_parse_float(row.get("score_frustration", 0)),
-                nb_reclamations=(
-                    _parse_int(row.get("nb_reclamations", None))
-                    if pd.notna(row.get("nb_reclamations"))
-                    else None
-                ),
+                nb_reclamations=_parse_nb_reclamations(row),
                 reclamation_manquante=_parse_bool(
                     row.get("reclamation_manquante", False), default=False
                 ),
@@ -163,11 +209,19 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
                     else None
                 ),
                 anciennete_mois=_parse_int(row.get("tenure_mois", 0)),
-                consommation_moyenne=_parse_float(row.get("data_moyenne_gb", 0)) * 1024,
+                consommation_moyenne=_parse_float(
+                    row.get("data_moyenne_gb", row.get("data_totale_gb", 0))
+                )
+                * 1024,
                 retards_paiement=0,
                 nb_services=1,
                 flag_offre_data=(
-                    1 if _parse_float(row.get("data_moyenne_gb", 0)) > 0 else 0
+                    1
+                    if _parse_float(
+                        row.get("data_moyenne_gb", row.get("data_totale_gb", 0))
+                    )
+                    > 0
+                    else 0
                 ),
                 flag_offre_voix=(
                     1 if _parse_float(row.get("duree_appel_moyenne_sec", 0)) > 0 else 0
@@ -183,7 +237,11 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
             continue
 
     if clients_crees == 0:
-        details = " | ".join(erreurs_import) if erreurs_import else "Aucun client valide trouvé."
+        details = (
+            " | ".join(erreurs_import)
+            if erreurs_import
+            else "Aucun client valide trouvé."
+        )
         raise ValueError(f"Import CSV échoué: 0 client créé. Détails: {details}")
 
     dataset.nb_clients = clients_crees

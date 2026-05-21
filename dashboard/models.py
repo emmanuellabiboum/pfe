@@ -48,6 +48,7 @@ class SystemMetrics(models.Model):
 
 from django.db import models
 from django.utils import timezone
+
 NOTIF_TYPES = [
     ("recommandation", "Recommandation"),
     ("validation_requise", "Validation requise"),
@@ -82,10 +83,13 @@ class Recommandation(models.Model):
     type_recommandation = models.CharField(max_length=20, choices=REC_TYPES)
     contenu = models.TextField()
     echeance = models.DateField(null=True, blank=True)
-    statut = models.CharField(
-        max_length=25, choices=REC_STATUTS, default="active"
-    )
+    statut = models.CharField(max_length=25, choices=REC_STATUTS, default="active")
     generee_par_systeme = models.BooleanField(default=True)
+    clv_estimee = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Estimation CLV (DT) au moment de la génération",
+    )
     cree_par = models.ForeignKey(
         "accounts.User",
         on_delete=models.SET_NULL,
@@ -126,11 +130,12 @@ class Recommandation(models.Model):
     def temps_restant_jours(self) -> int:
         """
         Calcule le nombre de jours restants avant l'échéance.
-        
+
         Returns:
             Nombre de jours (négatif si dépassée)
         """
         from datetime import date
+
         if not self.echeance:
             return 0
         delta = self.echeance - date.today()
@@ -140,15 +145,15 @@ class Recommandation(models.Model):
     def temps_restant_affichage(self) -> str:
         """
         Retourne le temps restant formaté pour l'affichage.
-        
+
         Returns:
             String formatée (ex: "3j restants", "Échéance dépassée", "Pas d'échéance")
         """
         if not self.echeance:
             return "Pas d'échéance"
-        
+
         jours = self.temps_restant_jours
-        
+
         if jours < 0:
             return f"Échéance dépassée de {-jours}j"
         elif jours == 0:
@@ -167,45 +172,45 @@ class Recommandation(models.Model):
     def urgence(self) -> str:
         """
         Détermine le niveau d'urgence basé sur le temps restant.
-        
+
         Returns:
             'critique', 'eleve', 'moyen', 'faible', or 'none'
         """
         if not self.echeance:
-            return 'none'
-        
+            return "none"
+
         jours = self.temps_restant_jours
-        
-        if self.statut in ['completee', 'retiree', 'expiree']:
-            return 'none'
-        
+
+        if self.statut in ["completee", "retiree", "expiree"]:
+            return "none"
+
         if jours < 0:
-            return 'critique'  # Échéance dépassée
+            return "critique"  # Échéance dépassée
         elif jours <= 1:
-            return 'critique'  # Moins de 24h
+            return "critique"  # Moins de 24h
         elif jours <= 3:
-            return 'eleve'     # 1-3 jours
+            return "eleve"  # 1-3 jours
         elif jours <= 7:
-            return 'moyen'     # 4-7 jours
+            return "moyen"  # 4-7 jours
         else:
-            return 'faible'    # Plus d'une semaine
+            return "faible"  # Plus d'une semaine
 
     @property
     def couleur_urgence(self) -> str:
         """
         Retourne la couleur associée au niveau d'urgence.
-        
+
         Returns:
             Code couleur CSS/bootstrap
         """
         couleurs = {
-            'critique': 'danger',    # Rouge
-            'eleve': 'warning',      # Orange
-            'moyen': 'info',         # Bleu
-            'faible': 'success',     # Vert
-            'none': 'secondary',     # Gris
+            "critique": "danger",  # Rouge
+            "eleve": "warning",  # Orange
+            "moyen": "info",  # Bleu
+            "faible": "success",  # Vert
+            "none": "secondary",  # Gris
         }
-        return couleurs.get(self.urgence, 'secondary')
+        return couleurs.get(self.urgence, "secondary")
 
 
 class Notification(models.Model):
@@ -237,13 +242,16 @@ class Notification(models.Model):
 
 class RejetRecommandation(models.Model):
     """Stocke les demandes de rejet de recommandation avec explication"""
+
     recommandation = models.ForeignKey(
         Recommandation, on_delete=models.CASCADE, related_name="rejets"
     )
     demandeur = models.ForeignKey(
         "accounts.User", on_delete=models.CASCADE, related_name="rejets_demandes"
     )
-    explication = models.TextField(help_text="Pourquoi voulez-vous rejeter cette recommandation ?")
+    explication = models.TextField(
+        help_text="Pourquoi voulez-vous rejeter cette recommandation ?"
+    )
     statut = models.CharField(
         max_length=20,
         choices=[
@@ -279,7 +287,10 @@ class AnalyseSession(models.Model):
         "core.Agence", on_delete=models.CASCADE, related_name="analyses"
     )
     lancee_par = models.ForeignKey(
-        "accounts.User", on_delete=models.SET_NULL, null=True, related_name="analyses_lancees"
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="analyses_lancees",
     )
     date_analyse = models.DateTimeField(auto_now_add=True)
 
@@ -319,18 +330,20 @@ class AnalyseSession(models.Model):
 
     def get_differences_with_previous(self):
         previous = AnalyseSession.objects.filter(
-            agence=self.agence,
-            date_analyse__lt=self.date_analyse
+            agence=self.agence, date_analyse__lt=self.date_analyse
         ).first()
 
         if not previous:
             return None
 
         return {
-            'clients_diff': self.nb_clients_total - previous.nb_clients_total,
-            'churn_diff': self.nb_clients_churn - previous.nb_clients_churn,
-            'non_churn_diff': self.nb_clients_non_churn - previous.nb_clients_non_churn,
-            'score_moyen_diff': round(self.score_churn_moyen - previous.score_churn_moyen, 2),
-            'recommandations_diff': self.nb_recommandations_generees - previous.nb_recommandations_generees,
-            'previous_date': previous.date_analyse,
+            "clients_diff": self.nb_clients_total - previous.nb_clients_total,
+            "churn_diff": self.nb_clients_churn - previous.nb_clients_churn,
+            "non_churn_diff": self.nb_clients_non_churn - previous.nb_clients_non_churn,
+            "score_moyen_diff": round(
+                self.score_churn_moyen - previous.score_churn_moyen, 2
+            ),
+            "recommandations_diff": self.nb_recommandations_generees
+            - previous.nb_recommandations_generees,
+            "previous_date": previous.date_analyse,
         }

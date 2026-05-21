@@ -1,0 +1,55 @@
+<div class="rec-card {{ rec.type_recommandation }}" {% if not can_edit %}style="opacity: 0.5; filter: grayscale(0.8); pointer-events: none;"{% endif %}>
+    <div class="d-flex justify-content-between align-items-start mb-2">
+        <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:#666;">
+            {{ rec.get_type_recommandation_display }}
+            {% if not can_edit %}
+                <span class="ms-2 badge bg-secondary" style="font-size:9px;">Lecture seule</span>
+            {% endif %}
+        </span>
+        <span style="font-size:11px; color:#888;">
+            <i class="bi bi-calendar3 me-1"></i>{{ rec.echeance|date:"d/m/Y" }}
+        </span>
+    </div>
+    <p class="mb-2" style="font-size:14px; color:#082281;">{{ rec.contenu }}</p>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        {% if can_edit %}
+        <form method="post" action="{% url 'dashboard:completer_rec' rec.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-success"
+                style="font-size:11px; padding:4px 12px;">
+                <i class="bi bi-check"></i> Marquer terminée
+            </button>
+        </form>
+
+        {% if rec.generee_par_systeme %}
+        <details style="min-width:220px;">
+            <summary class="btn btn-sm btn-outline-danger"
+                style="font-size:11px; padding:4px 12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                <i class="bi bi-x"></i> Demander rejet
+            </summary>
+            <form method="post" action="{% url 'dashboard:rejeter_recommandation' rec.id %}"
+                class="mt-2">
+                {% csrf_token %}
+                <textarea name="explication" placeholder="Motif du rejet" rows="2"
+                    style="width:100%; font-size:12px; padding:8px; border:1px solid #ccc; border-radius:8px;"></textarea>
+                <button type="submit" class="btn btn-sm btn-outline-danger mt-2"
+                    style="font-size:11px; padding:4px 12px;">
+                    Envoyer la demande
+                </button>
+            </form>
+        </details>
+        {% endif %}
+
+        {% if request.user.role == 'chef_agence' or request.user.is_superuser %}
+        <form method="post" action="{% url 'dashboard:action_recommandation' rec.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="retirer">
+            <button type="submit" class="btn btn-sm btn-outline-danger"
+                style="font-size:11px; padding:4px 12px;">
+                <i class="bi bi-trash"></i> Retirer
+            </button>
+        </form>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>

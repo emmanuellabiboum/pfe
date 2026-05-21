@@ -2,6 +2,7 @@
 # fastapi_service.py — Service d'intégration avec l'API FastAPI
 # =============================================================================
 
+import os
 import httpx
 import pandas as pd
 import io
@@ -11,7 +12,7 @@ from typing import Dict, Optional, List
 
 logger = logging.getLogger(__name__)
 
-FASTAPI_BASE_URL = "http://localhost:8000"
+FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://localhost:8000")
 FASTAPI_ENDPOINTS = {
     "health": "/health",
     "model_info": "/api/model/info",
@@ -154,4 +155,3 @@ def analyse_portefeuille_from_csv(csv_bytes: bytes) -> Optional[Dict]:
             f"{traceback.format_exc()}"
         )
         return None
-

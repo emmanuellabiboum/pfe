@@ -3,7 +3,7 @@
 
 from django.utils import timezone
 from accounts.models import User
-
+from core.model_config import estimate_clv
 
 # ── CORRESPONDANCE TYPE → RÔLE AGENT ────────────────────────────────────────
 ROLE_PAR_TYPE = {
@@ -68,7 +68,8 @@ REGLES = [
     },
     {
         "id": "anciennete_faible_risque",
-        "condition": lambda c: (c.anciennete_mois or 0) <= 6 and (c.score_churn or 0) >= 0.50,
+        "condition": lambda c: (c.anciennete_mois or 0) <= 6
+        and (c.score_churn or 0) >= 0.50,
         "type": "marketing",
         "contenu": lambda c: (
             f"Client récent ({c.anciennete_mois or 0} mois) avec risque élevé. "
@@ -79,7 +80,8 @@ REGLES = [
     },
     {
         "id": "faible_consommation_monoservice",
-        "condition": lambda c: (c.consommation_moyenne or 0) < 80 and (c.nb_services or 0) <= 2,
+        "condition": lambda c: (c.consommation_moyenne or 0) < 80
+        and (c.nb_services or 0) <= 2,
         "type": "commercial",
         "contenu": lambda c: (
             f"Faible consommation ({(c.consommation_moyenne or 0):.0f} DT/mois) "
@@ -91,7 +93,8 @@ REGLES = [
     },
     {
         "id": "fidele_monoservice",
-        "condition": lambda c: (c.nb_services or 0) == 1 and (c.anciennete_mois or 0) >= 18,
+        "condition": lambda c: (c.nb_services or 0) == 1
+        and (c.anciennete_mois or 0) >= 18,
         "type": "commercial",
         "contenu": lambda c: (
             f"Client fidèle ({c.anciennete_mois or 0} mois) sur un seul service. "
@@ -129,23 +132,33 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
         client=client, echeance__lt=today, statut="active"
     ).update(statut="expiree")
 
-    # Ne pas régénérer si des recs actives existent déjà
+    # Ne pas régénérer si des recs actives existent déjà pour les mêmes règles
     if not force:
-        deja_actives = Recommandation.objects.filter(
-            client=client,
-            statut__in=["active", "en_cours", "completee_agent"],
-        ).exists()
+        regles_existantes = set(
+            Recommandation.objects.filter(
+                client=client,
+                statut__in=["active", "en_cours", "completee_agent"],
+                generee_par_systeme=True,
+            ).values_list("contenu", flat=True)
+        )
+        deja_actives = len(regles_existantes) > 0
         if deja_actives:
             return 0
 
     # Appliquer les règles
+    regles_matchees = [
+        r
+        for r in REGLES
+        if r["condition"](client) and (client.score_churn or 0) >= r["seuil_min"]
+    ]
+
+    if not regles_matchees:
+        return 0
+
+    # Prioriser non seulement par priorité métier mais aussi par CLV estimée
+    clv_estimee = estimate_clv(client)
     regles_matchees = sorted(
-        [
-            r
-            for r in REGLES
-            if r["condition"](client) and (client.score_churn or 0) >= r["seuil_min"]
-        ],
-        key=lambda r: r["priorite"],
+        regles_matchees, key=lambda r: (r["priorite"], -clv_estimee)
     )[
         :3
     ]  # max 3 recommandations par client
@@ -159,8 +172,9 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
             client=client,
             type_recommandation=regle["type"],
             contenu=regle["contenu"](client),
-            echeance=today + timezone.timedelta(days=14),
+            echeance=today + timezone.timedelta(days=2),
             generee_par_systeme=True,
+            clv_estimee=clv_estimee,
             statut="active",  # ← directement active, sans validation
         )
         recs_creees.append((rec, regle))
@@ -169,19 +183,20 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
     for rec, regle in recs_creees:
         role_cible = ROLE_PAR_TYPE.get(rec.type_recommandation)
         if role_cible:
-            agents = User.objects.filter(
-                agence=agence, role=role_cible, statut="actif"
-            )
+            agents = User.objects.filter(agence=agence, role=role_cible, statut="actif")
             for agent in agents:
+                # Inclure l'estimation de perte potentielle (CLV) pour priorisation
+                clv = round(estimate_clv(rec.client), 0)
+                contenu_notif = f"Client {rec.client.client_id} ({rec.client.nom}) : {rec.contenu[:100]}"
+                if clv > 0:
+                    contenu_notif += f" — Estim. perte potentielle ≈ {clv:.0f} DT"
+
                 Notification.objects.create(
                     destinataire=agent,
                     type_notif="recommandation",
                     recommandation=rec,
                     titre=f"Nouvelle mission — {rec.get_type_recommandation_display_fr()}",
-                    contenu=(
-                        f"Client {rec.client.client_id} ({rec.client.nom}) : "
-                        f"{rec.contenu[:100]}"
-                    ),
+                    contenu=contenu_notif,
                     lien=f"/clients/{rec.client.id}/#recommandations",
                     client=rec.client,
                     lu=False,

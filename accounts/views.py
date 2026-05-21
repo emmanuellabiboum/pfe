@@ -6,6 +6,8 @@ import random
 from datetime import timedelta
 from django.db.models import Q
 from .models import User, OTPCode, AdminVille
+
+OTP_RESET_PASSWORD_DURATION_MINUTES = 5
 from core.models import Ville, Agence
 from dashboard.models import Notification
 from .email_utils import envoyer_email
@@ -471,12 +473,16 @@ def reset_password_view(request):
                 OTPCode.objects.create(
                     user=user,
                     code=code,
-                    expire_at=timezone.now() + timedelta(minutes=5),
+                    expire_at=timezone.now()
+                    + timedelta(minutes=OTP_RESET_PASSWORD_DURATION_MINUTES),
                 )
                 envoyer_email(
                     destinataire=email,
                     sujet="Réinitialisation mot de passe — Tunisie Telecom",
-                    contenu=f"<p>Votre code de réinitialisation : <strong>{code}</strong><br>Valable 5 minutes.</p>",
+                    contenu=(
+                        f"<p>Votre code de réinitialisation : <strong>{code}</strong><br>"
+                        f"Valable {OTP_RESET_PASSWORD_DURATION_MINUTES} minute{'s' if OTP_RESET_PASSWORD_DURATION_MINUTES > 1 else ''}.</p>"
+                    ),
                 )
                 etape = "2"
             except User.DoesNotExist:
@@ -516,7 +522,13 @@ def reset_password_view(request):
                     etape = "1"
 
     return render(
-        request, "accounts/reset_password.html", {"etape": etape, "email": email}
+        request,
+        "accounts/reset_password.html",
+        {
+            "etape": etape,
+            "email": email,
+            "otp_validity_minutes": OTP_RESET_PASSWORD_DURATION_MINUTES,
+        },
     )
 
 

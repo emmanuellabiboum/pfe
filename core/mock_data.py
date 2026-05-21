@@ -1,6 +1,8 @@
 import random
 from datetime import datetime, timedelta
-import numpy as np
+
+# import numpy as np  # Déplacé dans les fonctions
+from core.model_config import estimate_clv
 
 
 # Fonctions d'audit de qualité des données (RGS-90)
@@ -188,12 +190,14 @@ def generer_recommandations_client(client, agence, createur=None):
 
     for regle in regles_a_creer:
         # Créer la recommandation directement active
+        clv = estimate_clv(client)
         rec = Recommandation.objects.create(
             client=client,
             type_recommandation=regle["type"],
             contenu=regle["contenu"](client),
-            echeance=today + timedelta(days=14),
+            echeance=today + timedelta(days=2),
             generee_par_systeme=True,
+            clv_estimee=clv,
             statut="active",
         )
         recs_creees.append(rec)
@@ -265,7 +269,15 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     if user and getattr(user, "agence", None):
         agence = user.agence
 
-    # Créer un dataset mock pour l'agence si besoin
+    # Nettoyage — conserver les anciens datasets historiques,
+    # mais marquer toutes les anciennes versions comme inactives.
+    from django.db.models import Q
+
+    Dataset.objects.filter(
+        agence=agence, methode__in=["mock", "csv"], actif=True
+    ).update(actif=False)
+
+    # Créer un dataset mock pour l'agence
     dataset = Dataset.objects.create(
         nom=f"Mock dataset - {agence.nom} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         methode="mock",
@@ -274,13 +286,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
         nb_clients=nb_clients,
         actif=True,
     )
-
-    # Nettoyage — supprimer uniquement les anciens clients mock (pas les vrais CSV)
-    from django.db.models import Q
-    ClientChurn.objects.filter(
-        Q(dataset__isnull=True) | Q(dataset__methode="mock"),
-        agence=agence,
-    ).delete()
 
     # Listes de données
     prenoms = [
@@ -418,7 +423,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     for i in range(nb_clients):
         score = score_realiste()
 
-
         # client_id unique et lisible
         client_id = f"TT-{agence.code}-{1000 + i}"
 
@@ -444,9 +448,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
         if score >= 0.32:
             # Churné : inactivité >= 90 jours
             recence_cdr = random.randint(90, 365)
-        elif score >= 0.20:
-            # Risque moyen : inactivité entre 30 et 89 jours
-            recence_cdr = random.randint(30, 89)
         else:
             # Risque faible : inactivité < 30 jours
             recence_cdr = random.randint(0, 29)
@@ -630,6 +631,7 @@ def generer_evenements_cdr(client):
     - Appels: durée ~ loi exponentielle(scale=180s)
     - Data: volume ~ loi log-normale selon plan tarifaire
     """
+    import numpy as np
     from learning.models import EvenementCDR
     from datetime import datetime
 

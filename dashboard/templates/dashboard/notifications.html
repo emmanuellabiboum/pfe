@@ -464,146 +464,164 @@
     </style>
 </head>
 
-    <body>
-        {% include 'accounts/navbar.html' %}
-        <div class="page-wrap">
+<body>
+    {% include 'accounts/navbar.html' %}
+    <div class="page-wrap">
 
-            {% for msg in messages %}
-            <div class="django-msg {{ msg.tags }}" id="msg-{{ forloop.counter }}">
-                <i
-                    class="bi bi-{% if msg.tags == 'success' %}check-circle-fill{% else %}exclamation-triangle-fill{% endif %}"></i>
-                {{ msg }}
-                <button class="msg-close" onclick="closeMessage('msg-{{ forloop.counter }}')">
-                    <i class="bi bi-x"></i>
-                </button>
+        {% for msg in messages %}
+        <div class="django-msg {{ msg.tags }}" id="msg-{{ forloop.counter }}">
+            <i
+                class="bi bi-{% if msg.tags == 'success' %}check-circle-fill{% else %}exclamation-triangle-fill{% endif %}"></i>
+            {{ msg }}
+            <button class="msg-close" onclick="closeMessage('msg-{{ forloop.counter }}')">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        {% endfor %}
+
+        <div class="page-header">
+            <div>
+                <h1 class="page-title"><i class="bi bi-bell-fill me-2"></i>Notifications</h1>
+                <p class="page-sub">
+                    {{ nb_notifs }} notification{% if nb_notifs > 1 %}s{% endif %}
+                    {% if nb_non_lues > 0 %}
+                    · <span style="color:var(--accent);font-weight:700;">{{ nb_non_lues }} non lue{% if nb_non_lues > 1 %}s{% endif %}</span>
+                    {% endif %}
+                </p>
             </div>
-            {% endfor %}
+            <div style="display:flex; gap:8px;">
+                <a href="{% url 'dashboard:notifications_supprimees' %}" class="btn-secondary"><i
+                        class="bi bi-trash3"></i> Corbeille</a>
+                <a href="{% url 'dashboard:notifications_archivees' %}" class="btn-secondary"><i
+                        class="bi bi-archive"></i> Archivées</a>
+                <a href="{% url 'dashboard:accueil' %}" class="btn-secondary"><i class="bi bi-arrow-left"></i>
+                    Retour</a>
+            </div>
+        </div>
 
-            <div class="page-header">
-                <div>
-                    <h1 class="page-title"><i class="bi bi-bell-fill me-2"></i>Notifications</h1>
-                    <p class="page-sub">
-                        {{ nb_notifs }} notification{% if nb_notifs > 1 %}s{% endif %}
-                        {% if nb_non_lues > 0 %}
-                        · <span style="color:var(--accent);font-weight:700;">{{ nb_non_lues }} non lue{% if nb_non_lues > 1 %}s{% endif %}</span>
+        <div class="filters">
+            <button class="filter-pill active" data-filtre="toutes" onclick="filtrer(this)"><i
+                    class="bi bi-grid-3x3-gap"></i> Toutes <span class="filter-count">{{ nb_notifs }}</span></button>
+            <button class="filter-pill" data-filtre="recommandation" onclick="filtrer(this)"><i class="bi bi-lightbulb"></i> Recommandations <span class="filter-count" id="cnt-recommandation">{{ notif_counts.recommandation|default:0 }}</span></button>
+            <button class="filter-pill" data-filtre="alerte_churn" onclick="filtrer(this)"><i class="bi bi-exclamation-triangle"></i> Alertes <span class="filter-count" id="cnt-alerte_churn">{{ notif_counts.alerte_churn|default:0 }}</span></button>
+            <button class="filter-pill" data-filtre="compte" onclick="filtrer(this)"><i class="bi bi-person-check"></i>
+                Comptes <span class="filter-count" id="cnt-compte">{{ notif_counts.compte|default:0 }}</span></button>
+            <button class="filter-pill" data-filtre="info" onclick="filtrer(this)"><i class="bi bi-info-circle"></i>
+                Infos <span class="filter-count" id="cnt-info">{{ notif_counts.info|default:0 }}</span></button>
+            <button class="filter-pill" data-filtre="non-lues" onclick="filtrer(this)"><i class="bi bi-circle-fill"
+                    style="font-size:8px;"></i> Non lues <span class="filter-count" id="cnt-non-lues">{{nb_non_lues|default:0 }}</span></button>
+        </div>
+
+        <div class="card">
+            <div class="actions-bar" style="display:flex;justify-content:space-between;align-items:center;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <input type="checkbox" id="selectAll" style="width:18px;height:18px;cursor:pointer;">
+                    <span class="actions-bar-count" id="label-count">{{ nb_notifs }} notification{% if nb_notifs > 1 %}s{% endif %}</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <button type="button" id="bulkArchiveBtn" class="btn-secondary"
+                        style="font-size:11px;padding:6px 12px;display:none;"><i class="bi bi-archive"></i>
+                        Archiver</button>
+                    <button type="button" id="bulkDeleteBtn" class="btn-secondary"
+                        style="font-size:11px;padding:6px 12px;display:none;color:var(--danger);border-color:var(--danger);"><i
+                            class="bi bi-trash3"></i> Supprimer</button>
+                    {% if nb_non_lues > 0 %}<a href="{% url 'dashboard:marquer_lu' %}" class="btn-secondary"
+                        style="font-size:11px;padding:6px 12px;"><i class="bi bi-check2-all"></i> Tout marquer comme
+                        lu</a>{% endif %}
+                </div>
+            </div>
+            <div id="notifs-list">
+                {% if notifications %}
+                {% regroup notifications by type_notif as notifs_by_type %}
+                {% for type_group in notifs_by_type %}
+                <div class="type-section">
+                    <div class="type-section-header">
+                        {% if type_group.grouper == 'recommandation' %}
+                        <i class="bi bi-lightbulb" style="color:var(--accent);"></i> Recommandations
+                        {% elif type_group.grouper == 'alerte_churn' %}
+                        <i class="bi bi-exclamation-triangle" style="color:var(--danger);"></i> Alertes
+                        {% elif type_group.grouper == 'compte' %}
+                        <i class="bi bi-person-check" style="color:var(--success);"></i> Compte
+                        {% else %}
+                        <i class="bi bi-info-circle" style="color:var(--warning);"></i> Info
                         {% endif %}
-                    </p>
-                </div>
-                <div style="display:flex; gap:8px;">
-                    <a href="{% url 'dashboard:notifications_supprimees' %}" class="btn-secondary"><i class="bi bi-trash3"></i> Corbeille</a>
-                    <a href="{% url 'dashboard:notifications_archivees' %}" class="btn-secondary"><i class="bi bi-archive"></i> Archivées</a>
-                    <a href="{% url 'dashboard:accueil' %}" class="btn-secondary"><i class="bi bi-arrow-left"></i> Retour</a>
-                </div>
-            </div>
-
-            <div class="filters">
-                <button class="filter-pill active" data-filtre="toutes" onclick="filtrer(this)"><i
-                        class="bi bi-grid-3x3-gap"></i> Toutes <span class="filter-count">{{ nb_notifs }}</span></button>
-                <button class="filter-pill" data-filtre="recommandation" onclick="filtrer(this)"><i
-                        class="bi bi-lightbulb"></i> Recommandations <span class="filter-count"
-                        id="cnt-recommandation">{{ notif_counts.recommandation|default:0 }}</span></button>
-                <button class="filter-pill" data-filtre="alerte_churn" onclick="filtrer(this)"><i
-                        class="bi bi-exclamation-triangle"></i> Alertes <span class="filter-count"
-                        id="cnt-alerte_churn">{{ notif_counts.alerte_churn|default:0 }}</span></button>
-                <button class="filter-pill" data-filtre="compte" onclick="filtrer(this)"><i class="bi bi-person-check"></i>
-                    Comptes <span class="filter-count" id="cnt-compte">{{ notif_counts.compte|default:0 }}</span></button>
-                <button class="filter-pill" data-filtre="info" onclick="filtrer(this)"><i class="bi bi-info-circle"></i>
-                    Infos <span class="filter-count" id="cnt-info">{{ notif_counts.info|default:0 }}</span></button>
-                <button class="filter-pill" data-filtre="non-lues" onclick="filtrer(this)"><i class="bi bi-circle-fill"
-                        style="font-size:8px;"></i> Non lues <span class="filter-count" id="cnt-non-lues">{{ nb_non_lues|default:0 }}</span></button>
-            </div>
-
-            <div class="card">
-                <div class="actions-bar" style="display:flex;justify-content:space-between;align-items:center;">
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <input type="checkbox" id="selectAll" style="width:18px;height:18px;cursor:pointer;">
-                        <span class="actions-bar-count" id="label-count">{{ nb_notifs }} notification{% if nb_notifs > 1 %}s{% endif %}</span>
+                        <span class="type-section-count">{{ type_group.list|length }}</span>
                     </div>
-                    <div style="display:flex;gap:8px;">
-                        <button type="button" id="bulkArchiveBtn" class="btn-secondary" style="font-size:11px;padding:6px 12px;display:none;"><i class="bi bi-archive"></i> Archiver</button>
-                        <button type="button" id="bulkDeleteBtn" class="btn-secondary" style="font-size:11px;padding:6px 12px;display:none;color:var(--danger);border-color:var(--danger);"><i class="bi bi-trash3"></i> Supprimer</button>
-                        {% if nb_non_lues > 0 %}<a href="{% url 'dashboard:marquer_lu' %}" class="btn-secondary"
-                            style="font-size:11px;padding:6px 12px;"><i class="bi bi-check2-all"></i> Tout marquer comme
-                            lu</a>{% endif %}
-                    </div>
-                </div>
-                <div id="notifs-list">
-                    {% if notifications %}
-                    {% regroup notifications by type_notif as notifs_by_type %}
-                    {% for type_group in notifs_by_type %}
-                    <div class="type-section">
-                        <div class="type-section-header">
-                            {% if type_group.grouper == 'recommandation' %}
-                            <i class="bi bi-lightbulb" style="color:var(--accent);"></i> Recommandations
-                            {% elif type_group.grouper == 'alerte_churn' %}
-                            <i class="bi bi-exclamation-triangle" style="color:var(--danger);"></i> Alertes
-                            {% elif type_group.grouper == 'compte' %}
-                            <i class="bi bi-person-check" style="color:var(--success);"></i> Compte
-                            {% else %}
-                            <i class="bi bi-info-circle" style="color:var(--warning);"></i> Info
-                            {% endif %}
-                            <span class="type-section-count">{{ type_group.list|length }}</span>
-                        </div>
-                        {% regroup type_group.list by date_creation|date:"d/m/Y" as notifs_par_date %}
-                        {% for groupe in notifs_par_date %}
-                        <div class="date-group">
-                            <div class="date-label">{{ groupe.grouper }}</div>
-                            {% for notif in groupe.list %}
-                            <div class="notif-item-wrapper" style="position:relative;">
-                                <input type="checkbox" class="notif-checkbox" value="{{ notif.id }}" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:18px;height:18px;cursor:pointer;z-index:10;">
-                                <a href="{% url 'dashboard:notification_detail' notif.id %}" class="notif-item {% if not notif.lu %}non-lue{% endif %}"
-                                    data-type="{{ notif.type_notif }}" data-lu="{{ notif.lu|yesno:'true,false' }}" style="padding-left:44px;">
-                                    <div class="notif-icon"
-                                        style="background:{% if notif.type_notif == 'recommandation' %}var(--accent-light){% elif notif.type_notif == 'alerte_churn' %}var(--danger-bg){% elif notif.type_notif == 'compte' %}var(--success-bg){% else %}var(--brand-light){% endif %};">
-                                        <i class="bi {% if notif.type_notif == 'recommandation' %}bi-lightbulb{% elif notif.type_notif == 'alerte_churn' %}bi-exclamation-triangle-fill{% elif notif.type_notif == 'compte' %}bi-person-check{% else %}bi-bell{% endif %}"
-                                            style="color:{% if notif.type_notif == 'recommandation' %}var(--accent){% elif notif.type_notif == 'alerte_churn' %}var(--danger){% elif notif.type_notif == 'compte' %}var(--success){% else %}var(--brand){% endif %};"></i>
-                                    </div>
-                                    <div class="notif-body">
-                                        <div class="notif-title">{{ notif.titre }}</div>
-                                        <div class="notif-content">{{ notif.contenu }}</div>
-                                        <div class="notif-meta">
-                                            <span><i class="bi bi-clock me-1"></i>{{ notif.date_creation|timesince }}</span>
-                                            {% if notif.client %}
-                                            <span class="client-chip"><i class="bi bi-person"></i> {{ notif.client.client_id }}</span>
+                    {% regroup type_group.list by date_creation|date:"d/m/Y" as notifs_par_date %}
+                    {% for groupe in notifs_par_date %}
+                    <div class="date-group">
+                        <div class="date-label">{{ groupe.grouper }}</div>
+                        {% for notif in groupe.list %}
+                        <div class="notif-item-wrapper" style="position:relative;">
+                            <input type="checkbox" class="notif-checkbox" value="{{ notif.id }}"
+                                style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:18px;height:18px;cursor:pointer;z-index:10;">
+                            <a href="{% url 'dashboard:notification_detail' notif.id %}"
+                                class="notif-item {% if not notif.lu %}non-lue{% endif %}"
+                                data-type="{{ notif.type_notif }}" data-lu="{{ notif.lu|yesno:'true,false' }}"
+                                style="padding-left:44px;">
+                                <div class="notif-icon"
+                                    style="background:{% if notif.type_notif == 'recommandation' %}var(--accent-light){% elif notif.type_notif == 'alerte_churn' %}var(--danger-bg){% elif notif.type_notif == 'compte' %}var(--success-bg){% else %}var(--brand-light){% endif %};">
+                                    <i class="bi {% if notif.type_notif == 'recommandation' %}bi-lightbulb{% elif notif.type_notif == 'alerte_churn' %}bi-exclamation-triangle-fill{% elif notif.type_notif == 'compte' %}bi-person-check{% else %}bi-bell{% endif %}"
+                                        style="color:{% if notif.type_notif == 'recommandation' %}var(--accent){% elif notif.type_notif == 'alerte_churn' %}var(--danger){% elif notif.type_notif == 'compte' %}var(--success){% else %}var(--brand){% endif %};"></i>
+                                </div>
+                                <div class="notif-body">
+                                    <div class="notif-title">{{ notif.titre }}</div>
+                                    <div class="notif-content">{{ notif.contenu }}</div>
+                                    <div class="notif-meta">
+                                        <span><i class="bi bi-clock me-1"></i>{{ notif.date_creation|timesince }}</span>
+                                        {% if notif.client %}
+                                        <span class="client-chip"><i class="bi bi-person"></i> {{ notif.client.client_id }}</span>
+                                        {% endif %}
+                                        <span style="display:inline-flex; gap:4px; margin-left:auto;">
+                                            {% if not notif.lu %}
+                                            <form method="POST"
+                                                action="{% url 'dashboard:marquer_lu_notification' notif.id %}"
+                                                style="display:inline;" onclick="event.stopPropagation();">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                    style="background:none; border:none; cursor:pointer; color:var(--brand); font-size:13px; padding:0;"
+                                                    title="Marquer comme lu"><i class="bi bi-check2"></i></button>
+                                            </form>
                                             {% endif %}
-                                            <span style="display:inline-flex; gap:4px; margin-left:auto;">
-                                                {% if not notif.lu %}
-                                                <form method="POST" action="{% url 'dashboard:marquer_lu_notification' notif.id %}" style="display:inline;" onclick="event.stopPropagation();">
-                                                    {% csrf_token %}
-                                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:var(--brand); font-size:13px; padding:0;" title="Marquer comme lu"><i class="bi bi-check2"></i></button>
-                                                </form>
-                                                {% endif %}
-                                                <form method="POST" action="{% url 'dashboard:archiver_notification' notif.id %}" style="display:inline;" onclick="event.stopPropagation();">
-                                                    {% csrf_token %}
-                                                    <button type="submit" style="background:none; border:none; cursor:pointer; color:var(--warning); font-size:13px; padding:0;" title="Archiver"><i class="bi bi-archive"></i></button>
-                                                </form>
-                                                <form method="POST" action="{% url 'dashboard:supprimer_notification' notif.id %}" style="display:inline;" onclick="event.stopPropagation();">
-                                                    {% csrf_token %}
-                                                    <button type="button" onclick="showDeleteModal(this)" style="background:none; border:none; cursor:pointer; color:var(--danger); font-size:13px; padding:0;" title="Supprimer"><i class="bi bi-trash3"></i></button>
-                                                </form>
-                                            </span>
-                                        </div>
+                                            <form method="POST"
+                                                action="{% url 'dashboard:archiver_notification' notif.id %}"
+                                                style="display:inline;" onclick="event.stopPropagation();">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                    style="background:none; border:none; cursor:pointer; color:var(--warning); font-size:13px; padding:0;"
+                                                    title="Archiver"><i class="bi bi-archive"></i></button>
+                                            </form>
+                                            <form method="POST"
+                                                action="{% url 'dashboard:supprimer_notification' notif.id %}"
+                                                style="display:inline;" onclick="event.stopPropagation();">
+                                                {% csrf_token %}
+                                                <button type="submit"
+                                                    style="background:none; border:none; cursor:pointer; color:var(--danger); font-size:13px; padding:0;"
+                                                    title="Supprimer"><i class="bi bi-trash3"></i></button>
+                                            </form>
+                                        </span>
                                     </div>
-                                    {% if not notif.lu %}<div class="unread-dot"></div>{% endif %}
-                                </a>
-                            </div>
-                            {% endfor %}
+                                </div>
+                                {% if not notif.lu %}<div class="unread-dot"></div>{% endif %}
+                            </a>
                         </div>
                         {% endfor %}
                     </div>
                     {% endfor %}
-                    {% else %}
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="bi bi-bell-slash"></i></div>
-                        <div class="empty-title">Aucune notification</div>
-                        <div class="empty-sub">Vous êtes à jour.</div>
-                    </div>
-                    {% endif %}
                 </div>
-
+                {% endfor %}
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon"><i class="bi bi-bell-slash"></i></div>
+                    <div class="empty-title">Aucune notification</div>
+                    <div class="empty-sub">Vous êtes à jour.</div>
+                </div>
+                {% endif %}
             </div>
 
         </div>
+
+    </div>
 
     </div>
 
@@ -612,15 +630,21 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
                 <div class="modal-body p-4 text-center">
-                    <div style="width:64px;height:64px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                    <div
+                        style="width:64px;height:64px;border-radius:50%;background:var(--danger-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                         <i class="bi bi-trash3" style="font-size:28px;color:var(--danger);"></i>
                     </div>
-                    <h5 style="font-weight:700;color:var(--text-main);margin-bottom:8px;">Supprimer cette notification ?</h5>
-                    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">La notification sera déplacée dans la <strong>corbeille</strong>.</p>
-                    <p style="font-size:12px;color:var(--text-faint);margin-bottom:20px;">Vous pourrez la restaurer pendant 30 jours avant suppression définitive.</p>
+                    <h5 style="font-weight:700;color:var(--text-main);margin-bottom:8px;">Supprimer cette notification ?
+                    </h5>
+                    <p style="font-size:13px;color:var(--text-muted);margin-bottom:4px;">La notification sera déplacée
+                        dans la <strong>corbeille</strong>.</p>
+                    <p style="font-size:12px;color:var(--text-faint);margin-bottom:20px;">Vous pourrez la restaurer
+                        pendant 30 jours avant suppression définitive.</p>
                     <div style="display:flex;gap:10px;justify-content:center;">
-                        <button type="button" class="btn-secondary" data-bs-dismiss="modal" style="padding:10px 20px;">Annuler</button>
-                        <button type="button" id="confirmDeleteBtn" class="btn-delete" style="padding:10px 20px;"><i class="bi bi-trash3"></i> Supprimer</button>
+                        <button type="button" class="btn-secondary" data-bs-dismiss="modal"
+                            style="padding:10px 20px;">Annuler</button>
+                        <button type="button" id="confirmDeleteBtn" class="btn-delete" style="padding:10px 20px;"><i
+                                class="bi bi-trash3"></i> Supprimer</button>
                     </div>
                 </div>
             </div>
@@ -680,7 +704,7 @@
                 }
             }
         });
-        
+
         function filtrer(btn) {
             document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');

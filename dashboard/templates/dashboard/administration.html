@@ -1,331 +1,1018 @@
+{% extends 'accounts/navbar.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration</title>
-    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
-    <link href="{% static 'css/common.css' %}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-</head>
+{% block content %}
+<style>
+    /* ── BASE ── */
+    .adm-wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 16px;
+    }
 
-<body>
-    {% include 'accounts/navbar.html' %}
-    <div class="container-fluid py-4">
-        <div class="container-fluid py-4">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1">⚙️ Administration</h2>
-                    <p class="text-muted mb-0">Gestion des comptes et maintenance de la base de données</p>
-                </div>
-                <a href="{% url 'dashboard:accueil' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Retour au Dashboard
-                </a>
-            </div>
+    .adm-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
 
-            <!-- Alertes -->
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
+    .adm-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #004595;
+        margin: 0;
+    }
+
+    .adm-sub {
+        font-size: 13px;
+        color: #94a3b8;
+        margin: 0;
+    }
+
+    /* ── KPI STRIP ── */
+    .kpi-strip {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 14px;
+        padding: 18px 20px;
+        box-shadow: 0 2px 10px rgba(0, 69, 149, .06);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .kpi-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .kpi-val {
+        font-size: 24px;
+        font-weight: 800;
+        color: #004595;
+        line-height: 1;
+    }
+
+    .kpi-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        margin-top: 2px;
+    }
+
+    /* ── SEARCH ── */
+    .search-wrap {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-wrap i {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 14px;
+    }
+
+    .search-bar {
+        width: 100%;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 11px 16px 11px 38px;
+        font-size: 13px;
+        font-family: 'Manrope', sans-serif;
+        outline: none;
+        transition: .2s;
+    }
+
+    .search-bar:focus {
+        border-color: #004595;
+        box-shadow: 0 0 0 3px rgba(0, 69, 149, .08);
+    }
+
+    /* ── VILLE ACCORDION ── */
+    .ville-block {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 2px 14px rgba(0, 69, 149, .07);
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: .2s;
+    }
+
+    .ville-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        cursor: pointer;
+        user-select: none;
+        gap: 12px;
+    }
+
+    .ville-row:hover {
+        background: #f8faff;
+    }
+
+    .ville-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ville-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #004595, #1a3fcc);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .ville-name {
+        font-size: 15px;
+        font-weight: 800;
+        color: #004595;
+    }
+
+    .ville-meta {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 1px;
+    }
+
+    .ville-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chevron {
+        font-size: 14px;
+        color: #94a3b8;
+        transition: .25s;
+    }
+
+    .ville-block.open .chevron {
+        transform: rotate(180deg);
+    }
+
+    /* ── VILLE BODY ── */
+    .ville-body {
+        display: none;
+        border-top: 1px solid #f1f3f9;
+    }
+
+    .ville-block.open .ville-body {
+        display: block;
+    }
+
+    /* ── TABS AGENCES ── */
+    .ag-tabs {
+        display: flex;
+        gap: 0;
+        padding: 0 16px;
+        background: #fafbff;
+        border-bottom: 1px solid #f1f3f9;
+        overflow-x: auto;
+    }
+
+    .ag-tab {
+        padding: 12px 18px;
+        background: none;
+        border: none;
+        font-size: 13px;
+        font-weight: 700;
+        color: #94a3b8;
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -1px;
+        transition: .2s;
+        font-family: 'Manrope', sans-serif;
+    }
+
+    .ag-tab.active {
+        color: #004595;
+        border-bottom-color: #004595;
+    }
+
+    .ag-tab:hover:not(.active) {
+        color: #004595;
+    }
+
+    .ag-tab .ag-badge {
+        background: #f7941d;
+        color: white;
+        border-radius: 10px;
+        padding: 1px 6px;
+        font-size: 10px;
+        margin-left: 4px;
+    }
+
+    /* ── PANEL AGENCE ── */
+    .ag-panel {
+        display: none;
+        padding: 20px 24px;
+    }
+
+    .ag-panel.active {
+        display: block;
+    }
+
+    .ag-kpi {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+
+    .ag-kpi-item {
+        background: #f8faff;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+    }
+
+    .ag-kpi-val {
+        font-size: 20px;
+        font-weight: 800;
+        color: #004595;
+    }
+
+    .ag-kpi-lbl {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        color: #94a3b8;
+    }
+
+    /* ── USER ROWS ── */
+    .user-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8faff;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .user-row:last-child {
+        border: none;
+    }
+
+    .user-av {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 13px;
+    }
+
+    .user-sub {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+
+    /* ── BADGES ── */
+    .bst {
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .bst-actif {
+        background: rgba(0, 180, 100, .1);
+        color: #00b464;
+    }
+
+    .bst-attente {
+        background: rgba(247, 148, 29, .1);
+        color: #f7941d;
+    }
+
+    .bst-suspendu {
+        background: rgba(220, 53, 69, .1);
+        color: #dc3545;
+    }
+
+    .bst-bloque {
+        background: rgba(100, 100, 100, .1);
+        color: #666;
+    }
+
+    /* ── BTN ACTIONS ── */
+    .btn-a {
+        border: none;
+        border-radius: 7px;
+        padding: 5px 11px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+        font-family: 'Manrope', sans-serif;
+        white-space: nowrap;
+    }
+
+    .btn-a:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+    }
+
+    .btn-green {
+        background: rgba(0, 180, 100, .12);
+        color: #00b464;
+    }
+
+    .btn-red {
+        background: rgba(220, 53, 69, .12);
+        color: #dc3545;
+    }
+
+    .btn-orange {
+        background: rgba(247, 148, 29, .12);
+        color: #f7941d;
+    }
+
+    .btn-blue {
+        background: rgba(0, 69, 149, .1);
+        color: #004595;
+    }
+
+    .btn-gray {
+        background: #f1f3f9;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-primary-tt {
+        background: #004595;
+        color: white;
+        border-radius: 10px;
+        padding: 9px 18px;
+        font-size: 13px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        font-family: 'Manrope', sans-serif;
+        transition: .2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-primary-tt:hover {
+        background: #003070;
+        transform: translateY(-1px);
+    }
+
+    /* ── SECTION TITLE ── */
+    .sec-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #94a3b8;
+        margin: 16px 0 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .45);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-overlay.open {
+        display: flex;
+    }
+
+    .modal-box {
+        background: white;
+        border-radius: 20px;
+        padding: 32px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .2);
+        animation: modalIn .2s ease;
+    }
+
+    @keyframes modalIn {
+        from {
+            opacity: 0;
+            transform: translateY(16px)
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0)
+        }
+    }
+
+    .modal-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: #004595;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        background: #f8faff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        font-family: 'Manrope', sans-serif;
+        outline: none;
+        transition: .2s;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: #004595;
+        box-shadow: 0 0 0 3px rgba(0, 69, 149, .08);
+        background: white;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 24px;
+    }
+
+    /* ── EMPTY ── */
+    .empty {
+        text-align: center;
+        padding: 32px;
+        color: #94a3b8;
+    }
+
+    .empty i {
+        font-size: 32px;
+        display: block;
+        margin-bottom: 8px;
+        opacity: .4;
+    }
+
+    .empty p {
+        font-size: 13px;
+        margin: 0;
+    }
+
+    /* ── ADD VILLE BTN ── */
+    .add-ville-btn {
+        width: 100%;
+        background: white;
+        border: 2px dashed #e2e8f0;
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #94a3b8;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: .2s;
+        font-family: 'Manrope', sans-serif;
+    }
+
+    .add-ville-btn:hover {
+        border-color: #004595;
+        color: #004595;
+        background: #f8faff;
+    }
+
+    @media(max-width:640px) {
+        .kpi-strip {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .ag-kpi {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>
+
+<div class="adm-wrap">
+
+    <!-- HEADER -->
+    <div class="adm-header">
+        <div>
+            <h1 class="adm-title">
+                {% if is_admin_city %}Administration de {{ admin_ville.nom }}{% else %}Administration{% endif %}
+            </h1>
+            <p class="adm-sub">
+                {% if is_admin_city %}Gestion locale — agences et utilisateurs de votre ville{% else %}Gestion complète
+                — villes, agences, utilisateurs{% endif %}
+            </p>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            {% if is_super_admin %}
+            <button class="btn-primary-tt" onclick="openModal('modal-ville')">
+                <i class="bi bi-plus-lg"></i>Nouvelle ville
+            </button>
             {% endif %}
+        </div>
+    </div>
 
-            <div class="row">
-                <!-- Colonne Gauche: Statistiques et Vidage -->
-                <div class="col-lg-5">
-                    <!-- Carte Statistiques -->
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="fas fa-database me-2"></i>Statistiques des Tables</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-6">
-                                    <div class="stat-card p-3 bg-light rounded">
-                                        <div class="text-muted small">Clients</div>
-                                        <div class="h4 mb-0">{{ stats.clients }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="stat-card p-3 bg-light rounded">
-                                        <div class="text-muted small">Notifications</div>
-                                        <div class="h4 mb-0">{{ stats.notifications }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="stat-card p-3 bg-light rounded">
-                                        <div class="text-muted small">Analyses</div>
-                                        <div class="h4 mb-0">{{ stats.analyses }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="stat-card p-3 bg-light rounded">
-                                        <div class="text-muted small">Recommandations</div>
-                                        <div class="h4 mb-0">{{ stats.recommandations }}</div>
-                                    </div>
-                                </div>
-                                <div class="col-6">
-                                    <div class="stat-card p-3 bg-light rounded">
-                                        <div class="text-muted small">Utilisateurs</div>
-                                        <div class="h4 mb-0">{{ stats.users }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 shadow-sm mb-4">
+        {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- KPI -->
+    <div class="kpi-strip">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(0,69,149,.1)"><i class="bi bi-geo-alt-fill"
+                    style="color:#004595"></i></div>
+            <div>
+                <div class="kpi-val">{{ total_villes }}</div>
+                <div class="kpi-lbl">Villes</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(146,39,143,.1)"><i class="bi bi-building"
+                    style="color:#92278f"></i></div>
+            <div>
+                <div class="kpi-val">{{ total_agences }}</div>
+                <div class="kpi-lbl">Agences</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(0,174,239,.1)"><i class="bi bi-people-fill"
+                    style="color:#00aeef"></i></div>
+            <div>
+                <div class="kpi-val">{{ total_users }}</div>
+                <div class="kpi-lbl">Utilisateurs</div>
+            </div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background:rgba(247,148,29,.1)"><i class="bi bi-hourglass-split"
+                    style="color:#f7941d"></i></div>
+            <div>
+                <div class="kpi-val">{{ total_en_attente }}</div>
+                <div class="kpi-lbl">En attente</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-wrap">
+        <i class="bi bi-search"></i>
+        <input type="text" class="search-bar" id="searchInput" placeholder="Rechercher une ville, agence…"
+            oninput="filterVilles()">
+    </div>
+
+    <!-- VILLES -->
+    {% for vd in villes_data %}{% with ville=vd.ville agences=vd.agences admin=vd.admin %}
+    <div class="ville-block ville-item" data-search="{{ ville.nom|lower }}" id="ville-{{ ville.id }}">
+
+        <div class="ville-row" onclick="toggleVille({{ ville.id }})">
+            <div class="ville-left">
+                <div class="ville-dot"><i class="bi bi-geo-alt-fill"></i></div>
+                <div>
+                    <div class="ville-name">{{ ville.nom }}</div>
+                    <div class="ville-meta">
+                        {{ agences|length }} agence{{ agences|length|pluralize }} ·
+                        {% if admin %}Admin : {{ admin.get_full_name|default:admin.username }}{% else %}<span
+                            style="color:#f7941d">Aucun admin</span>{% endif %}
                     </div>
+                </div>
+            </div>
+            <div class="ville-right">
+                <button class="btn-a btn-blue"
+                    onclick="event.stopPropagation();openModalAgence({{ ville.id }},'{{ ville.nom }}')">
+                    <i class="bi bi-plus me-1"></i>Agence
+                </button>
+                {% if is_super_admin %}
+                <button class="btn-a btn-orange"
+                    onclick="event.stopPropagation();openModalEditVille({{ ville.id }},'{{ ville.nom }}')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn-a btn-red"
+                    onclick="event.stopPropagation();confirmDelete('{% url 'dashboard:supprimer_ville' ville.id %}','la ville {{ ville.nom }}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+                {% endif %}
+                <i class="bi bi-chevron-down chevron"></i>
+            </div>
+        </div>
 
-                    <!-- Carte Vidage de Tables -->
-                    <div class="card shadow-sm border-danger">
-                        <div class="card-header bg-danger text-white">
-                            <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Vidage des Tables</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="text-muted small mb-3">
-                                <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                                Attention: Cette action est irréversible!
-                            </p>
+        <div class="ville-body">
+            {% if agences %}
+            <div class="ag-tabs" id="agtabs-{{ ville.id }}">
+                {% for ag in agences %}
+                <button class="ag-tab {% if forloop.first %}active{% endif %}"
+                    onclick="switchAgTab({{ ville.id }},{{ ag.agence.id }},this)">
+                    {{ ag.agence.nom }}
+                    {% if ag.nb_attente > 0 %}<span class="ag-badge">{{ ag.nb_attente }}</span>{% endif %}
+                </button>
+                {% endfor %}
+            </div>
 
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('clients')">
-                                    <i class="fas fa-users me-2"></i>Vider Clients
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('notifications')">
-                                    <i class="fas fa-bell me-2"></i>Vider Notifications
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('recommandations')">
-                                    <i class="fas fa-lightbulb me-2"></i>Vider Recommandations
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('analyses')">
-                                    <i class="fas fa-chart-line me-2"></i>Vider Analyses
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('evenements_cdr')">
-                                    <i class="fas fa-phone me-2"></i>Vider Événements CDR
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="viderTable('interactions')">
-                                    <i class="fas fa-mouse-pointer me-2"></i>Vider Interactions
-                                </button>
-                                <hr>
-                                <button class="btn btn-danger" onclick="viderTable('all')">
-                                    <i class="fas fa-trash me-2"></i>Vider TOUTES les tables
-                                </button>
-                                {% if request.user.is_superuser %}
-                                <button class="btn btn-dark" onclick="resetDatabase()">
-                                    <i class="fas fa-power-off me-2"></i>RÉINITIALISATION COMPLÈTE
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
+            {% for ag in agences %}
+            <div class="ag-panel {% if forloop.first %}active{% endif %}"
+                id="agpanel-{{ ville.id }}-{{ ag.agence.id }}">
+
+                <!-- AGENCE ACTIONS -->
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+                    <a class="btn-a btn-primary" href="{% url 'dashboard:historique_agence' ag.agence.id %}">
+                        <i class="bi bi-clock-history me-1"></i>Historique
+                    </a>
+                    {% if ag.agence.active %}
+                    <button class="btn-a btn-green" onclick="openModalUser({{ ag.agence.id }},'{{ ag.agence.nom }}')">
+                        <i class="bi bi-person-plus me-1"></i>Ajouter utilisateur
+                    </button>
+                    <button class="btn-a btn-orange"
+                        onclick="openModalEditAgence({{ ag.agence.id }},'{{ ag.agence.nom }}')">
+                        <i class="bi bi-pencil me-1"></i>Modifier
+                    </button>
+                    <button class="btn-a btn-red"
+                        onclick="confirmDelete('{% url 'dashboard:supprimer_agence' ag.agence.id %}','l\'agence {{ ag.agence.nom }}')">
+                        <i class="bi bi-trash me-1"></i>Supprimer
+                    </button>
+                    {% else %}
+                    <span class="bst bst-suspendu" style="align-self:center;">Inactive</span>
+                    <form method="POST" action="{% url 'dashboard:activer_agence' ag.agence.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-a btn-green">
+                            <i class="bi bi-check-circle me-1"></i>Activer
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <!-- KPI AGENCE -->
+                <div class="ag-kpi">
+                    <div class="ag-kpi-item">
+                        <div class="ag-kpi-val">{{ ag.nb_total }}</div>
+                        <div class="ag-kpi-lbl">Utilisateurs</div>
+                    </div>
+                    <div class="ag-kpi-item" style="background:rgba(0,180,100,.06)">
+                        <div class="ag-kpi-val" style="color:#00b464">{{ ag.nb_actifs }}</div>
+                        <div class="ag-kpi-lbl">Actifs</div>
+                    </div>
+                    <div class="ag-kpi-item" style="background:rgba(247,148,29,.06)">
+                        <div class="ag-kpi-val" style="color:#f7941d">{{ ag.nb_attente }}</div>
+                        <div class="ag-kpi-lbl">En attente</div>
                     </div>
                 </div>
 
-                <!-- Colonne Droite: Gestion des Utilisateurs -->
-                {% if can_manage_users %}
-                <div class="col-lg-7">
-                    <div class="card shadow-sm">
-                        <div
-                            class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="fas fa-users-cog me-2"></i>Gestion des Comptes</h5>
-                            <span class="badge bg-white text-success">{{ user_count }} utilisateurs</span>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Email</th>
-                                            <th>Nom</th>
-                                            <th>Rôle</th>
-                                            <th>Agence</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for user in users %}
-                                        <tr>
-                                            <td>{{ user.email }}</td>
-                                            <td>{{ user.nom|default:"-" }}</td>
-                                            <td>
-                                                {% if user.role == 'admin' %}
-                                                <span class="badge bg-primary">Admin Ville</span>
-                                                {% elif user.role == 'super_admin' %}
-                                                <span class="badge bg-dark">Super Admin</span>
-                                                {% elif user.role == 'chef_agence' %}
-                                                <span class="badge bg-info">Chef Agence</span>
-                                                {% elif user.role == 'agent_marketing' %}
-                                                <span class="badge bg-warning text-dark">Agent Marketing</span>
-                                                {% elif user.role == 'agent_commercial' %}
-                                                <span class="badge bg-secondary">Agent Commercial</span>
-                                                {% else %}
-                                                <span class="badge bg-secondary">{{ user.get_role_display }}</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>{{ user.agence.nom|default:"-" }}</td>
-                                            <td>
-                                                {% if user.is_active %}
-                                                <span class="badge bg-success">Actif</span>
-                                                {% else %}
-                                                <span class="badge bg-danger">Inactif</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <form method="post"
-                                                    action="{% url 'dashboard:toggle_user_active' user.id %}"
-                                                    class="d-inline">
-                                                    {% csrf_token %}
-                                                    {% if user.is_active %}
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Désactiver ce compte ?')">
-                                                        <i class="fas fa-ban"></i> Désactiver
-                                                    </button>
-                                                    {% else %}
-                                                    <button type="submit" class="btn btn-sm btn-outline-success"
-                                                        onclick="return confirm('Activer ce compte ?')">
-                                                        <i class="fas fa-check"></i> Activer
-                                                    </button>
-                                                    {% endif %}
-                                                </form>
-                                            </td>
-                                        </tr>
-                                        {% empty %}
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted py-4">
-                                                Aucun utilisateur à afficher
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
+                <!-- USERS -->
+                <div class="sec-title">Utilisateurs</div>
+                {% if ag.users %}
+                {% for u in ag.users %}
+                <div class="user-row">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        {% if u.role == 'chef_agence' %}
+                        <div class="user-av" style="background:rgba(0,69,149,.1)"><i class="bi bi-person-badge"
+                                style="color:#004595"></i></div>
+                        {% elif u.role == 'agent_marketing' %}
+                        <div class="user-av" style="background:rgba(146,39,143,.1)"><i class="bi bi-megaphone"
+                                style="color:#92278f"></i></div>
+                        {% else %}
+                        <div class="user-av" style="background:rgba(140,198,63,.1)"><i class="bi bi-briefcase"
+                                style="color:#8cc63f"></i></div>
+                        {% endif %}
+                        <div>
+                            <div class="user-name">{{ u.get_full_name|default:u.username }}</div>
+                            <div class="user-sub">{{ u.get_role_display }} · {{ u.email }}</div>
                         </div>
                     </div>
+                    <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                        {% if u.est_bloque %}
+                        <span class="bst bst-bloque">Bloqué</span>
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">{% csrf_token %}<input
+                                type="hidden" name="action" value="debloquer"><button
+                                class="btn-a btn-blue">Débloquer</button></form>
+                        {% elif u.statut == 'en_attente' %}
+                        <span class="bst bst-attente">En attente</span>
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">{% csrf_token %}<input
+                                type="hidden" name="action" value="valider"><button class="btn-a btn-green"><i
+                                    class="bi bi-check"></i></button></form>
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">{% csrf_token %}<input
+                                type="hidden" name="action" value="refuser"><button class="btn-a btn-red"><i
+                                    class="bi bi-x"></i></button></form>
+                        {% elif u.statut == 'actif' %}
+                        <span class="bst bst-actif">Actif</span>
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">{% csrf_token %}<input
+                                type="hidden" name="action" value="suspendre"><button
+                                class="btn-a btn-orange">Suspendre</button></form>
+                        {% else %}
+                        <span class="bst bst-suspendu">Suspendu</span>
+                        <form method="POST" action="{% url 'accounts:action_compte' u.id %}">{% csrf_token %}<input
+                                type="hidden" name="action" value="valider"><button
+                                class="btn-a btn-green">Réactiver</button></form>
+                        {% endif %}
+                        <button class="btn-a btn-red"
+                            onclick="confirmDelete('{% url 'dashboard:supprimer_utilisateur' u.id %}','l\'utilisateur {{ u.get_full_name|default:u.username }}')"><i
+                                class="bi bi-trash"></i></button>
+                    </div>
                 </div>
+                {% endfor %}
                 {% else %}
-                <div class="col-lg-7">
-                    <div class="card shadow-sm border-info">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="fas fa-table me-2"></i>Gestion des tables</h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="mb-0">
-                                En tant que <strong>{{ request.user.get_role_display }}</strong>, vous pouvez uniquement
-                                gérer les tables et la maintenance depuis cette page.
-                            </p>
-                        </div>
-                    </div>
+                <div class="empty"><i class="bi bi-people"></i>
+                    <p>Aucun utilisateur</p>
                 </div>
                 {% endif %}
-            </div>
-        </div>
 
-        <!-- Modal de confirmation -->
-        <div class="modal fade" id="confirmModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">⚠️ Confirmation</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p id="confirmMessage">Êtes-vous sûr de vouloir continuer ?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-danger" id="confirmBtn">Confirmer</button>
-                    </div>
+            </div>
+            {% endfor %}
+
+            {% else %}
+            <div class="empty" style="padding:32px;"><i class="bi bi-building"></i>
+                <p>Aucune agence — <a href="#" onclick="openModalAgence({{ ville.id }},'{{ ville.nom }}')">en créer
+                        une</a></p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endwith %}{% endfor %}
+
+    <!-- ADD VILLE -->
+    <button class="add-ville-btn" onclick="openModal('modal-ville')">
+        <i class="bi bi-plus-circle" style="font-size:18px;"></i>
+        Ajouter une nouvelle ville
+    </button>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- Modal Nouvelle Ville -->
+<div class="modal-overlay" id="modal-ville">
+    <div class="modal-box">
+        <div class="modal-title"><i class="bi bi-geo-alt-fill" style="color:#004595"></i>Nouvelle ville</div>
+        <form method="POST" action="{% url 'dashboard:creer_ville' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Nom de la ville</label>
+                <input type="text" name="nom" placeholder="ex: Tunis" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-a btn-gray" onclick="closeModal('modal-ville')">Annuler</button>
+                <button type="submit" class="btn-primary-tt"><i class="bi bi-check-lg"></i>Créer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Modifier Ville -->
+<div class="modal-overlay" id="modal-edit-ville">
+    <div class="modal-box">
+        <div class="modal-title"><i class="bi bi-pencil" style="color:#004595"></i>Modifier la ville</div>
+        <form method="POST" id="form-edit-ville">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Nom de la ville</label>
+                <input type="text" name="nom" id="edit-ville-nom" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-a btn-gray" onclick="closeModal('modal-edit-ville')">Annuler</button>
+                <button type="submit" class="btn-primary-tt"><i class="bi bi-check-lg"></i>Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Nouvelle Agence -->
+<div class="modal-overlay" id="modal-agence">
+    <div class="modal-box">
+        <div class="modal-title"><i class="bi bi-building" style="color:#92278f"></i>Nouvelle agence — <span
+                id="modal-agence-ville"></span></div>
+        <form method="POST" id="form-agence">
+            {% csrf_token %}
+            <input type="hidden" name="ville_id" id="agence-ville-id">
+            <div class="form-group">
+                <label>Nom de l'agence</label>
+                <input type="text" name="nom" placeholder="ex: Agence Centre" required>
+            </div>
+            <div class="form-group">
+                <label>Code agence</label>
+                <input type="text" name="code" placeholder="ex: AG001">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-a btn-gray" onclick="closeModal('modal-agence')">Annuler</button>
+                <button type="submit" class="btn-primary-tt"><i class="bi bi-check-lg"></i>Créer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Modifier Agence -->
+<div class="modal-overlay" id="modal-edit-agence">
+    <div class="modal-box">
+        <div class="modal-title"><i class="bi bi-pencil" style="color:#92278f"></i>Modifier l'agence</div>
+        <form method="POST" id="form-edit-agence">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Nom de l'agence</label>
+                <input type="text" name="nom" id="edit-agence-nom" required>
+            </div>
+            <div class="form-group">
+                <label>Code agence</label>
+                <input type="text" name="code" id="edit-agence-code">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-a btn-gray" onclick="closeModal('modal-edit-agence')">Annuler</button>
+                <button type="submit" class="btn-primary-tt"><i class="bi bi-check-lg"></i>Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Nouvel Utilisateur -->
+<div class="modal-overlay" id="modal-user">
+    <div class="modal-box">
+        <div class="modal-title"><i class="bi bi-person-plus" style="color:#00b464"></i>Nouvel utilisateur — <span
+                id="modal-user-agence"></span></div>
+        <form method="POST" id="form-user">
+            {% csrf_token %}
+            <input type="hidden" name="agence_id" id="user-agence-id">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" name="first_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" name="last_name" required>
                 </div>
             </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Nom d'utilisateur</label>
+                <input type="text" name="username" required>
+            </div>
+            <div class="form-group">
+                <label>Rôle</label>
+                <select name="role">
+                    <option value="chef_agence">Chef d'agence</option>
+                    <option value="agent_marketing">Agent Marketing</option>
+                    <option value="agent_commercial">Agent Commercial</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe temporaire</label>
+                <input type="password" name="password" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-a btn-gray" onclick="closeModal('modal-user')">Annuler</button>
+                <button type="submit" class="btn-primary-tt"><i class="bi bi-check-lg"></i>Créer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmation Suppression -->
+<div class="modal-overlay" id="modal-confirm">
+    <div class="modal-box" style="max-width:400px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:12px;">🗑️</div>
+        <div class="modal-title" style="justify-content:center;">Confirmer la suppression</div>
+        <p id="confirm-msg" style="color:#64748b;font-size:14px;margin-bottom:24px;"></p>
+        <div class="modal-actions" style="justify-content:center;">
+            <button class="btn-a btn-gray" onclick="closeModal('modal-confirm')">Annuler</button>
+            <form method="POST" id="form-delete">{% csrf_token %}<button type="submit" class="btn-a btn-red"
+                    style="padding:8px 20px;font-size:13px;">Supprimer définitivement</button></form>
         </div>
+    </div>
+</div>
 
-        <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-        <script>
-            function viderTable(table) {
-                const messages = {
-                    'clients': 'Vider la table Clients ?',
-                    'notifications': 'Vider la table Notifications ?',
-                    'recommandations': 'Vider la table Recommandations ?',
-                    'analyses': 'Vider la table Analyses ?',
-                    'evenements_cdr': 'Vider la table Événements CDR ?',
-                    'interactions': 'Vider la table Interactions ?',
-                    'all': '⚠️ VIDER TOUTES LES TABLES ? Cette action supprimera tous les clients, notifications, analyses, recommandations, etc.'
-                };
+<script>
+    // ── ACCORDION ──
+    function toggleVille(id) {
+        const block = document.getElementById('ville-' + id);
+        block.classList.toggle('open');
+    }
 
-                if (!confirm(messages[table] || 'Continuer ?')) return;
+    // ── TABS AGENCES ──
+    function switchAgTab(villeId, agenceId, btn) {
+        document.querySelectorAll(`#agtabs-${villeId} .ag-tab`).forEach(b => b.classList.remove('active'));
+        document.querySelectorAll(`[id^="agpanel-${villeId}-"]`).forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(`agpanel-${villeId}-${agenceId}`).classList.add('active');
+    }
 
-                fetch('{% url "dashboard:vider_table" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: 'table=' + encodeURIComponent(table)
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.redirect) {
-                            alert('Erreur : ' + data.error);
-                            if (data.redirect_url) {
-                                window.location.href = data.redirect_url;
-                            }
-                            return;
-                        }
+    // ── MODALS ──
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-                        if (data.success) {
-                            alert('✅ ' + data.message);
-                            location.reload();
-                        } else {
-                            alert('❌ Erreur: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        alert('❌ Erreur: ' + error);
-                    });
-            }
+    document.querySelectorAll('.modal-overlay').forEach(m => {
+        m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+    });
 
-            function resetDatabase() {
-                if (!confirm('⚠️ RÉINITIALISATION COMPLÈTE DE LA BASE DE DONNÉES ?\n\nCette action va:\n- Supprimer tous les clients\n- Supprimer toutes les notifications\n- Supprimer toutes les analyses\n- Supprimer toutes les recommandations\n- Supprimer tous les utilisateurs (sauf superusers)\n\nCette action est IRRÉVERSIBLE !')) return;
+    function openModalAgence(villeId, villeNom) {
+        document.getElementById('agence-ville-id').value = villeId;
+        document.getElementById('modal-agence-ville').textContent = villeNom;
+        document.getElementById('form-agence').action = "{% url 'dashboard:creer_agence' %}";
+        openModal('modal-agence');
+    }
 
-                if (!confirm('Êtes-vous VRAIMENT sûr ? Tapez "OUI" pour confirmer.')) return;
+    function openModalEditVille(villeId, villeNom) {
+        document.getElementById('edit-ville-nom').value = villeNom;
+        document.getElementById('form-edit-ville').action = `/administration/villes/${villeId}/modifier/`;
+        openModal('modal-edit-ville');
+    }
 
-                fetch('{% url "dashboard:reset_database" %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'X-Requested-With': 'XMLHttpRequest',
-                    }
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.redirect) {
-                            alert('Erreur : ' + data.error);
-                            if (data.redirect_url) {
-                                window.location.href = data.redirect_url;
-                            }
-                            return;
-                        }
+    function openModalEditAgence(agenceId, agenceNom) {
+        document.getElementById('edit-agence-nom').value = agenceNom;
+        document.getElementById('form-edit-agence').action = `/administration/agences/${agenceId}/modifier/`;
+        openModal('modal-edit-agence');
+    }
 
-                        if (data.success) {
-                            alert('✅ ' + data.message);
-                            location.reload();
-                        } else {
-                            alert('❌ Erreur: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        alert('❌ Erreur: ' + error);
-                    });
-            }
-        </script>
-</body>
+    function openModalUser(agenceId, agenceNom) {
+        document.getElementById('user-agence-id').value = agenceId;
+        document.getElementById('modal-user-agence').textContent = agenceNom;
+        document.getElementById('form-user').action = "{% url 'dashboard:creer_utilisateur' %}";
+        openModal('modal-user');
+    }
 
-</html>
+    function confirmDelete(url, label) {
+        document.getElementById('confirm-msg').textContent = `Voulez-vous supprimer ${label} ? Cette action est irréversible.`;
+        document.getElementById('form-delete').action = url;
+        openModal('modal-confirm');
+    }
+
+    // ── SEARCH ──
+    function filterVilles() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('.ville-item').forEach(c => {
+            c.style.display = !q || c.dataset.search.includes(q) ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

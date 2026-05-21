@@ -7,9 +7,56 @@ app_name = "dashboard"
 
 urlpatterns = [
     path("", views.accueil, name="accueil"),
+    path("administration/", views.administration, name="administration"),
+    path("administration/villes/creer/", views.creer_ville, name="creer_ville"),
+    path(
+        "administration/villes/<int:ville_id>/modifier/",
+        views.modifier_ville,
+        name="modifier_ville",
+    ),
+    path(
+        "administration/villes/<int:ville_id>/supprimer/",
+        views.supprimer_ville,
+        name="supprimer_ville",
+    ),
+    path("administration/agences/creer/", views.creer_agence, name="creer_agence"),
+    path(
+        "administration/agences/<int:agence_id>/modifier/",
+        views.modifier_agence,
+        name="modifier_agence",
+    ),
+    path(
+        "administration/agences/<int:agence_id>/supprimer/",
+        views.supprimer_agence,
+        name="supprimer_agence",
+    ),
+    path(
+        "administration/agences/<int:agence_id>/activer/",
+        views.activer_agence,
+        name="activer_agence",
+    ),
+    path(
+        "administration/agences/<int:agence_id>/historique/",
+        views.historique_agence_view,
+        name="historique_agence",
+    ),
+    path(
+        "administration/utilisateurs/creer/",
+        views.creer_utilisateur,
+        name="creer_utilisateur",
+    ),
+    path(
+        "administration/utilisateurs/<int:user_id>/supprimer/",
+        views.supprimer_utilisateur,
+        name="supprimer_utilisateur",
+    ),
     path("clients/", views.liste_clients, name="clients"),
-    path("clients/<str:client_id>/shap/", views.shap_explanation, name="shap_explanation"),
-    path("clients/<int:client_id>/shap/", views.shap_explanation, name="shap_explanation"),
+    path(
+        "clients/<str:client_id>/shap/", views.shap_explanation, name="shap_explanation"
+    ),
+    path(
+        "clients/<int:client_id>/shap/", views.shap_explanation, name="shap_explanation"
+    ),
     path("clients/<str:client_id>/", views.fiche_client, name="fiche_client"),
     path(
         "clients/<int:client_id>/",
@@ -168,27 +215,6 @@ urlpatterns = [
         "rejets/<int:rejet_id>/valider/",
         views.valider_rejet_recommandation,
         name="valider_rejet_recommandation",
-    ),
-    # URLs pour l'administration
-    path(
-        "administration/",
-        views.administration_view,
-        name="administration",
-    ),
-    path(
-        "administration/vider-table/",
-        views.vider_table,
-        name="vider_table",
-    ),
-    path(
-        "administration/toggle-user/<int:user_id>/",
-        views.toggle_user_active,
-        name="toggle_user_active",
-    ),
-    path(
-        "administration/reset-database/",
-        views.reset_database,
-        name="reset_database",
     ),
 ]
 

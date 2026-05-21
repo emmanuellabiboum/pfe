@@ -36,8 +36,6 @@ class ClientChurn(models.Model):
         null=True,
         blank=True,
     )
-
-    # Infos client
     client_id = models.CharField(max_length=100)
     nom = models.CharField(max_length=200, blank=True)
     genre_client = models.CharField(
@@ -47,21 +45,15 @@ class ClientChurn(models.Model):
     telephone = models.CharField(max_length=20, blank=True)
     email = models.CharField(max_length=200, blank=True)
     adresse_physique = models.CharField(max_length=200, blank=True)
-    identifiant_national = models.CharField(max_length=20, blank=True)  # CIN tunisienne
+    identifiant_national = models.CharField(max_length=20, blank=True)
     segment = models.CharField(max_length=100, blank=True)
-
-    # Dates et statut
     date_debut_abonnement = models.DateField(null=True, blank=True)
     statut_actif = models.BooleanField(default=True)
     date_consentement = models.DateField(null=True, blank=True)
     consentement_marketing = models.BooleanField(default=False)
     optout_marketing = models.BooleanField(default=False)
-
-    # Tenure (durée de relation client)
     tenure_jours = models.IntegerField(default=0)
     tenure_mois = models.FloatField(default=0)
-
-    # Profil contractuel
     type_abonnement = models.CharField(
         max_length=20,
         choices=[("prepaye", "Prépayé"), ("postpaye", "Post-payé")],
@@ -70,91 +62,50 @@ class ClientChurn(models.Model):
     plan_tarifaire = models.CharField(max_length=100, blank=True)
     facture_moyenne_mensuelle = models.FloatField(default=0)
     moyen_paiement = models.CharField(max_length=50, blank=True)
-
-    # Usage télécom agrégé (CDR)
     nb_appels = models.IntegerField(default=0)
     duree_appel_totale_sec = models.IntegerField(default=0)
     duree_appel_moyenne_sec = models.FloatField(default=0)
     sms_total = models.IntegerField(default=0)
     data_totale_mb = models.FloatField(default=0)
     nb_evenements_data_cdr = models.IntegerField(default=0)
-
-    # Tendance de consommation
-    data_mois_M = models.FloatField(null=True, blank=True)  # Data du mois M
-    data_mois_M1 = models.FloatField(null=True, blank=True)  # Data du mois M-1
-    tendance_data = models.FloatField(default=0)  # Variation data entre M et M-1
-
-    # Engagement digital
+    data_mois_M = models.FloatField(null=True, blank=True)
+    data_mois_M1 = models.FloatField(null=True, blank=True)
+    tendance_data = models.FloatField(default=0)
     nb_sessions = models.IntegerField(default=0)
     duree_session_moyenne_sec = models.FloatField(default=0)
     recence_session_jours = models.IntegerField(null=True, blank=True)
     taux_cookies = models.FloatField(default=0)
-
-    # Qualité de service et satisfaction
     zone_reseau_principale = models.CharField(max_length=100, blank=True)
     qualite_signal_dominante = models.CharField(max_length=50, blank=True)
     score_qualite_zone = models.FloatField(default=0)
-    satisfaction_client = models.FloatField(null=True, blank=True)  # 1-5
+    satisfaction_client = models.FloatField(null=True, blank=True)
     score_frustration = models.FloatField(default=0)
-
-    # Features ML existants
     anciennete_mois = models.IntegerField(default=0)
-    nb_reclamations = models.IntegerField(
-        null=True, blank=True
-    )  # NaN = jamais contacté support, 0 = contacté sans réclamation
-    reclamation_manquante = models.BooleanField(
-        default=False
-    )  # Indicateur pour distinguer NaN vs 0
+    nb_reclamations = models.IntegerField(null=True, blank=True)
+    reclamation_manquante = models.BooleanField(default=False)
     consommation_moyenne = models.FloatField(default=0)
     retards_paiement = models.IntegerField(default=0)
     nb_services = models.IntegerField(default=0)
-    recence_cdr_jours = models.IntegerField(
-        null=True, blank=True
-    )  # Jours depuis dernier CDR (exclu des features ML pour éviter data leakage)
-
-    # Flags structurels pour l'audit RGS-90 (Feature Engineering ML)
-    flag_offre_data = models.IntegerField(
-        default=0
-    )  # 1 si l'offre inclut la data, 0 sinon
-    flag_offre_voix = models.IntegerField(
-        default=0
-    )  # 1 si l'offre inclut la voix, 0 sinon
-
-    # Flags pour valeurs manquantes (stratégie NaN avec flags - RGS-90)
-    data_mois_m_manquante = models.IntegerField(default=0)  # 1 si data_mois_M est NaN
-    data_mois_m1_manquante = models.IntegerField(default=0)  # 1 si data_mois_M1 est NaN
-
-    # Prédiction
-    score_churn = models.FloatField(default=0)  # 0 à 1
+    recence_cdr_jours = models.IntegerField(null=True, blank=True)
+    flag_offre_data = models.IntegerField(default=0)
+    flag_offre_voix = models.IntegerField(default=0)
+    data_mois_m_manquante = models.IntegerField(default=0)
+    data_mois_m1_manquante = models.IntegerField(default=0)
+    score_churn = models.FloatField(default=0)
     churn_predit = models.BooleanField(default=False)
     date_prediction = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.client_id} — {self.score_churn:.0%}"
+        return f"{self.client_id} - {self.score_churn:.0%}"
 
     def calculer_churn(self):
-        """
-        Calcule le churn selon le score ML (prioritaire) ou la règle RGS-90.
-        - Si un score ML est disponible (> 0), utilise le seuil 0.32 (aligné FastAPI).
-        - Sinon, si recence_cdr_jours >= 90, applique la règle RGS-90.
-        - Sinon, conserve la valeur actuelle.
-
-        Returns:
-            bool: True si le client est churné, False sinon
-        """
-        # Priorité au score ML s'il est disponible et valide
         if self.score_churn and self.score_churn > 0:
             return self.score_churn >= 0.32
         if self.recence_cdr_jours is None:
-            # Ni score ML ni recence disponible : conserver la valeur actuelle
             return self.churn_predit
         return self.recence_cdr_jours >= 90
 
     def save(self, *args, **kwargs):
-        """
-        Surcharge de save pour mettre à jour automatiquement churn_predit.
-        Le score ML prend le pas sur la règle RGS-90 dès qu'il est disponible.
-        """
         if not self.agence_id and self.dataset_id:
             self.agence_id = self.dataset.agence_id
         self.churn_predit = self.calculer_churn()
@@ -182,10 +133,10 @@ class EvenementCDR(models.Model):
     date_heure = models.DateTimeField()
     type_evenement = models.CharField(max_length=20, choices=TYPE_EVENEMENT_CHOICES)
     numero_source = models.CharField(max_length=20)
-    numero_destination = models.CharField(max_length=20)  # "INTERNET" pour data
-    duree_appel_sec = models.IntegerField(default=0)  # 0 pour non-appel
-    sms_compte = models.IntegerField(default=0)  # 0 ou 1
-    data_mb = models.FloatField(default=0)  # 0 pour non-data
+    numero_destination = models.CharField(max_length=20)
+    duree_appel_sec = models.IntegerField(default=0)
+    sms_compte = models.IntegerField(default=0)
+    data_mb = models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.client.client_id} - {self.type_evenement} - {self.date_heure}"

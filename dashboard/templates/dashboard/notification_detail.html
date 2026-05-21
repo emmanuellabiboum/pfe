@@ -1,11 +1,13 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notification — Tunisie Telecom</title>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
     <style>
@@ -27,10 +29,14 @@
             --text-faint: #9aa3b5;
             --radius-sm: 6px;
             --radius-md: 10px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Manrope', sans-serif;
@@ -61,7 +67,9 @@
             gap: 8px;
         }
 
-        .page-title i { color: var(--accent); }
+        .page-title i {
+            color: var(--accent);
+        }
 
         .page-sub {
             font-size: 13px;
@@ -86,7 +94,9 @@
             transition: background .15s;
         }
 
-        .btn-secondary:hover { background: var(--border); }
+        .btn-secondary:hover {
+            background: var(--border);
+        }
 
         .notif-card {
             background: white;
@@ -116,13 +126,40 @@
             flex-shrink: 0;
         }
 
-        .notif-icon.recommandation { background: var(--accent-light); color: var(--accent); }
-        .notif-icon.validation_requise { background: var(--warning-bg); color: var(--warning); }
-        .notif-icon.validation_acceptee { background: var(--success-bg); color: var(--success); }
-        .notif-icon.validation_refusee { background: var(--danger-bg); color: var(--danger); }
-        .notif-icon.alerte_churn { background: var(--danger-bg); color: var(--danger); }
-        .notif-icon.compte { background: var(--success-bg); color: var(--success); }
-        .notif-icon.info { background: var(--brand-light); color: var(--brand); }
+        .notif-icon.recommandation {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .notif-icon.validation_requise {
+            background: var(--warning-bg);
+            color: var(--warning);
+        }
+
+        .notif-icon.validation_acceptee {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .notif-icon.validation_refusee {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .notif-icon.alerte_churn {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .notif-icon.compte {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .notif-icon.info {
+            background: var(--brand-light);
+            color: var(--brand);
+        }
 
         .notif-title {
             font-size: 18px;
@@ -142,13 +179,40 @@
             letter-spacing: .4px;
         }
 
-        .type-badge.recommandation { background: var(--accent-light); color: var(--accent); }
-        .type-badge.validation_requise { background: var(--warning-bg); color: #7a4d00; }
-        .type-badge.validation_acceptee { background: var(--success-bg); color: #1a6b46; }
-        .type-badge.validation_refusee { background: var(--danger-bg); color: #8b0000; }
-        .type-badge.alerte_churn { background: var(--danger-bg); color: var(--danger); }
-        .type-badge.compte { background: var(--success-bg); color: var(--success); }
-        .type-badge.info { background: var(--brand-light); color: var(--brand); }
+        .type-badge.recommandation {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .type-badge.validation_requise {
+            background: var(--warning-bg);
+            color: #7a4d00;
+        }
+
+        .type-badge.validation_acceptee {
+            background: var(--success-bg);
+            color: #1a6b46;
+        }
+
+        .type-badge.validation_refusee {
+            background: var(--danger-bg);
+            color: #8b0000;
+        }
+
+        .type-badge.alerte_churn {
+            background: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .type-badge.compte {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .type-badge.info {
+            background: var(--brand-light);
+            color: var(--brand);
+        }
 
         .notif-meta {
             display: flex;
@@ -165,7 +229,9 @@
             white-space: pre-wrap;
         }
 
-        .notif-content p { margin-bottom: 12px; }
+        .notif-content p {
+            margin-bottom: 12px;
+        }
 
         .client-chip {
             display: inline-flex;
@@ -204,7 +270,9 @@
             transition: opacity .15s;
         }
 
-        .btn-primary:hover { opacity: .9; }
+        .btn-primary:hover {
+            opacity: .9;
+        }
 
         .unread-badge {
             background: var(--accent);
@@ -219,6 +287,7 @@
     <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
     <link href="{% static 'css/common.css' %}" rel="stylesheet">
 </head>
+
 <body>
     {% include 'accounts/navbar.html' %}
     <div class="page-wrap">
@@ -227,7 +296,7 @@
                 <h1 class="page-title"><i class="bi bi-bell-fill"></i> Notification</h1>
                 <p class="page-sub">Détail du message</p>
             </div>
-            
+
         </div>
 
         <div class="notif-card">
@@ -268,6 +337,14 @@
                 {{ notif.contenu|linebreaksbr }}
             </div>
 
+            {% if notif.lien %}
+            <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="{{ notif.lien }}" class="btn-primary" style="background:var(--brand);">
+                    <i class="bi bi-people"></i> Voir clients
+                </a>
+            </div>
+            {% endif %}
+
             {% if notif.client %}
             <div style="margin-top: 20px;">
                 <span class="client-chip">
@@ -291,13 +368,16 @@
                     {% endif %}
                     <form method="POST" action="{% url 'dashboard:archiver_notification' notif.id %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn-secondary" style="color:var(--warning); border-color:var(--warning);">
+                        <button type="submit" class="btn-secondary"
+                            style="color:var(--warning); border-color:var(--warning);">
                             <i class="bi bi-archive"></i> Archiver
                         </button>
                     </form>
-                    <form method="POST" action="{% url 'dashboard:supprimer_notification' notif.id %}" onsubmit="return confirm('Supprimer cette notification ?');">
+                    <form method="POST" action="{% url 'dashboard:supprimer_notification' notif.id %}"
+                        onsubmit="return confirm('Supprimer cette notification ?');">
                         {% csrf_token %}
-                        <button type="submit" class="btn-secondary" style="color:var(--danger); border-color:var(--danger);">
+                        <button type="submit" class="btn-secondary"
+                            style="color:var(--danger); border-color:var(--danger);">
                             <i class="bi bi-trash3"></i> Supprimer
                         </button>
                     </form>
@@ -308,4 +388,5 @@
 
     <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
 </body>
+
 </html>

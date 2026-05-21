@@ -63,10 +63,6 @@ logs/
 # Local development
 local_settings.py
 
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
 # SendGrid
 sendgrid.env
 
@@ -78,3 +74,5 @@ desktop.ini
 *.dump
 
 node_modules/
+
+pfe_final/venv/

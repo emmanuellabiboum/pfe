@@ -17,23 +17,21 @@
 
 from typing import List, Optional, Literal
 
-import numpy  as np
+import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, Query
 
 from app.ml.dependencies import get_artifacts, get_shap_matrix
-from app.ml.loader       import MLArtifacts
-from app.schemas         import ClientListResponse, ClientListItem
-from app.config          import (
-    SEUIL_CHURN,
+from app.ml.loader import MLArtifacts
+from app.schemas import ClientListResponse, ClientListItem
+from app.config import (
     DEFAULT_PAGE_SIZE,
     MAX_PAGE_SIZE,
 )
 
-
 router = APIRouter(
-    prefix = "/api",
-    tags   = ["Clients"],
+    prefix="/api",
+    tags=["Clients"],
 )
 
 
@@ -41,9 +39,10 @@ router = APIRouter(
 # UTILITAIRE INTERNE — calcul des probabilités via additivité SHAP
 # =============================================================================
 
+
 def _calculer_probas_depuis_shap(
     shap_matrix: pd.DataFrame,
-    base_value : float,
+    base_value: float,
 ) -> np.ndarray:
     """
     Reconstitue les probabilités de churn pour chaque client du test set
@@ -67,35 +66,33 @@ def _calculer_probas_depuis_shap(
     return np.clip(probas, 0.0, 1.0)
 
 
-
-
-
 # =============================================================================
 # GET /api/clients — Liste paginée avec filtre par risque
 # =============================================================================
 
+
 @router.get(
     "/clients",
-    response_model = ClientListResponse,
-    summary        = "Liste des clients avec score churn",
-    description    = (
+    response_model=ClientListResponse,
+    summary="Liste des clients avec score churn",
+    description=(
         "Retourne la liste paginée des clients du test set avec leur "
         "probabilité de churn et décision binaire (CHURN / NON-CHURN)."
     ),
 )
 def get_clients(
-    page       : int = Query(
-        default     = 1,
-        ge          = 1,
-        description = "Page courante (1-indexed)",
+    page: int = Query(
+        default=1,
+        ge=1,
+        description="Page courante (1-indexed)",
     ),
-    limit      : int = Query(
-        default     = DEFAULT_PAGE_SIZE,
-        ge          = 1,
-        le          = MAX_PAGE_SIZE,
-        description = f"Nombre d'items par page (max {MAX_PAGE_SIZE})",
+    limit: int = Query(
+        default=DEFAULT_PAGE_SIZE,
+        ge=1,
+        le=MAX_PAGE_SIZE,
+        description=f"Nombre d'items par page (max {MAX_PAGE_SIZE})",
     ),
-    artefacts  : MLArtifacts  = Depends(get_artifacts),
+    artefacts: MLArtifacts = Depends(get_artifacts),
     shap_matrix: pd.DataFrame = Depends(get_shap_matrix),
 ) -> ClientListResponse:
     """
@@ -119,9 +116,7 @@ def get_clients(
     """
     # ── 1. Récupération de la base_value SHAP ──────────────────────────────
     # base_value = probabilité moyenne de churn sur le train set (≈ 0.49)
-    base_value = float(
-        artefacts.shap_meta.get("base_value", {}).get("valeur", 0.5)
-    )
+    base_value = float(artefacts.shap_meta.get("base_value", {}).get("valeur", 0.5))
 
     # ── 2. Reconstitution vectorielle des probabilités ─────────────────────
     probas = _calculer_probas_depuis_shap(shap_matrix, base_value)
@@ -130,26 +125,26 @@ def get_clients(
     seuil = artefacts.seuil
     clients_complets: List[ClientListItem] = [
         ClientListItem(
-            id                = int(idx),
-            probabilite_churn = round(float(proba), 4),
-            decision          = "CHURN" if proba >= seuil else "NON-CHURN",
+            id=int(idx),
+            probabilite_churn=round(float(proba), 4),
+            decision="CHURN" if proba >= seuil else "NON-CHURN",
         )
         for idx, proba in enumerate(probas)
     ]
 
     # ── 5. Pagination ──────────────────────────────────────────────────────
-    total  = len(clients_complets)
-    debut  = (page - 1) * limit
-    fin    = debut + limit
-    pages  = (total + limit - 1) // limit if total > 0 else 0
+    total = len(clients_complets)
+    debut = (page - 1) * limit
+    fin = debut + limit
+    pages = (total + limit - 1) // limit if total > 0 else 0
 
     clients_page = clients_complets[debut:fin]
 
     # ── 6. Construction de la réponse ──────────────────────────────────────
     return ClientListResponse(
-        total   = total,
-        page    = page,
-        limit   = limit,
-        pages   = pages,
-        clients = clients_page,
+        total=total,
+        page=page,
+        limit=limit,
+        pages=pages,
+        clients=clients_page,
     )
