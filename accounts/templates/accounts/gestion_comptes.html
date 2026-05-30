@@ -372,6 +372,10 @@
                             </button>
                         </form>
                         {% endif %}
+                        <button type="button" class="btn-action btn-refuser" 
+                                onclick="prepareDelete('{{ u.id }}', '{{ u.get_full_name|default:u.username }}')">
+                            <i class="bi bi-trash me-1"></i>Supprimer
+                        </button>
                         {% endif %}
                     </div>
                 </div>
@@ -386,7 +390,44 @@
         </div>
     </div>
 
+    <!-- Modal de Confirmation de Suppression -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pt-4 px-4">
+                    <h5 class="modal-title fw-800" style="color: #082281;">Confirmation de suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body px-4 pb-4">
+                    <p class="text-muted mb-0">Vous êtes sur le point de supprimer définitivement le compte de <strong id="deleteUserName" style="color: #082281;"></strong>.</p>
+                    <p class="text-danger small mt-2 fw-bold"><i class="bi bi-exclamation-triangle me-1"></i> Cette action est irréversible et purgera toutes les données associées.</p>
+                </div>
+                <div class="modal-footer border-0 bg-light px-4 py-3" style="border-radius: 0 0 20px 20px;">
+                    <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Annuler</button>
+                    <form id="deleteForm" method="POST" action="">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="supprimer">
+                        <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="font-size: 13px;">
+                            Supprimer définitivement
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteUserName = document.getElementById('deleteUserName');
+
+        function prepareDelete(userId, userName) {
+            deleteUserName.textContent = userName;
+            deleteForm.action = `/accounts/action-compte/${userId}/`;
+            deleteModal.show();
+        }
+    </script>
 </body>
 
 </html>

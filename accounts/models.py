@@ -84,6 +84,14 @@ class User(AbstractUser):
             raise ValidationError({
                 'agence': 'Ce rôle nécessite une agence.'
             })
+        
+        # Limite de 3 utilisateurs par agence
+        if self.agence:
+            nb_employes = User.objects.filter(agence=self.agence).exclude(pk=self.pk).count()
+            if nb_employes >= 3:
+                raise ValidationError({
+                    'agence': f"L'agence {self.agence.nom} a déjà atteint la limite maximale de 3 employés."
+                })
         super().clean()
 
     class Meta:

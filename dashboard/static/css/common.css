@@ -35,7 +35,7 @@
     --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.08);
     --shadow-lg: 0 22px 70px rgba(0, 0, 0, 0.12);
-    --gradient-brand: linear-gradient(90deg, var(--accent-cyan) 0%, var(--brand) 50%, var(--accent-purple) 100%);
+    --gradient-brand: linear-gradient(90deg, rgba(0, 174, 239, 0.78) 0%, rgba(0, 69, 149, 0.90) 52%, rgba(145, 39, 143, 0.82) 100%);
 
     /* Alias pour templates legacy */
     --primary: var(--brand);
@@ -244,11 +244,11 @@ body {
 
 /* â”€â”€ BOUTONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn-launch {
-    background: linear-gradient(135deg, var(--brand), var(--accent-purple));
+    background: linear-gradient(135deg, #0e47b1, #6d55e4);
     color: white;
     border: none;
     border-radius: var(--radius-pill);
-    padding: 14px 30px;
+    padding: 14px 28px;
     font-size: 15px;
     font-weight: 700;
     font-family: "Manrope", sans-serif;
@@ -258,20 +258,43 @@ body {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 8px 20px rgba(0, 69, 149, 0.2);
+    transition: all .25s ease;
+    box-shadow: 0 8px 18px rgba(15, 59, 161, 0.16);
 }
 
 .btn-launch:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(0, 69, 149, 0.3);
-    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(15, 59, 161, 0.18);
+    filter: brightness(1.03);
 }
 
 .btn-launch:disabled {
-    opacity: .5;
+    opacity: .62;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+}
+
+.btn-reset {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    background: #ffffff;
+    border: 1px solid rgba(15, 59, 161, 0.16);
+    color: var(--brand);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s ease;
+    box-shadow: 0 6px 16px rgba(15, 59, 161, 0.08);
+}
+
+.btn-reset:hover {
+    transform: translateY(-1px);
+    background: #f8fbff;
+    border-color: rgba(15, 59, 161, 0.24);
 }
 
 .btn-secondary {
@@ -279,15 +302,21 @@ body {
     color: var(--brand);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
-    padding: 7px 14px;
-    font-size: 12px;
+    padding: 8px 16px;
+    font-size: 13px;
     font-weight: 600;
     font-family: 'Manrope', sans-serif;
     cursor: pointer;
+    transition: background .2s, border-color .2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(15, 59, 161, 0.06);
+    border-color: rgba(15, 59, 161, 0.18);
 }
 
 .btn-voir {
-    background: linear-gradient(135deg, #0f3ba1, #7b2cff);
+    background: linear-gradient(135deg, #0e47b1, #6d55e4);
     color: white;
     border: none;
     border-radius: var(--radius-sm);
@@ -304,11 +333,11 @@ body {
     text-decoration: none;
     margin-top: 12px;
     transition: opacity .2s, transform .1s;
-    box-shadow: 0 10px 24px rgba(15, 59, 161, 0.14);
+    box-shadow: 0 8px 18px rgba(15, 59, 161, 0.1);
 }
 
 .btn-voir:hover {
-    opacity: .95;
+    opacity: .96;
     color: white;
     transform: translateY(-1px);
 }

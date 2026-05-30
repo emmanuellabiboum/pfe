@@ -698,8 +698,12 @@
             <p>Chargez vos données, sélectionnez un algorithme et lancez l'analyse prédictive.</p>
         </div>
 
+        <div id="reset-message" class="alert alert-success" style="display:none; margin-bottom: 20px;">
+            <strong></strong>
+            <span></span>
+        </div>
+
         <div class="row g-3 mb-3" style="--bs-gutter-x:16px;">
-            <!-- COLONNE GAUCHE -->
             <div class="col-12 col-lg-6">
                 <div class="card h-100">
                     <div class="section-label">
@@ -710,7 +714,7 @@
                         <button class="src-btn active" onclick="selectMethod('upload')" id="method-upload">
                             <i class="bi bi-cloud-arrow-up src-icon"></i>
                             <div class="src-title">Importer un fichier</div>
-                            <div class="src-desc">CSV, Excel,... avec scores ML</div>
+                            <div class="src-desc">Fichier CSV avec scores ML</div>
                         </button>
                         <button class="src-btn" onclick="selectMethod('mock')" id="method-mock">
                             <i class="bi bi-magic src-icon" style="color:var(--success);"></i>
@@ -721,14 +725,7 @@
 
                     <div id="zone-upload">
                         <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
-                            <span class="format-badge"><i class="bi bi-filetype-csv"></i> CSV</span>
-                            <span class="format-badge"><i class="bi bi-file-earmark-excel"></i> XLSX</span>
-                            <span class="format-badge"><i class="bi bi-file-earmark-excel"></i> XLS</span>
-                            <span class="format-badge"><i class="bi bi-file-earmark-spreadsheet"></i> XLSM</span>
-                            <span class="format-badge"><i class="bi bi-filetype-txt"></i> TXT</span>
-                            <span class="format-badge" title="Séparateur point-virgule ou tabulation">
-                                <i class="bi bi-table"></i> TSV
-                            </span>
+                            <span class="format-badge"><i class="bi bi-filetype-csv"></i> CSV uniquement</span>
                         </div>
 
                         <div class="upload-zone" id="drop-zone" onclick="document.getElementById('data-file').click()"
@@ -736,7 +733,7 @@
                             ondrop="handleDrop(event)">
                             <i class="bi bi-cloud-arrow-up upload-zone-icon"></i>
                             <p id="upload-label">Glissez votre fichier ici</p>
-                            <span>CSV · Excel (xlsx, xls, xlsm) · TXT · TSV — max 50 Mo</span>
+                            <span>CSV — max 50 Mo</span>
                             <button class="btn-secondary"
                                 onclick="event.stopPropagation(); document.getElementById('data-file').click()">
                                 <i class="bi bi-folder2-open"></i> Parcourir
@@ -755,8 +752,8 @@
                             </button>
                         </div>
 
-                        <input type="file" id="data-file" accept=".csv,.xlsx,.xls,.xlsm,.xlsb,.ods,.txt,.tsv,.tab"
-                            style="display:none;" onchange="handleFileUpload(this)">
+                        <input type="file" id="data-file" accept=".csv" style="display:none;"
+                            onchange="handleFileUpload(this)">
                     </div>
 
                     <div id="zone-mock" style="display:none;" class="mock-zone">
@@ -806,15 +803,13 @@
                             disabled>
                             Lancer l'analyse
                         </button>
-                        <button class="btn-reset" onclick="reinitialiser()" title="Réinitialiser"
-                            style="border-radius: var(--radius-pill); width: 50px;">
+                        <button class="btn-reset" onclick="reinitialiser()" title="Réinitialiser">
                             <i class="bi bi-arrow-counterclockwise"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- COLONNE DROITE -->
             <div class="col-12 col-lg-6 d-flex flex-column gap-3">
                 <div class="card">
                     <div class="section-label">
@@ -887,28 +882,6 @@
                         </div>
                     </div>
 
-                    <!-- SHAP VALUES -->
-                    <div id="shap-section"
-                        style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
-                        <div class="section-label" style="font-size:13px; margin-bottom:12px;">
-                            <i class="bi bi-bar-chart-fill" style="color:var(--accent); margin-right:6px;"></i>
-                            Valeurs SHAP (Top Features)
-                        </div>
-                        <div id="shap-values-list" style="max-height:200px; overflow-y:auto;"></div>
-                    </div>
-
-                    <!-- RECOMMANDATIONS -->
-                    <div id="rec-section"
-                        style="display:none; margin-top:20px; padding-top:20px; border-top:1px solid var(--border);">
-                        <div class="section-label" style="font-size:13px; margin-bottom:12px;">
-                            <i class="bi bi-lightbulb-fill" style="color:var(--warning); margin-right:6px;"></i>
-                            Recommandations
-                            <span id="nb-rec-badge"
-                                style="background:var(--warning); color:white; padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px;">0</span>
-                        </div>
-                        <div id="recommandations-list" style="max-height:200px; overflow-y:auto;"></div>
-                    </div>
-
                     <a href="/clients/" id="btn-voir-clients" class="btn-voir">
                         <i class="bi bi-table"></i> Voir les clients
                     </a>
@@ -916,7 +889,6 @@
             </div>
         </div>
 
-        <!-- CRISP-DM -->
         <div class="card mb-3">
             <div class="section-label">
                 <i class="bi bi-diagram-3"></i> Pipeline CRISP-DM
@@ -955,7 +927,6 @@
             </div>
         </div>
 
-        <!-- KPIs -->
         <div class="kpi-section" id="kpi-section">
             <div class="section-divider mb-3">
                 <span><i class="bi bi-speedometer2 me-1"></i> Indicateurs clés</span>
@@ -994,22 +965,11 @@
     </div>
 
     <script>
-        // ═══════════════════════════════════════════════════
-        // VARIABLES GLOBALES
-        // ═══════════════════════════════════════════════════
         let dataReady = false;
         const clientsExist = {% if total_clients > 0 %}true{% else %} false{% endif %};
-        const ACCEPTED_EXTENSIONS = ['csv', 'xlsx', 'xls', 'xlsm', 'xlsb', 'ods', 'txt', 'tsv', 'tab'];
+        const ACCEPTED_EXTENSIONS = ['csv'];
         const FORMAT_ICONS = {
             csv: 'bi-filetype-csv',
-            xlsx: 'bi-file-earmark-excel',
-            xls: 'bi-file-earmark-excel',
-            xlsm: 'bi-file-earmark-excel',
-            xlsb: 'bi-file-earmark-excel',
-            ods: 'bi-file-earmark-spreadsheet',
-            txt: 'bi-filetype-txt',
-            tsv: 'bi-table',
-            tab: 'bi-table',
         };
 
         const stepLabels = [
@@ -1021,9 +981,6 @@
             'Déploiement terminé',
         ];
 
-        // ═══════════════════════════════════════════════════
-        // SÉLECTION DE LA MÉTHODE
-        // ═══════════════════════════════════════════════════
         function selectMethod(method) {
             document.querySelectorAll('.src-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('method-' + method).classList.add('active');
@@ -1047,9 +1004,6 @@
             }
         }
 
-        // ═══════════════════════════════════════════════════
-        // DRAG & DROP
-        // ═══════════════════════════════════════════════════
         function handleDragOver(e) {
             e.preventDefault();
             document.getElementById('drop-zone').classList.add('dragover');
@@ -1070,14 +1024,11 @@
             if (input.files.length > 0) traiterFichier(input.files[0]);
         }
 
-        // ═══════════════════════════════════════════════════
-        // TRAITEMENT FICHIER
-        // ═══════════════════════════════════════════════════
         function traiterFichier(file) {
             const ext = file.name.split('.').pop().toLowerCase();
 
             if (!ACCEPTED_EXTENSIONS.includes(ext)) {
-                afficherErreurFichier(`Format ".${ext}" non supporté. Utilisez CSV, Excel ou TXT.`);
+                afficherErreurFichier(`Format ".${ext}" non supporté. Utilisez uniquement le format CSV.`);
                 return;
             }
 
@@ -1129,9 +1080,6 @@
             alertEl.style.display = 'none';
         }
 
-        // ═══════════════════════════════════════════════════
-        // LOG
-        // ═══════════════════════════════════════════════════
         function log(msg, type = 'done') {
             const c = document.getElementById('console');
             const line = document.createElement('div');
@@ -1141,81 +1089,10 @@
             c.scrollTop = c.scrollHeight;
         }
 
-        // ═══════════════════════════════════════════════════
-        // AFFICHAGE DÉTAILS ANALYSE (SHAP + RECOMMANDATIONS)
-        // ═══════════════════════════════════════════════════
         function afficherDetailsAnalyse(stats) {
             if (!stats) return;
-
-            // --- SHAP VALUES ---
-            if (stats.shap_values && stats.shap_values.length > 0) {
-                document.getElementById('shap-section').style.display = 'block';
-                const shapList = document.getElementById('shap-values-list');
-
-                const shapByClient = {};
-                stats.shap_values.forEach(shap => {
-                    if (!shapByClient[shap.client_id]) {
-                        shapByClient[shap.client_id] = [];
-                    }
-                    shapByClient[shap.client_id].push(shap);
-                });
-
-                const allShapValues = stats.shap_values.map(s => Math.abs(s.shap_value));
-                const maxShap = Math.max(...allShapValues) || 1;
-
-                shapList.innerHTML = Object.entries(shapByClient).map(([clientId, features]) => `
-                    <div style="margin-bottom:20px; padding:15px; background:var(--brand-light); border-radius:var(--radius-md);">
-                        <div style="font-weight:700; color:var(--brand); margin-bottom:10px; font-size:14px;">
-                            Client : ${clientId}
-                        </div>
-                        ${features.map(shap => {
-                    const isPositive = shap.shap_value > 0;
-                    const widthPercent = Math.min((Math.abs(shap.shap_value) / maxShap) * 100, 100);
-                    return `
-                                <div style="margin-bottom:8px; padding:8px; background:white; border-radius:6px; border:1px solid var(--border);">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                        <div style="font-size:12px; font-weight:600; color:var(--text-main);">
-                                            ${shap.feature}
-                                        </div>
-                                        <div style="font-size:12px; font-weight:700; color:${isPositive ? 'var(--danger)' : 'var(--success)'};">
-                                            ${shap.shap_value > 0 ? '+' : ''}${Number(shap.shap_value).toFixed(4)}
-                                        </div>
-                                    </div>
-                                    <div style="position:relative; height:8px; background:#f0f0f0; border-radius:4px; overflow:hidden;">
-                                        ${isPositive
-                            ? `<div style="position:absolute; right:0; height:100%; background:linear-gradient(90deg,#ef4444,#b91c1c); width:${widthPercent}%; border-radius:0 4px 4px 0; min-width:8px;"></div>`
-                            : `<div style="position:absolute; left:0; height:100%; background:linear-gradient(90deg,#34d399,#059669); width:${widthPercent}%; border-radius:4px 0 0 4px; min-width:8px;"></div>`
-                        }
-                                    </div>
-                                </div>
-                            `;
-                }).join('')}
-                    </div>
-                `).join('');
-            }
-
-            // --- RECOMMANDATIONS ---
-            if (stats.recommandations && stats.recommandations.length > 0) {
-                document.getElementById('rec-section').style.display = 'block';
-                document.getElementById('nb-rec-badge').textContent = stats.nb_recommandations || stats.recommandations.length;
-                const recList = document.getElementById('recommandations-list');
-                recList.innerHTML = stats.recommandations.map(rec => `
-                    <div style="background:var(--brand-light); padding:10px 12px; border-radius:var(--radius-sm); margin-bottom:8px; border-left:3px solid var(--accent);">
-                        <div style="font-size:12px; font-weight:700; color:var(--brand); margin-bottom:4px;">
-                            ${rec.client_nom || rec.client_id || 'Client'} — ${rec.type}
-                        </div>
-                        <div style="font-size:11px; color:var(--text-main);">${rec.message}</div>
-                        <div style="font-size:10px; color:var(--text-muted); margin-top:4px;">
-                            Priorité : <span style="font-weight:600; color:var(--warning);">${rec.priorite}</span>
-                        </div>
-                    </div>
-                `).join('');
-            }
         }
 
-        // ═══════════════════════════════════════════════════
-        // LANCER L'ANALYSE
-        // ═══════════════════════════════════════════════════
         async function lancerAvecAnimation() {
             const activeMethod = document.querySelector('.src-btn.active').id.replace('method-', '');
             const algorithme = document.getElementById('model-select').value;
@@ -1319,11 +1196,42 @@
             document.getElementById('btn-voir-clients').classList.add('show');
         }
 
-        // ═══════════════════════════════════════════════════
-        // RÉINITIALISATION
-        // ═══════════════════════════════════════════════════
+        function showResetMessage(type, title, text) {
+            const banner = document.getElementById('reset-message');
+            if (!banner) return;
+            banner.classList.remove('alert-success', 'alert-danger', 'alert-warning');
+            banner.classList.add(type === 'success' ? 'alert-success' : 'alert-danger');
+            banner.innerHTML = '';
+
+            const strong = document.createElement('strong');
+            strong.textContent = title;
+            banner.appendChild(strong);
+
+            if (text) {
+                const span = document.createElement('span');
+                span.textContent = ' ' + text;
+                banner.appendChild(span);
+            }
+
+            banner.style.display = 'flex';
+            if (window.resetMessageTimer) {
+                clearTimeout(window.resetMessageTimer);
+            }
+            window.resetMessageTimer = setTimeout(() => {
+                banner.style.display = 'none';
+            }, 7000);
+        }
+
+        let resetModal = null;
         function reinitialiser() {
-            if (!confirm('Êtes-vous sûr de vouloir réinitialiser ?\n\nCette action va :\n- Effacer tous les clients de la liste\n- Effacer les recommandations et notifications\n- Conserver les analyses en base\n\nCette action est irréversible.')) return;
+            if (!resetModal) {
+                resetModal = new bootstrap.Modal(document.getElementById('modalConfirmReset'));
+            }
+            resetModal.show();
+        }
+
+        function confirmResetExecution() {
+            if (resetModal) resetModal.hide();
 
             fetch("{% url 'dashboard:reinitialiser' %}", {
                 method: 'POST',
@@ -1361,13 +1269,19 @@
                         document.getElementById('res-f1').textContent = '0.7097';
                         document.getElementById('res-recall').textContent = '0.88';
                         document.getElementById('res-duration').textContent = '—';
-                        alert('Réinitialisation effectuée avec succès.');
+                        const btnVoirClients = document.getElementById('btn-voir-clients');
+                        if (btnVoirClients) {
+                            btnVoirClients.classList.remove('show');
+                        }
+                        sessionStorage.removeItem('lastDuration');
+                        sessionStorage.removeItem('lastAnalyseStats');
+                        showResetMessage('success', 'Réinitialisation effectuée', data.message || 'Le tableau de bord a été remis à zéro.');
                     } else {
-                        alert('Erreur : ' + (data.error || 'Erreur inconnue'));
+                        showResetMessage('danger', 'Erreur', data.error || 'Erreur inconnue');
                     }
                 })
                 .catch(error => {
-                    alert('Erreur de communication : ' + error);
+                    showResetMessage('danger', 'Erreur de communication', error.message || error);
                 });
         }
 
@@ -1386,9 +1300,6 @@
             return cookieValue;
         }
 
-        // ═══════════════════════════════════════════════════
-        // INIT DOM
-        // ═══════════════════════════════════════════════════
         document.addEventListener('DOMContentLoaded', () => {
             const dz = document.getElementById('drop-zone');
             if (dz) {
@@ -1462,32 +1373,58 @@
             {% endif %}
 
             const kpiSection = document.getElementById('kpi-section');
-            const btnVoirClients = document.getElementById('btn-voir-clients');
             if (kpiSection) kpiSection.classList.add('active');
-            if (btnVoirClients) btnVoirClients.classList.add('show');
+            const btnVoirClients = document.getElementById('btn-voir-clients');
+            if (btnVoirClients) {
+                btnVoirClients.classList.add('show');
+            }
             {% endif %}
 
-            // Restaurer durée et stats depuis sessionStorage
             const lastDuration = sessionStorage.getItem('lastDuration');
             if (lastDuration) {
                 const resDuration = document.getElementById('res-duration');
                 if (resDuration) resDuration.textContent = lastDuration + 's';
-                sessionStorage.removeItem('lastDuration');
             }
 
             const lastAnalyseStats = sessionStorage.getItem('lastAnalyseStats');
             if (lastAnalyseStats) {
                 try {
                     afficherDetailsAnalyse(JSON.parse(lastAnalyseStats));
-                } finally {
-                    sessionStorage.removeItem('lastAnalyseStats');
+                    const btnVoirClients = document.getElementById('btn-voir-clients');
+                    if (btnVoirClients) {
+                        btnVoirClients.classList.add('show');
+                    }
+                } catch (e) {
+                    console.warn('Impossible de restaurer les détails d\'analyse :', e);
                 }
             }
 
-            // Méthode par défaut
             selectMethod('upload');
         });
     </script>
+
+    <div class="modal fade" id="modalConfirmReset" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="fw-800 mb-3">Confirmer la réinitialisation ?</h5>
+                    <p class="text-muted small mb-4">
+                        Cette action va vider la liste des clients actifs et archiver les recommandations en cours. 
+                        Les historiques d'analyses seront conservés.
+                        <br><br>
+                        <strong>Cette opération est irréversible.</strong>
+                    </p>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light rounded-pill flex-grow-1 fw-bold" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger rounded-pill flex-grow-1 fw-bold" onclick="confirmResetExecution()">Réinitialiser</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 </body>

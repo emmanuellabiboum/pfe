@@ -136,10 +136,10 @@ class ClientFeatures(BaseModel):
         None, ge=1, le=5,
         description="Satisfaction (1-5)"
     )
-    # [Étape 8] Borne ÉLARGIE : observé -93 à 200 dans le dataset
+    # [Étape 8] Borne ÉLARGIE : observé -93 à 200 dans le dataset, augmenté à 5000 pour cas extrêmes
     tendance_data_pct        : Optional[float] = Field(
-        None, ge=-150, le=300,
-        description="Tendance data en % (observé -93 à 200, marge -150 à 300)"
+        None, ge=-150, le=5000,
+        description="Tendance data en % (observé -93 à 200, marge élargie à 5000)"
     )
     # [Étape 8] Borne ÉLARGIE : observé 0 à 10257 dans le dataset
     ratio_data_voix          : Optional[float] = Field(

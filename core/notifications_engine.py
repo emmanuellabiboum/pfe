@@ -1,24 +1,12 @@
-# core/notifications_engine.py
-# Moteur central : génère recommandations + notifications selon les règles métier
-
 from django.utils import timezone
 from accounts.models import User
 from core.model_config import estimate_clv
 
-# ── CORRESPONDANCE TYPE → RÔLE AGENT ────────────────────────────────────────
 ROLE_PAR_TYPE = {
     "marketing": "agent_marketing",
     "commercial": "agent_commercial",
     "technique": "chef_agence",  # technique → chef directement
 }
-
-# ── RÈGLES MÉTIER ────────────────────────────────────────────────────────────
-# Chaque règle définit :
-#   condition  : lambda(client) → bool
-#   type       : "marketing" | "commercial" | "technique"
-#   contenu    : lambda(client) → str
-#   priorite   : int (1 = plus urgent)
-#   seuil_min  : score_churn minimum pour déclencher la règle
 
 REGLES = [
     {
@@ -106,9 +94,6 @@ REGLES = [
 ]
 
 
-# ── FONCTION PRINCIPALE ──────────────────────────────────────────────────────
-
-
 def generer_recommandations_et_notifs(client, agence, createur=None, force=False):
     """
     Génère les recommandations système pour un client et crée les notifications
@@ -168,28 +153,42 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
 
     recs_creees = []
     for regle in regles_matchees:
+        contenu_base = regle["contenu"](client)
+        
+        # Vérifier si une recommandation identique a déjà expiré
+        deja_expiree = Recommandation.objects.filter(
+            client=client,
+            contenu__icontains=contenu_base,
+            statut="expiree"
+        ).exists()
+
+        final_contenu = contenu_base
+        if deja_expiree:
+            final_contenu = f"RAPPEL URGENT — RETARD : {contenu_base}"
+            # On remet à 1 jour comme initialement
+            nouvelle_echeance = today + timezone.timedelta(days=1)
+        else:
+            # On remet à 2 jours comme initialement
+            nouvelle_echeance = today + timezone.timedelta(days=2)
+
         rec = Recommandation.objects.create(
             client=client,
             type_recommandation=regle["type"],
-            contenu=regle["contenu"](client),
-            echeance=today + timezone.timedelta(days=2),
+            contenu=final_contenu,
+            echeance=nouvelle_echeance,
             generee_par_systeme=True,
             clv_estimee=clv_estimee,
-            statut="active",  # ← directement active, sans validation
+            statut="active",
         )
         recs_creees.append((rec, regle))
 
-    # ── Notifier directement les agents concernés ────────────────────────────
+    # Notifier directement les agents concernés
     for rec, regle in recs_creees:
         role_cible = ROLE_PAR_TYPE.get(rec.type_recommandation)
         if role_cible:
             agents = User.objects.filter(agence=agence, role=role_cible, statut="actif")
             for agent in agents:
-                # Inclure l'estimation de perte potentielle (CLV) pour priorisation
-                clv = round(estimate_clv(rec.client), 0)
-                contenu_notif = f"Client {rec.client.client_id} ({rec.client.nom}) : {rec.contenu[:100]}"
-                if clv > 0:
-                    contenu_notif += f" — Estim. perte potentielle ≈ {clv:.0f} DT"
+                contenu_notif = f"Client {rec.client.client_id} ({rec.client.nom}) : {rec.contenu[:120]}"
 
                 Notification.objects.create(
                     destinataire=agent,

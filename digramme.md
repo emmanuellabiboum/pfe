@@ -1,641 +1,432 @@
-## 1) Diagramme de cas d'utilisation global (détaillé)
+# Guide de Modélisation UML — Projet CHURN (Tunisie Telecom)
 
-```mermaid
-usecaseDiagram
-    %% Acteurs (figurines)
-    actor SuperAdmin as Super
-    actor AdminVille as AdminVille
-    actor ChefAgence as Chef
-    actor AgentCommercial as AgentCom
-    actor AgentMarketing as AgentMark
+Ce document constitue la référence officielle pour la modélisation du système. Il respecte les normes académiques UML et couvre l'intégralité des 14 Besoins Fonctionnels (BF) validés.
 
-    %% Cas d'utilisation
-    (Se connecter / OTP) as UC_Auth
-    (Se déconnecter) as UC_Logout
-    (Gérer comptes utilisateurs) as UC_GererCompte
-    (Consulter fiche client) as UC_ConsulterClient
-    (Consulter historique recommandations) as UC_HistoriqueReco
-    (Lancer analyse / import) as UC_LancerAnalyse
-    (Générer données mock) as UC_GenererMock
-    (Créer recommandation commerciale) as UC_CreerRecoCom
-    (Créer recommandation marketing) as UC_CreerRecoMark
-    (Valider / Rejeter recommandation) as UC_ValiderReco
-    (Compléter recommandation) as UC_CompleterReco
-    (Consulter notifications) as UC_ConsulterNotif
-    (Accéder tableau de bord KPIs) as UC_Dashboard
-    (Accéder tableau de bord multi-agences) as UC_DashboardMulti
+---
 
-    %% Liens acteur → use case
-    AgentCom --> UC_Auth
-    AgentCom --> UC_Logout
-    AgentCom --> UC_ConsulterClient
-    AgentCom --> UC_HistoriqueReco
-    AgentCom --> UC_CreerRecoCom
-    AgentCom --> UC_CompleterReco
-    AgentCom --> UC_ConsulterNotif
+## 1. Principes de Conception et Conventions
 
-    AgentMark --> UC_Auth
-    AgentMark --> UC_Logout
-    AgentMark --> UC_ConsulterClient
-    AgentMark --> UC_HistoriqueReco
-    AgentMark --> UC_CreerRecoMark
-    AgentMark --> UC_CompleterReco
-    AgentMark --> UC_ConsulterNotif
+- **Standardisation :** Notation UML 2.5 rigoureuse.
+- **Traçabilité :** Chaque cas d'utilisation est lié à son identifiant de besoin (BF-XX).
+- **Acteurs :** Les actions système (ex: calculs) ne sont pas des Use Cases. Seuls les objectifs acteurs sont représentés.
 
-    Chef --> UC_Auth
-    Chef --> UC_Logout
-    Chef --> UC_ConsulterClient
-    Chef --> UC_HistoriqueReco
-    Chef --> UC_LancerAnalyse
-    Chef --> UC_GenererMock
-    Chef --> UC_ValiderReco
-    Chef --> UC_ConsulterNotif
-    Chef --> UC_Dashboard
+---
 
-    AdminVille --> UC_Auth
-    AdminVille --> UC_Logout
-    AdminVille --> UC_GererCompte
-    AdminVille --> UC_DashboardMulti
+## 2. Chapitre 2 : Analyse et Conception
 
-    Super --> UC_Auth
-    Super --> UC_Logout
-    Super --> UC_GererCompte
-    Super --> UC_DashboardMulti
+### 2.1 Liste des Besoins Fonctionnels (Référence)
+- **M1 (Sécurité) :** BF-01 (Inscription), BF-02 (2FA), BF-03 (Reset MDP).
+- **M2 (Données) :** BF-04 (Import), BF-05 (Mock), BF-06 (Analyse Prédictive IA).
+- **M3 (Pilotage) :** BF-07 (Dashboards G/R/A), BF-08 (Liste Clients), BF-09 (Fiche Détail/SHAP), BF-10 (Export PDF), BF-11 (Historique Sessions).
+- **M4 (Actions) :** BF-12 (Tâches Agents), BF-13 (Validation Chef), BF-14 (Alertes).
 
-    %% Héritage / spécialisation des rôles (visualisation)
-    Super --|> AdminVille
-    AdminVille --|> Chef
+### 2.2 Diagramme de Cas d'Utilisation Global (Conventionnel)
 
-    %% Intégrations techniques (références)
-    UC_LancerAnalyse ..> FastAPI : "POST /api/predict/batch"
-    UC_ConsulterClient ..> FastAPI : "GET /api/predict/{id}"
-    UC_ExporterPDF ..> WKHTML : "wkhtmltopdf"
-    %% Note : le diagramme utilise la notation usecaseDiagram pour afficher
-    %% les figurines d'acteurs et la hiérarchie simple des rôles.
+```plantuml
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Super Admin" as Super
+actor "Admin Ville" as AdminVille
+actor "Chef d'Agence" as Chef
+actor "Agent (Com/Mark)" as Agent
+actor "SendGrid (Email)" as SendGrid <<Service>>
+
+rectangle "Plateforme Churn Tunisie Telecom" {
+  
+  package "Module 1 : Sécurité" {
+    (BF-01 : S'inscrire / Valider compte) as BF01
+    (BF-02 : S'authentifier via OTP) as BF02
+    (BF-03 : Réinitialiser le mot de passe) as BF03
+  }
+
+  package "Module 2 : Données & Inférence" {
+    (BF-04 : Importer des données clients) as BF04
+    (BF-05 : Générer des données simulées) as BF05
+    (BF-06 : Lancer l'Analyse Prédictive) as BF06
+  }
+
+  package "Module 3 : Visualisation" {
+    (BF-07 : Consulter les Dashboards) as BF07
+    (BF-08 : Consulter la liste des clients) as BF08
+    (BF-09 : Consulter la fiche détaillée\net l'explicabilité SHAP) as BF09
+    (BF-10 : Exporter la fiche en PDF) as BF10
+    (BF-11 : Consulter l'historique des sessions) as BF11
+  }
+
+  package "Module 4 : Recommandations" {
+    (BF-12 : Gérer les tâches par spécialité) as BF12
+    (BF-13 : Valider les actions de rétention) as BF13
+    (BF-14 : Recevoir des alertes) as BF14
+  }
+}
+
+' Relations Super Admin
+Super --> BF01
+Super --> BF07
+
+' Relations Admin Ville
+AdminVille --> BF01
+AdminVille --> BF07
+
+' Relations Chef d'Agence
+Chef --> BF04
+Chef --> BF05
+Chef --> BF06
+Chef --> BF07
+Chef --> BF11
+Chef --> BF13
+
+' Relations Agents
+Agent --> BF08
+Agent --> BF09
+Agent --> BF12
+
+' Accès partagés et dépendances
+Chef --> BF08
+Chef --> BF09
+Chef --> BF14
+Agent --> BF14
+BF09 <.. BF10 : <<extend>>
+
+' Services techniques
+BF01 -- SendGrid
+BF02 -- SendGrid
+BF03 -- SendGrid
+BF14 -- SendGrid
+
+' Hiérarchie UML
+Super --|> AdminVille
+AdminVille --|> Chef
+Chef --|> Agent
+@enduml
+```
+
+### 2.3 Diagramme de Classes : Modèle de Données (Learning)
+```plantuml
+@startuml
+skinparam style strictuml
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam classAttributeIconSize 0
+
+enum MethodeChargement {
+    CSV
+    MOCK
+}
+
+class Dataset {
+    - id : Integer
+    - nom : String
+    - methode : MethodeChargement
+    - date_chargement : DateTime
+    + valider_structure() : Boolean
+}
+
+class ClientChurn {
+    - id : Integer
+    - client_id : String
+    - score_churn : Float
+    - churn_predit : Boolean
+    - facture_mensuelle : Float
+    + calculer_churn() : Float
+    + to_feature_dict() : Map
+}
+
+class ShapValeur {
+    - feature : String
+    - valeur : Float
+    - importance : Float
+}
+
+Dataset "1" *-- "0..*" ClientChurn : contient >
+ClientChurn "1" *-- "0..*" ShapValeur : explique par >
+@enduml
+```
+
+### 2.4 Diagramme de Classes : Organisation & Sécurité (Core & Accounts)
+```plantuml
+@startuml
+skinparam style strictuml
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam classAttributeIconSize 0
+
+enum UserRole {
+    SUPER_ADMIN
+    ADMIN_VILLE
+    CHEF_AGENCE
+    AGENT_MARKETING
+    AGENT_COMMERCIAL
+}
+
+enum UserStatut {
+    EN_ATTENTE
+    ACTIF
+    SUSPENDU
+}
+
+class Ville {
+    - id : Integer
+    - nom : String
+    - code : String
+    - prioritaire : Boolean
+}
+
+class Agence {
+    - id : Integer
+    - nom : String
+    - code : String
+    - active : Boolean
+}
+
+class User {
+    - id : Integer
+    - username : String
+    - role : UserRole
+    - statut : UserStatut
+    + get_validation_scope() : String
+}
+
+class AdminVille {
+    - date_nomination : DateTime
+    - actif : Boolean
+}
+
+Ville "1" *-- "1..*" Agence : localisée dans <
+Agence "1" -- "1..3" User : emploie >
+Ville "1" -- "1..*" User : gérée par (Admin) >
+User "1" --o "1" AdminVille : étend >
+AdminVille "0..*" -- "1" Ville : administre >
+@enduml
+```
+
+### 2.5 Diagramme de Classes : Pilotage & Actions (Dashboard)
+```plantuml
+@startuml
+skinparam style strictuml
+skinparam shadowing false
+skinparam roundcorner 10
+skinparam classAttributeIconSize 0
+
+enum RecType {
+    MARKETING
+    COMMERCIAL
+    TECHNIQUE
+}
+
+enum RecStatut {
+    ACTIVE
+    EN_COURS
+    COMPLETEE_AGENT
+    COMPLETEE
+    REJETEE
+    EXPIREE
+}
+
+enum Urgence {
+    CRITIQUE
+    ELEVE
+    MOYEN
+    FAIBLE
+    NONE
+}
+
+class AnalyseSession {
+    - id : Integer
+    - date_analyse : DateTime
+    - nb_clients_total : Integer
+    - nb_clients_churn : Integer
+    - score_churn_moyen : Float
+    - auc_roc : Float
+    + get_differences_with_previous() : Map
+}
+
+class Recommandation {
+    - type : RecType
+    - contenu : Text
+    - echeance : Date
+    - statut : RecStatut
+    - clv_estimee : Float
+    + temps_restant_jours() : Integer
+    + urgence() : Urgence
+}
+
+class Notification {
+    - id : Integer
+    - type_notif : String
+    - titre : String
+    - lu : Boolean
+    - date_creation : DateTime
+}
+
+class RejetRecommandation {
+    - explication : Text
+    - statut : Enum {ATTENTE, ACCEPTE, REFUSE}
+    - date_demande : DateTime
+}
+
+AnalyseSession "0..*" -- "1" Agence : concerne >
+AnalyseSession "0..*" -- "1" User : lancée par >
+Recommandation "0..*" -- "1" ClientChurn : pour >
+Recommandation "0..*" -- "0..1" User : assignée à >
+Notification "0..*" -- "1" User : destinée à >
+Notification "0..*" -- "0..1" Recommandation : liée à >
+RejetRecommandation "0..*" -- "1" Recommandation : rejette >
+@enduml
 ```
 
 ---
 
-## 2) Diagramme Entité-Association (E-A) — Plus complet
+## Chapitre 6 : Diagrammes de Séquence
 
-```mermaid
-erDiagram
-    USER {
-        int id PK
-        string username
-        string email
-        string role
-        string statut
-        int agence_id FK
-        int ville_id FK
-        int tentatives_connexion
-    }
+Nous utilisons les diagrammes de séquence pour modéliser les interactions dynamiques entre les composants de notre architecture. Ces schémas illustrent comment les différents services (Serveur d'Application, Moteur d'Inférence ML, PostgreSQL, SendGrid) collaborent pour réaliser les processus métier critiques.
 
-    VILLE {
-        int id PK
-        string nom
-        string region
-    }
+### 6.1 Flux 1 : Authentification à double facteur (2FA)
 
-    AGENCE {
-        int id PK
-        string nom
-        string adresse
-        string telephone
-        int ville_id FK
-    }
-
-    DATASET {
-        int id PK
-        string methode
-        int agence_id FK
-        int nb_clients
-        datetime created_at
-        string fichier
-    }
-
-    CLIENT_CHURN {
-        int id PK
-        string client_id
-        float score_churn
-        boolean churn_predit
-        float facture_moyenne_mensuelle
-        int dataset_id FK
-        int agence_id FK
-    }
-
-    SHAP_VALEUR {
-        int id PK
-        int client_id FK
-        string feature
-        float shap_value
-    }
-
-    RECOMMANDATION {
-        int id PK
-        int client_id FK
-        int createur_id FK
-        string type_recommandation
-        string statut
-        float clv_estimee
-        datetime created_at
-        datetime updated_at
-    }
-
-    REJET_RECOMMANDATION {
-        int id PK
-        int recommandation_id FK
-        int rejeteur_id FK
-        text motif
-        datetime created_at
-    }
-
-    ANALYSE_SESSION {
-        int id PK
-        int agence_id FK
-        int nb_clients
-        float seuil_optimal
-        float auc_roc
-        datetime date_analyse
-    }
-
-    NOTIFICATION {
-        int id PK
-        int destinataire_id FK
-        string type
-        text titre
-        text contenu
-        boolean is_read
-        datetime created_at
-    }
-
-    OTP_CODE {
-        int id PK
-        int user_id FK
-        string code
-        datetime expire_at
-        datetime created_at
-    }
-
-    %% Relations (cardinalités + sens)
-    VILLE ||--o{ AGENCE : "1..n"
-    AGENCE ||--o{ DATASET : "1..n"
-    DATASET ||--o{ CLIENT_CHURN : "1..n"
-
-    CLIENT_CHURN ||--o{ SHAP_VALEUR : "1..n"
-    CLIENT_CHURN ||--o{ RECOMMANDATION : "0..n"
-
-    USER ||--o{ RECOMMANDATION : "1..n (createur)"
-    USER ||--o{ REJET_RECOMMANDATION : "0..n (rejeteur)"
-    RECOMMANDATION ||--o{ REJET_RECOMMANDATION : "0..n"
-
-    AGENCE ||--o{ ANALYSE_SESSION : "0..n"
-    USER ||--o{ NOTIFICATION : "0..n"
-    CLIENT_CHURN }|..|{ NOTIFICATION : "0..n (lié_à)"
-
-    USER ||--o{ OTP_CODE : "0..n"
-
-    %% Remarque : ce modèle reflète les entités et champs principaux observés dans le code.
-```
-
----
-
-## 3) Diagrammes de classes par module
-
-### 3.1 Module `accounts`
-
-```mermaid
-classDiagram
-    class User {
-        +id
-        +username
-        +role
-        +statut
-        +telephone
-        +tentatives_connexion
-        +est_bloque
-        +save()
-        +get_validation_scope()
-        +clean()
-    }
-    class OTPCode {
-        +id
-        +user_id
-        +code
-        +expire_at
-        +created_at
-    }
-    class LoginActivity {
-        +id
-        +user_id
-        +timestamp
-    }
-    class AdminVille {
-        +id
-        +user_id
-        +ville_id
-        +date_nomination
-        +actif
-    }
-    User "1" o-- "0..*" OTPCode
-    User "1" o-- "0..*" LoginActivity
-    User "1" o-- "0..1" AdminVille
-    User "0..1" --> "0..1" Agence
-    User "0..1" --> "0..1" Ville
-    AdminVille "0..1" --> "0..1" Ville
-```
-
-### 3.2 Module `learning`
-
-```mermaid
-classDiagram
-    class Dataset {
-        +id
-        +nom
-        +methode
-        +fichier
-        +nb_clients
-        +date_chargement
-        +charge_par_id
-    }
-    class ClientChurn {
-        +id
-        +client_id
-        +nom
-        +score_churn
-        +churn_predit
-        +agence_id
-        +dataset_id
-        +date_prediction
-        +facture_moyenne_mensuelle
-    }
-    class EvenementCDR {
-        +id
-        +client_id
-        +date_heure
-        +type_evenement
-        +duree_appel_sec
-        +sms_compte
-        +data_mb
-    }
-    class InteractionDigital {
-        +id
-        +client_id
-        +date_heure
-        +type_interaction
-        +duree_session_sec
-        +pages_visitees
-    }
-    class DonneeGeospatiale {
-        +id
-        +client_id
-        +latitude
-        +longitude
-        +zone_couverture
-    }
-    class Reclamation {
-        +id
-        +client_id
-        +type_reclamation
-        +statut
-        +date_creation
-    }
-    class CampagneMarketing {
-        +id
-        +nom
-        +type_campagne
-        +date_envoi
-    }
-    class InteractionCampagne {
-        +id
-        +campagne_id
-        +client_id
-        +ouvert
-        +clique
-        +converti
-    }
-    class ShapValeur {
-        +id
-        +client_id
-        +feature
-        +valeur
-        +importance
-    }
-    Dataset "1" o-- "0..*" ClientChurn
-    Dataset "1" --> "1" Agence
-    Dataset "0..1" --> "0..1" User
-    ClientChurn "1" o-- "0..*" EvenementCDR
-    ClientChurn "1" o-- "0..*" InteractionDigital
-    ClientChurn "1" o-- "0..1" DonneeGeospatiale
-    ClientChurn "1" o-- "0..*" Reclamation
-    ClientChurn "1" o-- "0..*" InteractionCampagne
-    CampagneMarketing "1" o-- "0..*" InteractionCampagne
-    ClientChurn "1" o-- "0..*" ShapValeur
-```
-
-### 3.3 Module `dashboard`
-
-```mermaid
-classDiagram
-    class Message {
-        +id
-        +destinataire_id
-        +expediteur_id
-        +client_id
-        +sujet
-        +contenu
-        +lu
-        +date_envoi
-    }
-    class ModelPerformance {
-        +accuracy
-        +precision
-        +recall
-        +roc_auc
-        +created_at
-    }
-    class SystemMetrics {
-        +total_predictions
-        +total_pdfs_generated
-        +total_recommendations
-        +errors_count
-        +updated_at
-    }
-    class Recommandation {
-        +id
-        +client_id
-        +type_recommandation
-        +contenu
-        +statut
-        +clv_estimee
-        +cree_par_id
-        +assignee_a_id
-        +modifiee_par_id
-        +date_creation
-    }
-    class Notification {
-        +id
-        +destinataire_id
-        +type_notif
-        +titre
-        +contenu
-        +lien
-        +client_id
-        +recommandation_id
-        +lu
-        +archive
-        +supprimee
-        +date_creation
-    }
-    class RejetRecommandation {
-        +id
-        +recommandation_id
-        +demandeur_id
-        +explication
-        +statut
-        +valide_par_id
-        +date_demande
-        +date_validation
-    }
-    class AnalyseSession {
-        +id
-        +agence_id
-        +lancee_par_id
-        +date_analyse
-        +nb_clients_total
-        +nb_clients_churn
-        +nb_clients_non_churn
-        +score_churn_moyen
-        +nb_recommandations_generees
-        +seuil_optimal
-        +auc_roc
-        +f1_score
-        +recall
-        +precision
-        +methode
-    }
-    User "1" o-- "0..*" Message
-    ClientChurn "0..1" o-- "0..*" Message
-    User "1" o-- "0..*" Recommandation
-    ClientChurn "1" o-- "0..*" Recommandation
-    Recommandation "1" o-- "0..*" RejetRecommandation
-    User "1" o-- "0..*" Notification
-    Recommandation "0..1" o-- "0..*" Notification
-    ClientChurn "0..1" o-- "0..*" Notification
-    Agence "1" o-- "0..*" AnalyseSession
-    User "1" o-- "0..*" AnalyseSession
-```
-
----
-
-## 4) Diagrammes de séquence — Flux clés
-
-### 4.1 Flux : Authentification à double facteur
+Ce processus sécurise l'accès à la plateforme en générant un code OTP via SendGrid après la validation des identifiants primaires.
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Django
-    participant DB
-    participant Mail
+    autonumber
+    actor User as Utilisateur
+    participant App as Serveur d'Application (Django)
+    participant DB as PostgreSQL
+    participant Email as API SendGrid
 
-    User->>Django: POST /accounts/login (username,password)
-    Django->>DB: load User + verify password + vérifier blocage
-    Django->>DB: OTPCode.objects.filter(user).delete()
-    Django->>DB: OTPCode.objects.create(user, code, expire_at)
-    Django->>Mail: envoyer email OTP
-    Django-->>User: redirect /accounts/verify-otp
-    User->>Django: POST /accounts/verify-otp (code)
-    Django->>DB: lookup OTPCode(user, code)
-    DB-->>Django: OTP valide / expire_at check
-    Django->>DB: delete OTPCode
-    Django-->>User: login success
-```
+    User->>App: Soumettre identifiants (Login/Pass)
+    activate App
+    App->>DB: Vérifier identifiants
+    DB-->>App: Résultat vérification
 
-### 4.2 Flux : Lancer analyse (FastAPI disponible — batch)
+    alt Identifiants invalides
+        App-->>User: Message d'erreur (Accès refusé)
+    else Identifiants corrects
+        App->>App: Générer code OTP
+        App->>Email: Envoyer OTP (Email)
+        activate Email
+        Email-->>User: Réception du code OTP
+        deactivate Email
+        App-->>User: Afficher formulaire de saisie OTP
+        
+        User->>App: Saisir code OTP
+        App->>DB: Valider code (vs expiration)
+        DB-->>App: Résultat validation
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Django
-    participant FastAPI
-    participant DB
-
-    User->>Django: POST /lancer_analyse (mock ou csv)
-    Django->>Django: préparer clients et payload
-    Django->>FastAPI: POST /api/predict/batch
-    FastAPI-->>Django: 200 + predictions
-    Django->>DB: update ClientChurn scores
-    Django->>DB: create AnalyseSession
-    Django->>DB: create Notification (alerte_churn)
-    Django-->>User: rendre dashboard / JSON résultats
-```
-
-### 4.3 Flux : Lancer analyse (FastAPI indisponible — comportement réel)
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Django
-    participant FastAPI
-
-    User->>Django: POST /lancer_analyse
-    Django->>FastAPI: GET /health
-    FastAPI--xDjango: timeout / non reachable
-    Django-->>User: erreur 503 + message
-    Note right of Django: le code ne bascule pas sur un fallback local de prédiction
-```
-
-### 4.4 Flux : Génération de données mock
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Django
-    participant Core
-    participant DB
-
-    User->>Django: POST /dashboard/generer_mock
-    Django->>Core: generer_mock_data(agence_id, user_id, nb_clients)
-    Core-->>Django: clients mock créés
-    Django->>DB: update ClientChurn scores (règles heuristiques)
-    Django-->>User: redirect /dashboard/clients
-```
-
-### 4.5 Flux : Workflow de recommandation (création → validation → rejet)
-
-```mermaid
-sequenceDiagram
-    participant Agent
-    participant Django
-    participant DB
-    participant Chef
-
-    Agent->>Django: POST create recommendation
-    Django->>DB: create Recommandation(statut='active' ou 'en_attente_validation')
-    Django->>DB: create Notification(type=validation_requise)
-    Chef->>Django: GET /valider_creation_recommandation
-    Django->>DB: update Recommandation.statut
-    alt rejected
-        Django->>DB: create RejetRecommandation
-        Django->>DB: update Notification(type=validation_refusee)
-        Django-->>Agent: notify rejection
-    else validated
-        Django->>DB: update Notification(type=validation_acceptee)
-        Django-->>Agent: notify acceptance
+        alt OTP invalide ou expiré
+            App-->>User: Message d'erreur (Session invalidée)
+        else OTP valide
+            App->>DB: Créer session & Enregistrer activité
+            DB-->>App: OK
+            App-->>User: Accès au Dashboard (Connexion réussie)
+        end
     end
+    deactivate App
 ```
 
-### 4.6 Flux : Export PDF depuis la fiche client via wkhtmltopdf
+### 6.2 Flux 2 : Analyse de portefeuille avec FastAPI
+
+Ce flux constitue le cœur technologique, intégrant une communication asynchrone avec le moteur d'inférence ML.
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Django
-    participant DB
-    participant WKHTMLTOPDF
+    autonumber
+    actor Chef as Chef d'Agence
+    participant App as Serveur d'Application (Django)
+    participant ML as Moteur d'Inférence (FastAPI)
+    participant DB as PostgreSQL
 
-    User->>Django: GET /clients/<client_id>/pdf/
-    Django->>DB: charger ClientChurn et recommandations associées
-    Django->>Django: render_to_string("dashboard/fiche_client_pdf.html")
-    Django->>WKHTMLTOPDF: pdfkit.from_string(html)
-    WKHTMLTOPDF-->>Django: PDF bytes
-    Django-->>User: PDF téléchargement
-    alt erreur wkhtmltopdf
-        Django-->>User: message d'erreur
+    Chef->>App: Lancer Analyse de Portefeuille
+    activate App
+    App->>DB: Préparer données clients (Batch)
+    DB-->>App: Liste des clients
+
+    opt Vérification de santé (Health Check)
+        App->>ML: GET /health
+        ML-->>App: 200 OK (Service opérationnel)
     end
+
+    App->>ML: POST /api/predict/batch (Données JSON/CSV)
+    activate ML
+    note over ML: Chargement Random Forest + Calcul SHAP
+    
+    alt Calcul réussi
+        ML-->>App: Résultats (Scores + SHAP JSON)
+        deactivate ML
+        App->>DB: Persister résultats & Créer AnalyseSession
+        App-->>Chef: Affichage des KPIs & Résultats détaillés
+    else Erreur Micro-service
+        ML-->>App: Erreur 500 / Timeout
+        App-->>Chef: Alerte : Service indisponible (Message d'erreur)
+    end
+    deactivate App
 ```
 
----
+### 6.3 Flux 3 : Workflow de recommandation et validation
 
-## 5) Arborescence UML — Structure des modules
+Modélisation du cycle de vie des actions de rétention reflétant l'organisation hiérarchique de Tunisie Telecom.
 
 ```mermaid
-graph TD
-    A["Projet CHURN"] --> B[" accounts"] 
-    A --> C[" learning"]
-    A --> D["dashboard"]
-    A --> E["core"]
-    A --> F["config"]
-    
-    B --> B1["User modèle custom"]
-    B --> B2["OTPCode"]
-    B --> B3["AdminVille"]
-    B --> B4["LoginActivity"]
-    B --> B5["Views login verify-otp reset"]
-    B --> B6["Forms AuthForm ResetForm"]
-    B --> B7["Services email OTP"]
-    
-    C --> C1["Dataset"]
-    C --> C2["ClientChurn"]
-    C --> C3["ShapValeur"]
-    C --> C4["EvenementCDR"]
-    C --> C5["InteractionDigital"]
-    C --> C6["DonneeGeospatiale"]
-    C --> C7["Pipeline ML Data Quality"]
-    
-    D --> D1["Recommandation"]
-    D --> D2["RejetRecommandation"]
-    D --> D3["Notification"]
-    D --> D4["AnalyseSession"]
-    D --> D5["Message"]
-    D --> D6["Tasks Celery async"]
-    D --> D7["Views dashboard validation"]
-    
-    E --> E1["ml_service prédictions"]
-    E --> E2["ml_pipeline prétraitement"]
-    E --> E3["fastapi_service intégration"]
-    E --> E4["data_quality nettoyage"]
-    E --> E5["model_config hyperparamètres"]
-    E --> E6["notifications_engine"]
-    E --> E7["otp_service"]
-    E --> E8["mock_data génération test"]
-    
-    F --> F1["settings.py Django config"]
-    F --> F2["urls.py routing"]
-    F --> F3["wsgi.py"]
-    F --> F4["asgi.py"]
+sequenceDiagram
+    autonumber
+    actor Agent as Agent (Com/Mark)
+    participant App as Serveur d'Application
+    participant DB as PostgreSQL
+    actor Chef as Chef d'Agence
+
+    Agent->>App: Créer recommandation (Client X)
+    activate App
+    App->>DB: Enregistrer (Statut: Validation Requise)
+    DB-->>App: OK
+    App->>App: Générer notification système
+    App-->>Chef: Alerte : Nouvelle recommandation à valider
+    deactivate App
+
+    Chef->>App: Consulter détails recommandation
+    activate App
+    App->>DB: Récupérer infos client & contenu action
+    DB-->>App: Données recommandation
+    App-->>Chef: Affichage interface de décision
+
+    alt Validation (Activation)
+        Chef->>App: Activer l'action de rétention
+        App->>DB: Update Statut -> "Active"
+        App-->>Agent: Notification : Action prête à être exécutée
+    else Rejet
+        Chef->>App: Rejeter la recommandation
+        App->>DB: Update Statut -> "Rejetée"
+        App-->>Agent: Information : Recommandation refusée
+    end
+    deactivate App
 ```
 
----
+### 6.4 Flux 4 : Exportation de rapports PDF
 
-## 6) Arborescence URL — Structure du routage
+Génération de documents à la volée en transformant le rendu HTML (avec SHAP) en PDF via wkhtmltopdf.
 
 ```mermaid
-graph TD
-    Root["/ ROOT"] --> Auth[" /accounts/"]
-    Root --> Dashboard["/dashboard/"]
-    Root --> Admin[" /admin/"]
-    Root --> API[" /api/"]
+sequenceDiagram
+    autonumber
+    actor User as Utilisateur
+    participant App as Contrôleur Django
+    participant DB as PostgreSQL
+    participant PDF as Moteur pdfkit / wkhtmltopdf
+
+    User->>App: Demander export PDF (Fiche Client)
+    activate App
+    App->>DB: Récupérer profil + SHAP explications
+    DB-->>App: Données client formatées
+    App->>App: Injecter données dans template HTML spécialisé
     
-    Auth --> A1["login GET/POST"]
-    Auth --> A2["verify-otp GET/POST"]
-    Auth --> A3["logout GET"]
-    Auth --> A4["reset-password GET/POST"]
-    Auth --> A5["gestion-comptes GET/POST"]
-    Auth --> A6["create-user GET/POST"]
-    Auth --> A7["edit-user/:id GET/POST"]
-    Auth --> A8["delete-user/:id POST"]
-    
-    Dashboard --> D1["clients/ GET"]
-    Dashboard --> D2["clients/:id/ GET"]
-    Dashboard --> D3["clients/:id/pdf/ GET"]
-    Dashboard --> D4["recommandations/ GET/POST"]
-    Dashboard --> D5["recommandations/:id/valider/ POST"]
-    Dashboard --> D6["recommandations/:id/rejeter/ POST"]
-    Dashboard --> D7["notifications/ GET"]
-    Dashboard --> D8["notifications/:id/marquer-lu/ POST"]
-    Dashboard --> D9["analyse/ GET/POST"]
-    Dashboard --> D10["generer-mock/ POST"]
-    Dashboard --> D11["statistiques/ GET"]
-    
-    Admin --> Adm1["Django Admin Interface"]
-    
-    API --> AP1["health GET"]
-    API --> AP2["model-info GET"]
-    AP2 --> AP2a["FastAPI: /api/model/info"]
-    AP1 --> AP1a["FastAPI: /health"]
+    App->>PDF: Transmettre flux HTML
+    activate PDF
+    note right of PDF: Transformation HTML -> PDF (A4)
+    PDF-->>App: Retourner flux binaire PDF
+    deactivate PDF
+
+    App-->>User: Retourner fichier (Flux binaire au navigateur)
+    deactivate App
+    note over User, App: Téléchargement instantané sans stockage disque
 ```
-
-
-

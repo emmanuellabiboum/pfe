@@ -1,739 +1,247 @@
+%==============================================================
+% CHAPITRE 4  DÉVELOPPEMENT ET RÉALISATION
+%==============================================================
+
 \chapter{Développement et Réalisation}
 
 \section{Introduction}
-Ce chapitre décrit la réalisation concrète du système de détection
-du churn client développé pour \textbf{Tunisie Telecom}. Il
-documente ce qui est effectivement implémenté dans le code:
-un backend \textbf{Django} principal, une intégration vers une
-API \textbf{FastAPI} dédiée au traitement Machine Learning, un
-mécanisme \textbf{OTP} pour l'authentification sécurisée, un
-moteur de notifications, un cycle de vie complet des
-recommandations et un export PDF via
-\textbf{pdfkit/ wkhtmltopdf}.
 
-Le développement a suivi une approche pragmatique en six axes,
-conformément aux sprints définis au Chapitre 2. Les résultats partiels des tests
-fonctionnels sont présentés en fin de chapitre, deux scénarios
-restant en cours de finalisation au moment de la rédaction.
+La phase de développement et de réalisation constitue l'aboutissement technique de notre projet de détection du churn pour Tunisie Telecom. Dans ce chapitre, nous détaillons les choix d'implémentation et les mécanismes logiciels que nous avons mis en oeuvre pour transformer nos modèles théoriques en une plateforme opérationnelle.
 
-\section{Architecture fonctionnelle du projet}
-Le projet s'appuie sur une architecture Django modulaire, enrichie
-d'une API de prédiction FastAPI et d'une interface utilisateur
-responsive. La figure\ref{fig:archi_fonctionnelle} illustre
-l'organisation globale des composants.
+Conformément à la méthodologie Scrum que nous avons adoptée, nous présentons notre travail de réalisation sous la forme d'incréments successifs correspondant aux trois derniers sprints du projet. Cette structure nous permet de démontrer la traçabilité entre les objectifs fixés dans le backlog, les choix techniques de réalisation, les livrables produits sous forme de releases et leur validation par les tests.
 
-\begin{figure}[H]
-    \centering
-\includegraphics[width=0.7\linewidth,height=19cm]{images/architecture fonctionnelle.drawio.png}
-    \caption{Architecture fonctionnelle du projet}
-    \label{fig:archi_fonctionnelle}
-\end{figure}
+\section{Environnement de développement et outils}
 
-Les responsabilités sont réparties comme suit:
+Avant de détailler les sprints, nous présentons le socle technologique commun à l'ensemble du projet. Nous utilisons Python 3.12 comme langage de base. Le backend repose sur Django 4.2.30, tandis que le service d'intelligence artificielle est porté par FastAPI 0.115.0. La persistance des données est assurée par PostgreSQL 15, et l'explicabilité du modèle s'appuie sur la bibliothèque SHAP 0.51.0. Nous avons organisé notre code source sous Git en suivant une structure modulaire composée de plusieurs applications Django (accounts, learning, dashboard et core).
 
-\begin{itemize}
-    \item \textbf{Django} gère l'authentification, le dashboard,
-    la gestion des utilisateurs, les notifications et l'export PDF.
-    \item \textbf{\texttt{learning.models}} contient le c\oe{}ur
-    métier: les entités \texttt{Dataset}, \texttt{ClientChurn}
-    et les objets auxiliaires liés aux usages clients.
-    \item \textbf{\texttt{dashboard.views}} orchestre l'affichage,
-    les KPI, la fiche client, l'historique et la génération de
-    rapports.
-    \item \textbf{\texttt{core}} contient le moteur de
-    notifications, la génération de données mock et l'intégration
-    vers l'API de prédiction FastAPI.
-    \item \textbf{\texttt{config/settings.py}} centralise la
-    configuration, notamment la détection du binaire
-    \texttt{wkhtmltopdf} et les paramètres \texttt{pdfkit}.
-\end{itemize}
+\section{Sprint 4 : API d'inférence et Sécurité applicative}
 
-Cette organisation garantit une séparation nette entre la couche
-métier et données, la couche applicative et workflows, et la
-couche présentation.
+\subsection{Objectif du sprint}
 
-\section{Sécurité applicative et gestion des habilitations}
+L'objectif de ce premier sprint applicatif était de mettre en place le moteur d'inférence via une API performante et de sécuriser l'accès à la plateforme par un mécanisme d'authentification robuste.
 
-\subsection{Authentification à double facteur (OTP)}
+\subsection{Backlog du Sprint 4}
 
-L'accès à la plateforme est protégé par un mécanisme
-d'\textbf{authentification à deux facteurs} basé sur un code à
-usage unique (\textbf{OTP}). Ce choix répond aux exigences de
-confidentialité des données clients de Tunisie Telecom.
-
-Le flux se déroule en trois étapes:
-
-\begin{enumerate}
-    \item \textbf{Vérification des identifiants}: l'utilisateur
-    saisit son nom d'utilisateur et son mot de passe. Django
-    vérifie le statut du compte (\texttt{actif},
-    \texttt{en\_attente}, \texttt{bloqué}) ainsi que le compteur
-    de tentatives échouées.
-    \item \textbf{Envoi du code OTP}: un code à six chiffres est
-    généré aléatoirement, stocké en base avec une expiration de
-    \textbf{dix minutes}, puis transmis par email via
-    \textbf{SendGrid}.
-    \item \textbf{Validation du code}: le code saisi est comparé
-    à l'entrée en base. S'il est valide, la session Django est
-    ouverte et le code est \textbf{immédiatement supprimé}: un
-    OTP ne peut être utilisé qu'une seule fois.
-\end{enumerate}
-
-Ce mécanisme est implémenté dans \texttt{accounts/views.py},
-\texttt{accounts/models.py} et
-\texttt{core/otp\_email\_service.py}.
-
-La figure \ref{fig:otpCODE} présente le code view de notre moteur OPT tandis que la figure\ref{fig:otpINTERF} présente l'interface de saisie
-du code OTP telle qu'elle s'affiche après la première étape de
-connexion .
-
-\begin{figure}[htbp]
-    \centering
-    \begin{subfigure}{0.47\linewidth}
-        \centering
-    \includegraphics[width=\linewidth,height=7cm]
-        {images/otp_view.png}
-        \caption{}
-    \label{fig:otpCODE}
-    \end{subfigure}
-    \hspace{0.03\linewidth}
-    \begin{subfigure}{0.47\linewidth}
-        \centering
-   \includegraphics[width=\linewidth,height=7cm]
-        {images/INTERFACE OTP.jpeg}
-        \caption{}
-    \label{fig:otpINTERF}
-    \end{subfigure}
-\end{figure}
-
-\subsection{Sécurisation des mots de passe}
-
-Aucun mot de passe n'est stocké en clair dans PostgreSQL. Django
-utilise l'algorithme \textbf{PBKDF2} couplé à un sel SHA-256,
-qui offre deux garanties:
-
-\begin{itemize}
-    \item \textbf{Dérivation itérative}: la fonction de hachage
-    est appliquée un grand nombre d'itérations, rendant les
-    attaques par force brute extrêmement coûteuses.
-    \item \textbf{Salage}: une chaîne aléatoire unique par
-    utilisateur garantit que deux mots de passe identiques
-    produisent des empreintes distinctes, neutralisant l'usage
-    des \textit{rainbow tables}.
-\end{itemize}
-
-\subsection{Protection contre les attaques par force brute}
-
-Un mécanisme de verrouillage automatique a été développé: à la
-troisième tentative échouée, le statut du compte bascule sur
-\texttt{bloqué}. L'accès est alors refusé même en cas de saisie
-correcte, jusqu'à l'intervention explicite du Chef d'Agence ou
-de l'administrateur compétent.
-
-\subsection{Workflow hiérarchique de validation des comptes}
-
-Notre système distingue cinq rôles: Super Administrateur,
-Administrateur de Ville, Chef d'Agence, Agent Marketing et Agent
-Commercial. La chaîne de validation respecte strictement le
-périmètre de chaque acteur: toute tentative d'accès hors périmètre
-retourne une erreur HTTP 403. Des règles d'unicité garantissent
-qu'il ne peut exister qu'un seul Administrateur par ville et un
-seul Chef d'Agence par agence.
-
-La figure \ref{fig:interface_gestion_compte} présente l'interface de
-gestion des comptes de l'une des agences en base.
-
-\begin{figure}[htbp]
-    \centering    \includegraphics[width=0.7\linewidth,height=7cm]{images/gestion des compte.jpeg}
-    \caption{Interface de gestion des compte}
-    \label{fig:interface_gestion_compte}
-\end{figure}
-
-\section{ Modélisation des données et pipeline ML}
-
-\subsection{Le modèle \texttt{ClientChurn}}
-
-Le modèle principal est \texttt{learning.models.ClientChurn}. Il
-représente un client télécom enrichi de variables statistiques,
-comportementales et d'un score de churn. Ses attributs sont
-regroupés en plusieurs familles, La figure\ref{fig:code_clientchurn} présente l'extrait de code
-de cette classe.
-
-\vspace{4 cm}
-
-\begin{figure}[htbp]
-    \centering
-
-    \begin{subfigure}{0.47\linewidth}
-        \centering
-        \includegraphics[width=\linewidth,height=5cm]
-        {images/clientchurncode1.png}
-        \caption{}
-        \label{fig:clientchurn_a}
-    \end{subfigure}
-    \hspace{0.03\linewidth}
-    \begin{subfigure}{0.47\linewidth}
-        \centering
-        \includegraphics[width=\linewidth,height=5cm]
-        {images/clientchurncode2.png}
-        \caption{}
-        \label{fig:clientchurn_b}
-    \end{subfigure}
-
-    \vspace{0.8cm}
-
-    \begin{subfigure}{0.75\linewidth}
-        \centering
-        \includegraphics[width=0.7\linewidth,height=5cm]
-        {images/clientchurncode3.png}
-        \caption{}
-        \label{fig:clientchurn_c}
-    \end{subfigure}
-
-    \caption{Implémentation progressive du modèle \texttt{ClientChurn}
-    : lecture de gauche à droite puis de haut en bas}
-    
-    \label{fig:code_clientchurn}
-\end{figure}
-
-\subsection{Logique de classification du risque}
-
-La classification du risque est basée sur le score de churn calculé
-par le modèle ML. Le client est classé à \textbf{risque élevé} si
-\texttt{score\_churn}$\geq 0{,}32$, et à \textbf{risque faible}
-dans le cas contraire. Cette règle est formalisée ainsi:
-
-\begin{equation}
-\text{churn\_predit} =
-\begin{cases}
-\text{Vrai} & \text{si } \texttt{score\_churn} \geq 0{,}32 \\
-\text{Faux} & \text{si } \texttt{score\_churn} < 0{,}32
-\end{cases}
-\end{equation}
-
-Cette logique est appliquée directement lors de la prédiction par
-le service FastAPI ou le pipeline local, et le résultat est stocké
-dans le champ \texttt{churn\_predit} de l'entité \texttt{ClientChurn}.
-
-\subsection{Entités associées et explicabilité}
-
-Autour de \texttt{ClientChurn}, plusieurs entités enrichissent
-l'analyse:
-
-\begin{itemize}
-    \item \texttt{EvenementCDR}: traces d'appel, SMS et données
-    mobiles, permettant de calculer la récence et la fréquence
-    d'utilisation.
-    \item \texttt{InteractionDigital}: usages application web,
-    recharges et modifications de profil.
-    \item \texttt{DonneeGeospatiale}: couverture réseau, qualité
-    locale, position et code postal.
-    \item \texttt{Reclamation}: tickets clients avec type, statut
-    et délai de résolution.
-    \item \texttt{CampagneMarketing} et
-    \texttt{InteractionCampagne}: actions marketing et réponses
-    client.
-    \item \texttt{ShapValeur}: valeur de Shapley de chaque feature
-    pour le score de churn du client. La persistance de ces valeurs
-    permet d'alimenter la fiche client avec une explication locale
-    du score.
-\end{itemize}
-
-\subsection{Mode Mock: découplage du développement}
-
-Afin de permettre la progression parallèle du développement
-front-end et du pipeline ML, un \textbf{module de génération de
-données simulées} a été intégré dans \texttt{core}. Il répond
-à trois objectifs:
-
-\begin{itemize}
-    \item \textbf{Validation UX/UI}: vérifier que les composants
-    visuels réagissent correctement avant l'intégration du modèle
-    réel.
-    \item \textbf{Tests de robustesse}: simuler des cas extrêmes
-    (score $= 0$, score $= 1$, données manquantes) pour vérifier
-    la stabilité de la logique métier.
-    \item \textbf{Découplage technique}: progresser sur
-    l'interface sans attendre la finalisation de la phase
-    d'entraînement.
-\end{itemize}
-
-\textbf{Restriction de production:} le mode Mock sera strictement désactivé en production (\texttt{MOCK\_MODE=False}).
-Un contrôle au démarrage Django devrait lever une exception si
-\texttt{MOCK\_MODE=True} est détecté en combinaison avec
-\texttt{DEBUG=False}, afin d'empêcher toute activation
-accidentelle.
-
-\section{ Interface utilisateur et fonctionnalités métier}
-
-\subsection{Flux d'analyse et intégration FastAPI}
-
-Le workflow d'analyse se déroule dans
-\texttt{dashboard.views.accueil} et les pages associées. Django
-interroge le service \textbf{FastAPI} pour les prédictions et
-les métadonnées du modèle. Les métriques sont chargées depuis
-l'artefact
-\texttt{churn\_api/fastapi\_artifacts/churn\_metadata\_v1.json}
-et exposent: le nom du modèle, l'AUC, la précision, le rappel
-et le F1-score.
-
-Django affiche ensuite:
-
-\begin{itemize}
-    \item les agrégats de churn (taux global, score moyen);
-    \item la répartition des clients par niveau de risque
-    (élevé: score $\geq 0{,}32$ / faible: score $< 0{,}32$);
-    \item la dernière session d'analyse et l'historique paginé;
-    \item les liens de navigation vers la fiche client,
-    les notifications et les recommandations.
-\end{itemize}
-
-Pour garantir la fiabilité du lancement d'analyse, un
-\textbf{mécanisme de verrou de session} empêche les soumissions
-multiples: la clé \texttt{analyse\_en\_cours} est positionnée
-dans la session Django dès le lancement et libérée dans un bloc
-\texttt{finally}, garantissant qu'aucune session ne reste bloquée
-en cas d'erreur.
-
-\textit{Note: L'accès au tableau de bord principal est réservé aux chefs d'agence et aux administrateurs. Les agents (commercial et marketing) sont redirigés vers une page d'accueil restreinte.}
-
-La figure\ref{fig:interface_accueil} présente la page d'accueil après une analyse complète.
-
-
-\begin{figure}[H]
-    \centering
-\includegraphics[width=0.7\linewidth,height=10cm]{images/accueil.jpeg}
-    \caption{Dashboard de monitoring du portefeuille
-    clients après analyse}
-    \label{fig:interface_accueil}
-\end{figure}
-\vspace{0.3cm}
-
-\subsection{Cycle de vie du client dans le dashboard}
-
-Un client traverse les étapes suivantes:
-
-\begin{enumerate}
-    \item Chargement ou création d'un \texttt{Dataset}
-    (import CSV ou génération mock).
-    \item Génération ou import des enregistrements
-    \texttt{ClientChurn} associés.
-    \item Calcul des scores de churn via FastAPI et stockage
-    en base.
-    \item Consultation globale dans le dashboard: KPIs,
-    graphiques, historique.
-    \item Ouverture de la fiche client pour analyse détaillée
-    (score, SHAP, recommandations).
-    \item Export PDF ou action sur recommandation/ notification.
-\end{enumerate}
-
-\subsection{Fiche client et explicabilité SHAP}
-
-La fiche client est l'interface de \textbf{diagnostic rapide}.
-Elle regroupe le profil contractuel et comportemental du client,
-son score de churn et le graphique \textbf{SHAP Waterfall} qui
-décompose la contribution de chaque feature à la prédiction:
-
-\begin{itemize}
-    \item \textbf{Impact positif (rouge)}: variables augmentant
-    la probabilité de churn (récence CDR élevée, retards de
-    paiement).
-    \item \textbf{Impact négatif (vert)}: facteurs favorisant
-    la rétention (ancienneté élevée, nombreux services actifs).
-\end{itemize}
-
-Les valeurs SHAP sont persistées dans l'entité
-\texttt{ShapValeur} et rechargées à chaque ouverture de la fiche,
-sans recalcul. La figure\ref{fig:interface_fiche_shap} présente
-cette interface.
-
-\vspace{0.3cm}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth,height=7cm]{images/fiche_client.jpeg}
-    \caption{Fiche client avec score de churn et explication SHAP
-    Waterfall}
-    \label{fig:interface_fiche_shap}
-\end{figure}
-
-\subsection{Moteur de recommandations et notifications}
-
-Les recommandations sont créées manuellement par les agents
-(commercial ou marketing) depuis la fiche client, ou automatiquement
-par le système selon des règles métier. Chaque recommandation suit
-un workflow de validation hiérarchique.
-
-\subsubsection{Origines et statuts des recommandations}
-
-Le cycle de vie d'une recommandation dépend de son origine:
-
-\begin{itemize}
-    \item \textbf{Recommandation manuelle} (créée par un agent
-    depuis la fiche client): créée au statut
-    \texttt{pending}, nécessitant une validation par le Chef d'Agence.
-\end{itemize}
-
-L'ensemble des transitions possibles est gouverné par
-\textbf{plusieurs statuts}:
-
-\begin{enumerate}
-    \item \texttt{pending}: statut initial
-    exclusif des recommandations manuelles. Le Chef d'Agence
-    doit se prononcer avant toute transmission à l'agent.
-    \item \texttt{active}: recommandation opérationnelle,
-    validée par le chef depuis \texttt{pending}. L'agent reçoit
-    une notification in-app.
-    \item \texttt{completee}: validation finale par le chef
-    après vérification. La recommandation est archivée avec
-    traçabilité complète (date, agent, note de résultat).
-    \item \texttt{rejected}: recommandation rejetée par le chef
-    à n'importe quelle étape, avec motif conservé dans
-    \texttt{RejetRecommandation}.
-\end{enumerate}
-
-\subsubsection{Flux de rejet via \texttt{RejetRecommandation}}
-
-Lorsqu'un agent considère qu'une recommandation n'est pas
-pertinente pour un client donné, il peut soumettre une
-\textbf{demande de rejet} motivée: cette demande est
-obligatoirement accompagnée d'une explication textuelle et
-crée un enregistrement \texttt{RejetRecommandation} en base.
-Le Chef d'Agence dispose alors de deux options:
-
-\begin{itemize}
-    \item \textbf{Accepter le rejet}: la recommandation est
-    \textbf{supprimée définitivement} et la demande passe au
-    statut \texttt{accepte}.
-    \item \textbf{Refuser le rejet}: l'agent est notifié de
-    procéder à l'exécution et la demande passe au statut
-    \texttt{refuse}.
-\end{itemize}
-
-Ce mécanisme garantit qu'aucune recommandation pertinente ne
-peut être ignorée sans contrôle hiérarchique explicite. La
-traçabilité des décisions de rejet est conservée de façon
-indépendante du cycle de vie de la recommandation elle-même.
-
-La figure\ref{fig:interface_recommandations} présente l'interface
-de gestion des recommandations depuis le tableau de bord du
-Chef d'Agence.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth,height=13 cm]{images/fiche_onglet2.jpeg}
-    \caption{Interface de gestion du cycle de vie des recommandations
-    (vue Chef d'Agence)}
-    \label{fig:interface_recommandations}
-\end{figure}
-\vspace{0.3cm}
-
-Le dashboard propose également des pages dédiées aux
-notifications: \texttt{notifications.html},
-\texttt{notification\_detail.html} et une vue d'archives.
-La figure\ref{fig:interface_notifs} présente le centre de
-notifications.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth,height=9cm]{images/notif_alerte.jpeg}
-    \caption{Centre de notifications in-app}
-    \label{fig:interface_notifs}
-\end{figure}
-\vspace{0.3cm}
-
-\textit{Note: Les notifications par email sont réservées aux événements liés au compte et à l'authentification (création de compte, OTP, réinitialisation de mot de passe, journalisation des connexions). Les notifications liées aux analyses, recommandations et alertes churn ne déclenchent PAS d'envoi d'email, seule la notification in-app est utilisée.}
-
-\subsection{Interface utilisateur responsive}
-
-Le front-end est construit avec \textbf{Bootstrap 5} et un CSS
-personnalisé (\texttt{static/css/responsive.css}). Les pages
-implémentent plusieurs règles adaptatives:
-
-\begin{itemize}
-    \item grilles CSS avec \texttt{grid-template-columns} et
-    règles \texttt{@media (max-width: 768px)};
-    \item sections basculant en colonne unique sur mobile;
-    \item tableaux et cartes adaptables;
-    \item boutons et actions accessibles sur petit écran.
-\end{itemize}
-
-Les templates principaux sont:
-\texttt{dashboard/templates/dashboard/accueil.html},
-\texttt{dashboard\_global.html} et \texttt{fiche\_client.html}.
-
-\section{Export et reporting PDF}
-
-L'application propose un seul type d'export PDF à ce jour:
-
-\begin{itemize}
-    \item \textbf{Fiche client PDF}: via
-    \texttt{dashboard.views.fiche\_client\_pdf}, elle contient
-    le profil du client, son score de churn et les recommandations actives.
-\end{itemize}
-
-La génération repose sur \textbf{pdfkit/ wkhtmltopdf}, configuré
-automatiquement via \texttt{config/settings.py} qui détecte le
-binaire selon l'OS. Le flux suit trois étapes:
-
-\begin{enumerate}
-    \item \textbf{Rendu du template HTML}: Django collecte les
-    données et les injecte dans un template dédié
-    (\texttt{fiche\_client\_pdf.html}), distinct du template de
-    navigation.
-    \item \textbf{Conversion par wkhtmltopdf}: \texttt{pdfkit}
-    invoque wkhtmltopdf avec les options A4, marges de 15mm et
-    encodage UTF-8. Le rendu est produit entièrement en mémoire
-    sans écriture disque intermédiaire.
-    \item \textbf{Téléchargement direct}: la réponse HTTP est
-    retournée avec le type MIME \texttt{application/pdf} et
-    l'en-tête \texttt{Content-Disposition: attachment}.
-\end{enumerate}
-
-La figure\ref{fig:interface_rapport_pdf} présente un exemple de
-rapport exporté.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\linewidth,height=9cm]{images/export.jpeg}
-    \caption{Rapport PDF exporté d'une fiche client avec score et recommandations}
-    \label{fig:interface_rapport_pdf}
-\end{figure}
-
-\section{Déploiement et facilitation de l'installation}
-
-
-Un soin particulier a été apporté à la \textbf{facilité de
-déploiement} sur les postes Windows des équipes de Tunisie
-Telecom. L'organisation distingue deux répertoires:
-\texttt{bin/} pour les exécutables tiers et \texttt{scripts/}
-pour les scripts d'orchestration.
-
-\subsection{Exécutables tiers dans \texttt{bin/}}
-
-Afin d'éliminer toute dépendance à une installation système
-préalable, les exécutables tiers sont embarqués directement:
-
-\begin{itemize}
-    \item \texttt{bin/wkhtmltopdf/windows/}: binaire wkhtmltopdf
-    pour Windows, requis par \texttt{pdfkit} pour la génération
-    PDF. Des variantes pour \texttt{linux/} et \texttt{mac/}
-    sont incluses pour les environnements de développement
-    hétérogènes.
-\end{itemize}
-
-\textbf{Note sur les bonnes pratiques:} l'inclusion de binaires
-tiers dans le dépôt Git représente un compromis entre portabilité
-immédiate et bonnes pratiques de gestion des dépendances. Pour
-une version de production pérenne, il serait préférable pour nous, de
-référencer ces binaires dans un script d'installation téléchargeant
-les sources officielles, afin de garantir leur authenticité et
-d'alléger le dépôt.
-
-\subsection{Scripts d'orchestration}
-
-Le répertoire \texttt{scripts/} regroupe les scripts de
-démarrage qui lancent séquentiellement les services de
-l'application:
-
-\begin{itemize}
-    \item \texttt{scripts/start\_all.ps1}: démarre l'intégralité
-    des services en une seule commande (serveur Django, service
-    FastAPI).
-    \item \texttt{scripts/start\_django.ps1}: démarre uniquement
-    le serveur Django, utile pour le développement isolé.
-\end{itemize}
-
-\subsection{Infrastructure de production envisagée (Docker)}
-
-La conteneurisation de l'application via \textbf{Docker Compose}
-est prévue pour le déploiement en production. L'architecture
-cible orchestre les services suivants:
-
-\begin{itemize}
-    \item \textbf{Nginx}: terminaison SSL et distribution des
-    requêtes vers Django et FastAPI.
-    \item \textbf{Gunicorn}: serveur WSGI multi-worker pour
-    Django.
-    \item \textbf{Service FastAPI}: conteneur dédié au pipeline
-    ML, indépendant du serveur Django.
-    \item \textbf{PostgreSQL}: base de données persistante.
-\end{itemize}
-
-Cette configuration garantira un environnement reproductible
-et isolé pour chaque composant, et permettra une mise à l'échelle
-indépendante du service ML.
-
-\section{Validation et contrôle qualité}
-
-\subsection{Tests unitaires}
-
-Une suite de tests automatisés a été mise en place via
-\textbf{Pytest} pour valider les composants critiques:
-
-\begin{itemize}
-    \item La logique de hachage PBKDF2 des mots de passe.
-    \item Le flux OTP complet (génération, expiration à dix
-    minutes et invalidation après usage unique).
-    \item Les règles de verrouillage de compte après trois
-    tentatives échouées.
-    \item Le calcul correct des contributions SHAP pour des
-    vecteurs d'entrée connus.
-    \item La règle de classification: score $\geq 0{,}32$
-    → churn prédit vrai.
-\end{itemize}
-
-\subsection{Tests fonctionnels}
-
-\begin{table}[H]
-    \small
-    \centering
-    \begin{tabular}{|p{3.5cm}|p{4cm}|p{3cm}|p{2cm}|}
-        \hline
-        \textbf{Fonctionnalité} & \textbf{Scénario testé} &
-        \textbf{Résultat attendu} & \textbf{Statut} \\
-        \hline
-        Authentification OTP & Code valide dans la fenêtre
-        de 10 min & Redirection accueil & \textbf{Passé} \\
-        \hline
-        Expiration OTP & Code saisi après 10 min &
-        Accès refusé & \textbf{Passé} \\
-        \hline
-        Verrouillage compte & 3 tentatives échouées &
-        Compte bloqué & \textbf{Passé} \\
-        \hline
-        Validation hors périmètre & Chef valide un agent
-        d'une autre agence & Erreur 403 & \textbf{Passé} \\
-        \hline
-        Seuil de risque & Score $\geq 0{,}32$ &
-        Churn prédit vrai & \textbf{Passé} \\
-        \hline
-        Recommandation manuelle & Agent crée une recommandation &
-        Statut \texttt{pending}, chef notifié in-app &
-        \textbf{Passé} \\
-        \hline
-        Demande de rejet & Agent soumet demande motivée &
-        \texttt{RejetRecommandation} créé, chef notifié in-app &
-        \textbf{Passé} \\
-        \hline
-        Rejet accepté & Chef accepte le rejet &
-        Recommandation supprimée définitivement &
-        \textbf{Passé} \\
-        \hline
-        Workflow validation & Chef valide recommandation manuelle &
-        Statut \texttt{active}, agent notifié in-app &
-        \textbf{Passé} \\
-        \hline
-        Anti-doublon notif. & Analyse relancée en moins de 5 min &
-        Une seule notification & \textbf{Passé} \\
-        \hline
-        Verrou de session & Double soumission du pipeline &
-        Seconde requête ignorée & \textbf{Passé} \\
-        
-        \hline
-        Export PDF fiche & Clic sur \og{}Exporter\fg{} &
-        PDF téléchargé avec SHAP & \textbf{Passé} \\
-        \hline
-        Responsive (375 px) & Affichage mobile &
-        Interface Bootstrap adaptée & \textbf{Passé} \\
-        \hline
-        Restriction analyse & Agent tente de lancer analyse &
-        Accès refusé, message d'erreur & \textbf{Passé} \\
-        \hline
-        Restriction tableau de bord & Agent accède au tableau de bord &
-        Redirection vers page restreinte & \textbf{Passé} \\
-        \hline
-    \end{tabular}
-\end{table}
-\begin{table}[H]
-    \small
-    \centering
-    \begin{tabular}{|p{3.5cm}|p{4cm}|p{3cm}|p{2cm}|}
-        \hline
-        Déploiement Docker & Conteneurisation de l'application &
-    Fonctionnalité non encore implémentée &
-    \textbf{Non réalisé} \\
-        \hline
-        Versionnement GitHub & Publication et gestion du dépôt distant &
-    Projet non encore publié sur GitHub &
-    \textbf{Non réalisé} \\
-        \hline
-    \end{tabular}
-    \caption{Tableau de tests fonctionnels}
-    \label{tab:tests_fonctionnels}
+\begin{table}[htbp]
+\centering
+\caption{Backlog du Sprint 4}
+\label{tab:sprint4}
+\small
+\begin{tabular}{|c|p{8.5cm}|c|c|}
+\hline
+\textbf{ID} & \textbf{User Story} & \textbf{Prio.} & \textbf{SP} \\
+\hline
+US-25 & Nous concevons l'API FastAPI avec le pattern Lifespan & H & 5 \\
+\hline
+US-26 & Nous définissons les schémas Pydantic d'entrée et de sortie & H & 3 \\
+\hline
+US-31 & Nous mettons en place l'authentification à double facteur (OTP) & H & 8 \\
+\hline
+US-33 & Nous configurons la protection contre les attaques par force brute & H & 3 \\
+\hline
+\end{tabular}
 \end{table}
 
-Les deux éléments marqués \textit{Non réalisé}, à savoir le déploiement
-Docker et la publication du projet sur GitHub, n'ont pas encore
-été finalisés au moment de la rédaction de ce rapport. 
+\subsection{Réalisation technique}
 
+Nous avons implémenté l'API d'inférence en utilisant FastAPI pour ses capacités asynchrones. Nous avons adopté le pattern Lifespan pour charger les artefacts ML (modèle Random Forest et explainer SHAP) une seule fois au démarrage. Pour la sécurité, nous avons développé un moteur OTP intégré. Lorsqu'un utilisateur saisit ses identifiants, nous générons un code unique envoyé par email via SendGrid, avec une validité de cinq minutes. Nous avons également intégré un mécanisme de verrouillage qui bloque le compte après trois tentatives infructueuses.
 
-\section{Limites et perspectives}
+\subsection{Livrable et Release du Sprint 4}
 
-\subsection{Limites techniques identifiées}
+La release de ce sprint fournit un système d'accès sécurisé et un service de prédiction fonctionnel. L'interface de validation OTP que nous avons conçue constitue le point d'entrée principal pour les utilisateurs.
 
-\paragraph{Complexité computationnelle de SHAP}
-Le calcul des valeurs de Shapley présente une complexité
-théorique en $O(2^n)$. Bien que le \texttt{TreeExplainer} de
-SHAP optimise ce calcul pour XGBoost, un volume important de
-requêtes simultanées pourrait saturer les ressources CPU. Pour
-un déploiement à l'échelle nationale, les valeurs SHAP devraient
-être calculées de façon asynchrone et mises en cache.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth, height=7cm]{images/INTERFACE OTP.jpeg}
+    \caption{Interface de validation sécurisée par code OTP (Release S4)}
+\end{figure}
 
-\paragraph{Absence de boucle de rétroaction}
-Le moteur de recommandations ne dispose pas d'une \textbf{boucle
-de rétroaction} (\textit{Feedback Loop}). Il ne mesure pas encore
-si une recommandation a effectivement abouti à la rétention du
-client, ce qui empêche le système d'améliorer ses suggestions au
-fil du temps.
+\subsection{Tests et Validation du Sprint 4}
 
-\paragraph{Mode Mock en production}
-Le mode Mock doit être strictement désactivé en production
-(\texttt{MOCK\_MODE=False}). Un contrôle au démarrage devrait
-lever une exception si ce mode est activé avec
-\texttt{DEBUG=False}.
+\begin{table}[htbp]
+    \small
+    \centering
+    \begin{tabular}{|p{4cm}|p{5cm}|p{2cm}|}
+        \hline
+        Fonctionnalité & Scénario de test & Statut \\
+        \hline
+        Sécurité OTP & Saisie d'un code valide dans les 5 minutes & Passé \\
+        \hline
+        Verrouillage compte & 3 tentatives échouées consécutives & Passé \\
+        \hline
+        Inférence API & Test de l'endpoint /predict via Swagger UI & Passé \\
+        \hline
+    \end{tabular}
+    \caption{Tests de validation du Sprint 4}
+\end{table}
 
-\paragraph{Absence de signature électronique des rapports}
-Les rapports PDF sont générés sans signature électronique ni
-enregistrement côté serveur. Pour un usage juridiquement
-opposable, une évolution vers des rapports horodatés et signés
-numériquement serait nécessaire.
+\section{Sprint 5 : Intégration des données et Pipeline ML}
 
-\paragraph{Binaires tiers dans le dépôt}
-L'inclusion du binaire wkhtmltopdf dans \texttt{bin/} facilite
-le déploiement immédiat mais alourdit le dépôt. La migration
-vers un script d'installation téléchargeant les sources
-officielles est recommandée à terme.
+\subsection{Objectif du sprint}
 
-\subsection{Perspectives d'évolution}
+Ce sprint visait à intégrer le moteur ML au coeur de Django, en gérant l'import des données clients et en garantissant l'isolation stricte des informations par agence.
 
+\subsection{Backlog du Sprint 5}
+
+\begin{table}[htbp]
+\centering
+\caption{Backlog du Sprint 5}
+\label{tab:sprint5}
+\small
+\begin{tabular}{|c|p{8.5cm}|c|c|}
+\hline
+\textbf{ID} & \textbf{User Story} & \textbf{Prio.} & \textbf{SP} \\
+\hline
+US-39 & Nous développons l'import de dataset multi-formats & H & 5 \\
+\hline
+US-42 & Nous lançons l'analyse globale du portefeuille via FastAPI & H & 5 \\
+\hline
+US-45 & Nous implémentons la bascule sur le pipeline local (failover) & H & 5 \\
+\hline
+US-46 & Nous appliquons l'isolation stricte des données par agence & H & 5 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Réalisation technique}
+
+Nous avons conçu le modèle ClientChurn pour regrouper plus de quarante variables comportementales. Pour garantir l'isolation, nous avons mis en place un middleware nommé AgenceMiddleware qui filtre systématiquement les requêtes ORM. Nous avons également développé un service de communication asynchrone entre Django et FastAPI. Pour assurer la continuité de service, nous avons intégré un pipeline de failover : si FastAPI est injoignable, Django bascule automatiquement sur un modèle ML local pour fournir les prédictions de base.
+
+\subsection{Livrable et Release du Sprint 5}
+
+La release de ce sprint permet aux administrateurs de piloter leur agence. Le dashboard de monitoring que nous avons réalisé affiche les premiers agrégats issus des analyses réelles.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\linewidth,height=12cm]{images/accueil_i.png}
+    \caption{Dashboard de pilotage après intégration du pipeline (Release S5)}
+\end{figure}
+
+\subsection{Tests et Validation du Sprint 5}
+
+\begin{table}[htbp]
+    \small
+    \centering
+    \begin{tabular}{|p{4cm}|p{5cm}|p{2cm}|}
+        \hline
+        Fonctionnalité & Scénario de test & Statut \\
+        \hline
+        Isolation des données & Tentative d'accès aux clients d'une autre agence & Passé \\
+        \hline
+        Import multi-formats & Chargement d'un fichier Excel volumineux & Passé \\
+        \hline
+        Mécanisme Failover & Simulation de coupure de l'API FastAPI & Passé \\
+        \hline
+    \end{tabular}
+    \caption{Tests de validation du Sprint 5}
+\end{table}
+
+\section{Sprint 6 : Interface métier et Fonctionnalités avancées}
+
+\subsection{Objectif du sprint}
+
+Le dernier sprint avait pour but d'offrir une interface utilisateur complète, intégrant l'explicabilité des diagnostics, le workflow des recommandations et le reporting PDF.
+
+\subsection{Backlog du Sprint 6}
+
+\begin{table}[htbp]
+\centering
+\caption{Backlog du Sprint 6}
+\label{tab:sprint6}
+\small
+\begin{tabular}{|c|p{8.5cm}|c|c|}
+\hline
+\textbf{ID} & \textbf{User Story} & \textbf{Prio.} & \textbf{SP} \\
+\hline
+US-48 & Nous créons le tableau de bord dynamique par rôle & H & 5 \\
+\hline
+US-50 & Nous développons la fiche client avec graphique SHAP & H & 5 \\
+\hline
+US-53 & Nous concevons le workflow de validation des actions & H & 5 \\
+\hline
+US-57 & Nous réalisons l'export PDF de la fiche client & M & 3 \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Réalisation technique}
+
+Nous avons personnalisé l'expérience utilisateur selon les profils : le Chef d'Agence dispose d'une vue stratégique tandis que les agents accèdent à une liste opérationnelle. Nous avons intégré les graphiques SHAP Waterfall directement dans la fiche client pour expliquer les raisons du risque. Nous avons également implémenté un workflow de recommandation en six étapes avec un centre de notifications internes. Enfin, nous avons utilisé pdfkit pour générer des rapports professionnels incluant les graphiques d'explicabilité.
+
+Un effort particulier a été porté sur le \textbf{Centre de Pilotage des Recommandations}, qui matérialise la stratégie commerciale :
 \begin{itemize}
-    \item \textbf{Conteneurisation Docker}: mettre en \oe{}uvre
-    la configuration Docker Compose pour la mise en production.
-    \item \textbf{Boucle de rétroaction}: mesurer le taux de
-    succès des recommandations pour améliorer le moteur de
-    suggestion.
-    \item \textbf{Intégration NLP}: analyser les rapports de
-    réclamations textuels pour enrichir les features du modèle.
-    \item \textbf{Dashboarding longitudinal}: vue analytique
-    permettant au Chef d'Agence de suivre l'évolution du taux de
-    risque mois par mois.
-    \item \textbf{Prédictions en temps réel}: migrer du
-    traitement batch vers un pipeline de prédiction en continu
-    alimenté par les événements CDR en flux.
+    \item \textbf{Identification continue :} Nous avons implémenté une logique d'\texttt{update\_or\_create} lors des imports de datasets. Cela garantit que le système reconnaît le client à chaque analyse et conserve l'historique complet de ses actions passées, assurant une mémoire commerciale sans faille.
+    \item \textbf{Pilotage par la Valeur :} L'interface affiche désormais l'impact financier estimé (Odt/TND) pour chaque action, permettant une exécution basée sur le ROI.
+    \item \textbf{Rôles Métiers :} L'accès au centre de pilotage est strictement restreint aux profils opérationnels (Chef, Marketing, Commercial), renforçant la confidentialité et la spécialisation des tâches.
 \end{itemize}
+
+\subsection{Livrable et Release du Sprint 6}
+
+Cette release  permet un diagnostic approfondi et un suivi rigoureux des actions de rétention.
+\subsubsection{Fiche client }
+\begin{figure}[htbp]
+    \centering
+
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth, height=5cm]{images/fc.png}
+        \caption{fiche client}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=5cm]{images/s_shap.png}
+        \caption{Zoom sur la section shap de la fiche client}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.5\textwidth}
+        \centering
+        \includegraphics[width=\textwidth,height=5cm]{images/exp.png}
+        \caption{Apperçu shap et recommandation du document PDF}
+    \end{subfigure}
+    \caption{Explicabilité shap d'une fiche client
+    (Release S6)}
+\end{figure}
+
+
+\subsubsection{Dashboard de pilotage}
+
+Le dashboard a été conçu pour faciliter la prise de décision : les éléments les plus critiques sont mis en évidence, les alertes de seuil sont visibles en un coup d'oeil, et la navigation entre le suivi global et l'analyse client reste fluide.
+
+\begin{figure}[htbp]
+    \centering
+\includegraphics[width=0.7\linewidth,height=12cm]{images/dg.png}
+    \caption{Dashboard global}
+\end{figure}
+\subsection{Tests et Validation du Sprint 6}
+
+\begin{table}[htbp]
+    \small
+    \centering
+    \begin{tabular}{|p{4cm}|p{5cm}|p{2cm}|}
+        \hline
+        Fonctionnalité & Scénario de test & Statut \\
+        \hline
+        Seuil de risque & Vérification du classement si score $\geq$ 0,32 & Passé \\
+        \hline
+        Workflow Recom. & Création par agent et validation par le Chef & Passé \\
+        \hline
+        Export PDF & Téléchargement du rapport avec graphique SHAP & Passé \\
+        \hline
+    \end{tabular}
+    \caption{Tests de validation du Sprint 6}
+\end{table}
+
+\section{Bilan de la réalisation et Perspectives}
+
+\subsection{Orchestration et déploiement}
+
+Nous avons achevé ce cycle de développement par l'orchestration de nos services via Docker Compose. Cette approche nous permet de garantir un environnement identique entre le développement et la production chez Tunisie Telecom, en pilotant simultanément Django, FastAPI et PostgreSQL.
+
+\subsection{Limites identifiées}
+
+Malgré la complétude de notre solution, nous notons que le calcul des valeurs SHAP peut devenir gourmand en mémoire lors d'analyses massives. De plus, notre système ne dispose pas encore d'une boucle de rétroaction automatique permettant de mesurer le succès réel des recommandations sur le terrain.
 
 \section{Conclusion}
 
-Ce chapitre a présenté la réalisation concrète de notre système
-de détection du churn client pour Tunisie Telecom. En combinant
-la robustesse de \textbf{Django 4.2} pour la logique métier et
-la sécurité, le service \textbf{FastAPI} pour le pipeline de
-prédiction ML, et l'explicabilité transparente des
-\textbf{valeurs SHAP}, nous avons abouti à un outil d'aide à la
-décision opérationnel et hiérarchisé.
-
-L'architecture modulaire, les mécanismes de sécurité multicouche
-(OTP, PBKDF2, RBAC à cinq niveaux, verrouillage par force brute),
-le workflow de validation humaine des recommandations et les
-restrictions d'accès par rôle répondent directement aux
-exigences fonctionnelles et opérationnelles de Tunisie Telecom.
+Ce chapitre a permis de présenter la réalisation concrète de notre plateforme à travers ses incréments successifs. Nous avons démontré comment chaque sprint a contribué à construire une solution robuste, sécurisée et parfaitement adaptée aux besoins opérationnels de Tunisie Telecom. L'association de Django et FastAPI nous a permis de livrer un outil d'aide à la décision complet, prêt pour une exploitation en agence. Il est important de renseigner que ces tests utilisent un dataset synthétique comportant les mêmes features que celui qui nous a permis de mener nos travaux de Machine Learning.

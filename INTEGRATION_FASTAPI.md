@@ -1,10 +1,10 @@
 # Intégration de l'API FastAPI dans le Dashboard Django
 
-## 📋 Résumé des modifications
+## Résumé des modifications
 
 J'ai intégré l'API FastAPI `/api/predict/batch` dans le dashboard Django pour utiliser le même modèle ML centralisé. Voici les changements :
 
-## 🔧 Fichiers modifiés
+## Fichiers modifiés
 
 ### 1. **core/fastapi_service.py** (NOUVEAU)
 Service helper pour communiquer avec l'API FastAPI depuis Django.
@@ -57,7 +57,7 @@ uvicorn>=0.20.0
 httpx>=0.24.0
 ```
 
-## 🚀 Comment ça marche
+## Comment ça marche
 
 ### Flux normal (API FastAPI disponible) :
 
@@ -91,7 +91,7 @@ Basculer sur predict_churn_score_from_client()
 Utiliser le modèle local Django
 ```
 
-## 📦 Installation
+## Installation
 
 ```bash
 # Installer les nouvelles dépendances
@@ -101,7 +101,7 @@ pip install -r requirements.txt
 pip install httpx>=0.24.0 fastapi>=0.95.0 uvicorn>=0.20.0
 ```
 
-## 🔗 API FastAPI utilisée
+## API FastAPI utilisée
 
 L'intégration utilise les endpoints de `churn_api/app/main.py` :
 
@@ -118,14 +118,14 @@ Output: {
 }
 ```
 
-## ✅ Avantages
+## Avantages
 
 1. **Unification** : Même modèle ML utilisé partout (Django et FastAPI)
 2. **Résilience** : Fallback automatique si API indisponible
 3. **Scalabilité** : Permet de déployer l'API sur un serveur séparé
 4. **Maintenance** : Mise à jour du modèle au seul endroit (FastAPI)
 
-## ⚙️ Configuration
+## Configuration
 
 **FastAPI doit tourner sur `localhost:8000`** (ou modifier `FASTAPI_BASE_URL` dans `core/fastapi_service.py`)
 
@@ -141,7 +141,7 @@ Pour Django (sur un port différent) :
 python manage.py runserver 8080
 ```
 
-## 🧪 Test
+## Test
 
 Le fallback automatique garantit que même si l'API n'est pas disponible, l'application continue de fonctionner avec les prédictions locales.
 

@@ -271,11 +271,7 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
 
     # Nettoyage — conserver les anciens datasets historiques,
     # mais marquer toutes les anciennes versions comme inactives.
-    from django.db.models import Q
-
-    Dataset.objects.filter(
-        agence=agence, methode__in=["mock", "csv"], actif=True
-    ).update(actif=False)
+    Dataset.objects.filter(agence=agence, actif=True).update(actif=False)
 
     # Créer un dataset mock pour l'agence
     dataset = Dataset.objects.create(
@@ -591,6 +587,8 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     total_reclamations_hist = 0
     total_shap = 0
 
+    from core.ml_service import predict_churn_score_from_client, get_shap_explanation
+
     for client in created:
         # Événements CDR
         total_events += generer_evenements_cdr(client)
@@ -600,8 +598,37 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
         total_geo += generer_geolocalisation(client)
         # Réclamations historiques
         total_reclamations_hist += generer_reclamations(client)
-        # Valeurs SHAP pour explicabilité
-        total_shap += generer_shap_valeurs(client)
+        
+        # --- LOGIQUE ML RÉELLE ---
+        # 1. Obtenir le vrai score via le modèle ML
+        score = predict_churn_score_from_client(client)
+        if score is not None:
+            client.score_churn = round(score, 4)
+            client.churn_predit = score >= 0.32
+            client.save(update_fields=["score_churn", "churn_predit"])
+
+        # 2. Générer les vraies valeurs SHAP
+        try:
+            shap_data = get_shap_explanation(client)
+            if shap_data and shap_data.get("features"):
+                from learning.models import ShapValeur
+                ShapValeur.objects.filter(client=client).delete()
+                
+                shap_objs = []
+                for f in shap_data["features"]:
+                    shap_objs.append(
+                        ShapValeur(
+                            client=client,
+                            feature=f["feature"],
+                            valeur=round(f["shap_value"], 4),
+                            importance=abs(round(f["shap_value"], 4)),
+                        )
+                    )
+                if shap_objs:
+                    ShapValeur.objects.bulk_create(shap_objs)
+                    total_shap += 1
+        except Exception as e:
+            print(f"Erreur SHAP Mock pour client {client.client_id}: {e}")
 
     # Générer les recommandations pour les clients à risque
     total_recs = 0

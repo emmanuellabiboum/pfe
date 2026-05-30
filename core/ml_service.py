@@ -1,8 +1,8 @@
 import json
 import joblib
 # import shap  # Déplacé dans les fonctions
-# import numpy as np  # Déplacé dans les fonctions
-# import pandas as pd  # Déplacé dans les fonctions
+import numpy as np
+import pandas as pd
 import unicodedata
 from pathlib import Path
 

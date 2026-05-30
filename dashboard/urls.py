@@ -152,26 +152,6 @@ urlpatterns = [
         name="supprimer_analyses_mois",
     ),
     path(
-        "analyses/corbeille/",
-        views.corbeille_analyses,
-        name="corbeille_analyses",
-    ),
-    path(
-        "analyses/<int:analyse_id>/restaurer/",
-        views.restaurer_analyse,
-        name="restaurer_analyse",
-    ),
-    path(
-        "analyses/bulk-restaurer/",
-        views.bulk_restaurer_analyses,
-        name="bulk_restaurer_analyses",
-    ),
-    path(
-        "analyses/bulk-supprimer-definitivement/",
-        views.bulk_supprimer_definitivement_analyses,
-        name="bulk_supprimer_definitivement_analyses",
-    ),
-    path(
         "lancer-analyse/",
         views.lancer_analyse,
         name="lancer_analyse",
@@ -215,6 +195,11 @@ urlpatterns = [
         "rejets/<int:rejet_id>/valider/",
         views.valider_rejet_recommandation,
         name="valider_rejet_recommandation",
+    ),
+    path(
+        "recommandations/",
+        views.recommandations_dashboard,
+        name="recommandations_dashboard",
     ),
 ]
 

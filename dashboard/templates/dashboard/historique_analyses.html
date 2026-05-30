@@ -90,13 +90,13 @@
         }
 
         .btn-outline-custom {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: var(--radius-md);
+            background: #f1f5f9;
+            border: none;
+            border-radius: 10px;
             padding: 8px 18px;
-            color: var(--text-main);
+            color: #64748b;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 12px;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -104,22 +104,60 @@
             transition: all 0.2s;
         }
 
+        .btn-outline-custom:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        /* Styles spécifiques pour les filtres actifs */
         .btn-filter-active-all {
-            background: var(--text-main);
-            color: white;
-            border-color: var(--text-main);
+            background: #1e293b !important;
+            color: white !important;
         }
 
         .btn-filter-active-real {
-            background: var(--success);
-            color: white;
-            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.15) !important;
+            color: #166534 !important;
         }
 
         .btn-filter-active-mock {
+            background: rgba(79, 70, 229, 0.15) !important;
+            color: #4338ca !important;
+        }
+
+        /* Bouton Dashboard spécial */
+        .btn-dashboard-main {
             background: var(--brand);
-            color: white;
-            border-color: var(--brand);
+            color: white !important;
+            border-radius: 10px;
+            padding: 8px 18px;
+            font-weight: 700;
+            font-size: 12px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-indigo-soft {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5 !important;
+            border-radius: 10px;
+            padding: 4px 12px;
+            font-weight: 700;
+            font-size: 11px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-indigo-soft:hover {
+            background: rgba(79, 70, 229, 0.2);
+            transform: translateY(-1px);
         }
 
         .history-table {
@@ -278,15 +316,8 @@
                         Mock
                     </a>
                 </div>
-                <a href="{% url 'dashboard:corbeille_analyses' %}" class="btn-outline-custom"
-                    style="border-color:var(--danger); color:var(--danger);">
-                    <i class="bi bi-trash"></i> Corbeille
-                </a>
-                <a href="{% url 'dashboard:dashboard_global' %}" class="btn-outline-custom">
+                <a href="{% url 'dashboard:dashboard_global' %}" class="btn-dashboard-main">
                     <i class="bi bi-speedometer2"></i> Dashboard
-                </a>
-                <a href="{% url 'dashboard:accueil' %}" class="btn-outline-custom">
-                    <i class="bi bi-arrow-left"></i> Accueil
                 </a>
             </div>
         </div>
@@ -352,15 +383,11 @@
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <form method="POST" action="/analyses/mois/{{ cle }}/supprimer/" onclick="event.stopPropagation();"
-                        onsubmit="return confirm('Supprimer toutes les analyses de {{ groupe.label }} ? Elles seront déplacées dans la corbeille.')"
-                        style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn-outline-custom"
-                            style="padding:4px 8px; font-size:11px; border-color:var(--danger); color:var(--danger);">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </form>
+                    <button type="button" class="btn-outline-custom"
+                        style="padding:4px 8px; font-size:11px; border-color:var(--danger); color:var(--danger);"
+                        onclick="event.stopPropagation(); prepareMonthDelete('{{ cle }}', '{{ groupe.label }}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
                     <i class="bi bi-chevron-down folder-chevron"></i>
                 </div>
             </div>
@@ -446,20 +473,14 @@
                             <td class="text-center">
                                 <div style="display:flex; justify-content:center; gap:6px; flex-wrap:wrap;">
                                     <a href="{% url 'dashboard:clients' %}?analyse_id={{ item.analyse.id }}"
-                                        class="btn-outline-custom" style="padding:4px 8px; font-size:11px;">
+                                        class="btn-indigo-soft" style="padding:4px 8px; font-size:11px;">
                                         <i class="bi bi-people"></i> Voir clients
                                     </a>
-                                    <form method="POST"
-                                        action="/analyses/{{ item.analyse.id }}/supprimer-definitivement/"
-                                        onsubmit="return confirm('Supprimer définitivement cette analyse ? Cette action est irréversible.')"
-                                        style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn-outline-custom"
+                                    <button type="button" class="btn-outline-custom"
                                             style="padding:4px 8px; font-size:11px; border-color:var(--danger); color:var(--danger);"
-                                            onclick="event.stopPropagation();">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                            onclick="event.stopPropagation(); prepareDelete('{{ item.analyse.id }}', '{{ item.analyse.date_analyse|date:'d/m/Y à H:i' }}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -469,6 +490,72 @@
             </div>
         </div>
         {% endfor %}
+
+        <!-- Modal de Confirmation de Suppression -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                    <div class="modal-header border-0 pt-4 px-4">
+                        <h5 class="modal-title fw-800" style="color: var(--brand);">Confirmation de suppression</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body px-4 pb-4">
+                        <p class="text-muted mb-0">Vous êtes sur le point de supprimer définitivement l'analyse du <strong id="deleteAnalyseDate" style="color: var(--brand);"></strong>.</p>
+                        <div class="alert alert-danger mt-3 mb-0 py-3 rounded-4 border-0">
+                            <div class="d-flex gap-3">
+                                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                                <div class="small">
+                                    <p class="fw-bold mb-1">Action Irréversible</p>
+                                    <p class="mb-0 opacity-75">Cette opération supprimera également TOUS les clients associés, leurs recommandations, notifications et l'historique complet.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light px-4 py-3" style="border-radius: 0 0 20px 20px;">
+                        <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Annuler</button>
+                        <form id="deleteForm" method="POST" action="">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="font-size: 13px;">
+                                Purger l'analyse et ses données
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Confirmation de Suppression par Mois -->
+        <div class="modal fade" id="monthDeleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                    <div class="modal-header border-0 pt-4 px-4">
+                        <h5 class="modal-title fw-800" style="color: var(--brand);">Purger le mois</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body px-4 pb-4">
+                        <p class="text-muted mb-0">Toutes les analyses de <strong id="deleteMonthLabel" style="color: var(--brand);"></strong> seront supprimées.</p>
+                        <div class="alert alert-danger mt-3 mb-0 py-3 rounded-4 border-0">
+                            <div class="d-flex gap-3">
+                                <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                                <div class="small">
+                                    <p class="fw-bold mb-1">Avertissement de purge</p>
+                                    <p class="mb-0 opacity-75">Cette action supprimera TOUS les clients et toutes les données rattachés à ce mois. C'est définitif.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 bg-light px-4 py-3" style="border-radius: 0 0 20px 20px;">
+                        <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none" data-bs-dismiss="modal">Annuler</button>
+                        <form id="monthDeleteForm" method="POST" action="">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger px-4 rounded-pill fw-bold shadow-sm" style="font-size: 13px;">
+                                Confirmer la purge du mois
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Légende -->
         <div style="color:var(--gray-500); font-size:12px; padding:0 4px;">
@@ -517,6 +604,26 @@
 
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script>
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteAnalyseDate = document.getElementById('deleteAnalyseDate');
+
+        const monthDeleteModal = new bootstrap.Modal(document.getElementById('monthDeleteModal'));
+        const monthDeleteForm = document.getElementById('monthDeleteForm');
+        const deleteMonthLabel = document.getElementById('deleteMonthLabel');
+
+        function prepareDelete(analyseId, analyseDate) {
+            deleteAnalyseDate.textContent = analyseDate;
+            deleteForm.action = `/analyses/${analyseId}/supprimer-definitivement/`;
+            deleteModal.show();
+        }
+
+        function prepareMonthDelete(moisCle, moisLabel) {
+            deleteMonthLabel.textContent = moisLabel;
+            monthDeleteForm.action = `/analyses/mois/${moisCle}/supprimer/`;
+            monthDeleteModal.show();
+        }
+
         function toggleFolder(el) {
             el.classList.toggle('collapsed');
             const content = el.nextElementSibling;

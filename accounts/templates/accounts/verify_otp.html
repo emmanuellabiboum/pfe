@@ -211,7 +211,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             new OTPTimer('otp-timer-display', {
-                durationSeconds: 300,
+                durationSeconds: {{ remaining_seconds|default:300 }},
                 warningThreshold: 60,
                 dangerThreshold: 30,
                 onExpire: function () {

@@ -378,7 +378,7 @@
 
     <nav class="navbar-tt">
         <a href="{% url 'dashboard:accueil' %}" class="nav-logo">
-            <img src="{% static 'images/logoTT.png' %}" height="42" style="border-radius:6px;" alt="Tunisie Telecom">
+            <img src="{% static 'images/logoTT.jpg' %}" height="42" style="border-radius:6px;" alt="Tunisie Telecom">
             <div class="nav-logo-text">Churn Detection <span>System</span></div>
         </a>
         <div class="nav-actions">
@@ -506,6 +506,9 @@
                     {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
                     <a href="{% url 'dashboard:clients' %}" class="dd-menu-item">
                         <i class="bi bi-people"></i> Clients
+                    </a>
+                    <a href="{% url 'dashboard:recommandations_dashboard' %}" class="dd-menu-item">
+                        <i class="bi bi-lightning-charge"></i> Recommandations
                     </a>
                     {% endif %}
                 </div>

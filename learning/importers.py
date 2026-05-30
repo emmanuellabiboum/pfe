@@ -99,8 +99,8 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
     if uploaded_file is not None:
         uploaded_file.seek(0)
 
-    # Conserver les anciens datasets CSV historiques en les désactivant.
-    Dataset.objects.filter(agence=agence, methode="csv", actif=True).update(actif=False)
+    # Conserver les anciens datasets historiques en les désactivant.
+    Dataset.objects.filter(agence=agence, actif=True).update(actif=False)
 
     dataset = Dataset.objects.create(
         nom=f"Dataset uploadé - {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}",
@@ -127,95 +127,96 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
             date_debut = _parse_date(row.get("date_debut_abonnement"))
             date_consentement = _parse_date(row.get("date_consentement"))
 
-            client = ClientChurn.objects.create(
-                dataset=dataset,
-                client_id=str(
-                    _first_present(
-                        row, "client_id", "id_client", "id", default=f"client_{idx}"
-                    )
-                ),
-                nom=_parse_name(row, idx),
-                genre_client=row.get("genre_client", ""),
-                date_naissance=date_naissance,
-                telephone=str(row.get("num_tel_mobile", "")),
-                email=row.get("adresse_email", ""),
-                adresse_physique=row.get("adresse_physique", ""),
-                identifiant_national=str(row.get("identifiant_national", "")),
-                date_debut_abonnement=date_debut,
-                statut_actif=_parse_bool(row.get("statut_actif", True), default=True),
-                date_consentement=date_consentement,
-                consentement_marketing=_parse_bool(
+            client_id_val = str(
+                _first_present(
+                    row, "client_id", "id_client", "id", default=f"client_{idx}"
+                )
+            )
+
+            client_defaults = {
+                "dataset": dataset,
+                "nom": _parse_name(row, idx),
+                "genre_client": row.get("genre_client", ""),
+                "date_naissance": date_naissance,
+                "telephone": str(row.get("num_tel_mobile", "")),
+                "email": row.get("adresse_email", ""),
+                "adresse_physique": row.get("adresse_physique", ""),
+                "identifiant_national": str(row.get("identifiant_national", "")),
+                "date_debut_abonnement": date_debut,
+                "statut_actif": _parse_bool(row.get("statut_actif", True), default=True),
+                "date_consentement": date_consentement,
+                "consentement_marketing": _parse_bool(
                     row.get("consentement_marketing", False), default=False
                 ),
-                optout_marketing=_parse_bool(
+                "optout_marketing": _parse_bool(
                     row.get("optout_marketing", False), default=False
                 ),
-                tenure_jours=_parse_int(row.get("tenure_jours", 0)),
-                tenure_mois=_parse_float(row.get("tenure_mois", 0)),
-                type_abonnement=row.get("type_abonnement", ""),
-                plan_tarifaire=row.get("plan_tarifaire", ""),
-                facture_moyenne_mensuelle=_parse_float(
+                "tenure_jours": _parse_int(row.get("tenure_jours", 0)),
+                "tenure_mois": _parse_float(row.get("tenure_mois", 0)),
+                "type_abonnement": row.get("type_abonnement", ""),
+                "plan_tarifaire": row.get("plan_tarifaire", ""),
+                "facture_moyenne_mensuelle": _parse_float(
                     row.get("facture_moyenne_mensuelle", 0)
                 ),
-                moyen_paiement=row.get("moyen_paiement", ""),
-                nb_appels=_parse_int(row.get("nb_appels", 0)),
-                duree_appel_totale_sec=_parse_int(row.get("duree_appel_totale_sec", 0)),
-                duree_appel_moyenne_sec=_parse_float(
+                "moyen_paiement": row.get("moyen_paiement", ""),
+                "nb_appels": _parse_int(row.get("nb_appels", 0)),
+                "duree_appel_totale_sec": _parse_int(row.get("duree_appel_totale_sec", 0)),
+                "duree_appel_moyenne_sec": _parse_float(
                     row.get("duree_appel_moyenne_sec", 0)
                 ),
-                sms_total=_parse_int(row.get("sms_total", 0)),
-                data_totale_mb=_parse_float(
+                "sms_total": _parse_int(row.get("sms_total", 0)),
+                "data_totale_mb": _parse_float(
                     row.get("data_totale_gb", row.get("data_moyenne_gb", 0))
                 )
                 * 1024,
-                nb_evenements_data_cdr=_parse_int(row.get("nb_evenements_total", 0)),
-                data_mois_M=(
+                "nb_evenements_data_cdr": _parse_int(row.get("nb_evenements_total", 0)),
+                "data_mois_M": (
                     _parse_float(row.get("data_mois_M", None))
                     if pd.notna(row.get("data_mois_M"))
                     else None
                 ),
-                data_mois_M1=(
+                "data_mois_M1": (
                     _parse_float(row.get("data_mois_M1", None))
                     if pd.notna(row.get("data_mois_M1"))
                     else None
                 ),
-                tendance_data=_parse_float(row.get("tendance_data_pct", 0)),
-                nb_sessions=_parse_int(row.get("nb_sessions", 0)),
-                duree_session_moyenne_sec=_parse_float(
+                "tendance_data": _parse_float(row.get("tendance_data_pct", 0)),
+                "nb_sessions": _parse_int(row.get("nb_sessions", 0)),
+                "duree_session_moyenne_sec": _parse_float(
                     row.get("duree_session_moyenne_sec", 0)
                 ),
-                recence_session_jours=(
+                "recence_session_jours": (
                     _parse_int(row.get("recence_session_jours", None))
                     if pd.notna(row.get("recence_session_jours"))
                     else None
                 ),
-                taux_cookies=_parse_float(row.get("taux_cookies", 0)),
-                zone_reseau_principale=row.get("zone_reseau_principale", ""),
-                qualite_signal_dominante=row.get("qualite_signal_dominante", ""),
-                score_qualite_zone=_parse_float(row.get("score_qualite_zone", 0)),
-                satisfaction_client=(
+                "taux_cookies": _parse_float(row.get("taux_cookies", 0)),
+                "zone_reseau_principale": row.get("zone_reseau_principale", ""),
+                "qualite_signal_dominante": row.get("qualite_signal_dominante", ""),
+                "score_qualite_zone": _parse_float(row.get("score_qualite_zone", 0)),
+                "satisfaction_client": (
                     _parse_float(row.get("satisfaction_client", 0))
                     if pd.notna(row.get("satisfaction_client"))
                     else None
                 ),
-                score_frustration=_parse_float(row.get("score_frustration", 0)),
-                nb_reclamations=_parse_nb_reclamations(row),
-                reclamation_manquante=_parse_bool(
+                "score_frustration": _parse_float(row.get("score_frustration", 0)),
+                "nb_reclamations": _parse_nb_reclamations(row),
+                "reclamation_manquante": _parse_bool(
                     row.get("reclamation_manquante", False), default=False
                 ),
-                recence_cdr_jours=(
+                "recence_cdr_jours": (
                     _parse_int(row.get("recence_cdr_jours", None))
                     if pd.notna(row.get("recence_cdr_jours"))
                     else None
                 ),
-                anciennete_mois=_parse_int(row.get("tenure_mois", 0)),
-                consommation_moyenne=_parse_float(
+                "anciennete_mois": _parse_int(row.get("tenure_mois", 0)),
+                "consommation_moyenne": _parse_float(
                     row.get("data_moyenne_gb", row.get("data_totale_gb", 0))
                 )
                 * 1024,
-                retards_paiement=0,
-                nb_services=1,
-                flag_offre_data=(
+                "retards_paiement": 0,
+                "nb_services": 1,
+                "flag_offre_data": (
                     1
                     if _parse_float(
                         row.get("data_moyenne_gb", row.get("data_totale_gb", 0))
@@ -223,12 +224,19 @@ def create_dataset_from_dataframe(df, agence, user, uploaded_file: UploadedFile 
                     > 0
                     else 0
                 ),
-                flag_offre_voix=(
+                "flag_offre_voix": (
                     1 if _parse_float(row.get("duree_appel_moyenne_sec", 0)) > 0 else 0
                 ),
-                data_mois_m_manquante=1 if pd.isna(row.get("data_mois_M")) else 0,
-                data_mois_m1_manquante=1 if pd.isna(row.get("data_mois_M1")) else 0,
+                "data_mois_m_manquante": 1 if pd.isna(row.get("data_mois_M")) else 0,
+                "data_mois_m1_manquante": 1 if pd.isna(row.get("data_mois_M1")) else 0,
+            }
+
+            client, created = ClientChurn.objects.update_or_create(
+                client_id=client_id_val,
+                agence=agence,
+                defaults=client_defaults
             )
+
             clients_list.append(client)
             clients_crees += 1
         except Exception as e:

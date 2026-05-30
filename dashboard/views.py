@@ -197,7 +197,7 @@ def _read_uploaded_dataset(uploaded_file):
     uploaded_file.seek(0)
     ext = uploaded_file.name.split(".")[-1].lower()
 
-    if ext in ["csv", "txt"]:
+    if ext == "csv":
         uploaded_file.seek(0)
         # Read as bytes and decode to avoid bytes-like object error
         content = uploaded_file.read()
@@ -206,19 +206,8 @@ def _read_uploaded_dataset(uploaded_file):
         import io
 
         return pd.read_csv(io.StringIO(content), sep=None, engine="python")
-    if ext in ["tsv", "tab"]:
-        uploaded_file.seek(0)
-        content = uploaded_file.read()
-        if isinstance(content, bytes):
-            content = content.decode("utf-8")
-        import io
 
-        return pd.read_csv(io.StringIO(content), sep="\t")
-    if ext in ["xlsx", "xls", "xlsm"]:
-        uploaded_file.seek(0)
-        return pd.read_excel(uploaded_file)
-
-    raise ValueError("Format de fichier non supporté")
+    raise ValueError("Seul le format CSV est supporté pour l'importation de données.")
 
 
 @login_required
@@ -497,6 +486,22 @@ def lancer_analyse(request):
                 client__in=clients
             ).count()
 
+            # Extraire la valeur de base (moyenne) du modèle pour la session
+            from core.ml_service import (
+                get_fastapi_prediction_details,
+                get_shap_explanation,
+            )
+
+            base_value = 0.15
+            if clients.exists():
+                shap_data = get_fastapi_prediction_details(clients.first())
+                if shap_data and "valeur_base_shap" in shap_data:
+                    base_value = shap_data["valeur_base_shap"]
+                else:
+                    local_shap = get_shap_explanation(clients.first())
+                    if local_shap and "base_value" in local_shap:
+                        base_value = local_shap["base_value"]
+
             from dashboard.models import AnalyseSession
 
             # Charger les métriques du modèle ML depuis le metadata.json
@@ -532,8 +537,21 @@ def lancer_analyse(request):
                     ml_metrics["recall"] = metriques.get("Recall", 0.92)
                     ml_metrics["precision"] = metriques.get("Precision", 0.6765)
 
+            # Identifier le dataset associé pour l'historique
+            from learning.models import Dataset
+
+            dataset_analyzed = None
+            if clients.exists():
+                dataset_analyzed = clients.first().dataset
+            else:
+                # Fallback si pas de clients (rare mais possible)
+                dataset_analyzed = Dataset.objects.filter(
+                    agence=request.user.agence, actif=True, methode=methode
+                ).first()
+
             analyse_session = AnalyseSession.objects.create(
                 agence=request.user.agence,
+                dataset=dataset_analyzed,
                 lancee_par=request.user,
                 methode=methode,
                 nb_clients_total=total_clients,
@@ -542,6 +560,7 @@ def lancer_analyse(request):
                 score_churn_moyen=round(score_moyen * 100, 2),
                 nb_recommandations_generees=nb_recommandations,
                 seuil_optimal=ml_metrics["seuil_optimal"],
+                base_value=base_value,
                 auc_roc=ml_metrics["auc_roc"],
                 f1_score=ml_metrics["f1_score"],
                 recall=ml_metrics["recall"],
@@ -684,7 +703,10 @@ def liste_clients(request):
             except (ValueError, AnalyseSession.DoesNotExist):
                 analyse_session = None
 
-    if analyse_session:
+    if analyse_session and analyse_session.dataset:
+        clients_list = ClientChurn.objects.filter(dataset=analyse_session.dataset)
+    elif analyse_session:
+        # Fallback si l'ancienne session n'a pas de lien dataset (pour les anciennes données)
         selected_date = analyse_session.date_analyse.date()
         clients_list = ClientChurn.objects.filter(
             dataset__agence=analyse_session.agence,
@@ -780,6 +802,14 @@ def fiche_client(request, client_id):
         # Utiliser les données de la DB
         max_shap = max(abs(s.valeur) for s in shap_db) or 1.0
 
+        # Récupérer la base_value de la session d'analyse
+        last_session = (
+            AnalyseSession.objects.filter(agence=request.user.agence, supprimee=False)
+            .order_by("-date_analyse")
+            .first()
+        )
+        base_value = last_session.base_value if last_session else 0.15
+
         for shap_val in shap_db:
             width_norm = min(round((abs(shap_val.valeur) / max_shap) * 100, 1), 100.0)
             description = FEATURE_DESCRIPTIONS.get(shap_val.feature, shap_val.feature)
@@ -794,7 +824,7 @@ def fiche_client(request, client_id):
             )
 
         shap_meta = {
-            "base_value": 0.0,  # TODO: stocker aussi en DB
+            "base_value": base_value,
             "probabilite": client.score_churn,
         }
         shap_error = None
@@ -964,6 +994,12 @@ def fiche_client(request, client_id):
                 shap_error = f"SHAP indisponible: {str(e)}"
                 shap_meta = None
 
+    shap_base_pct = None
+    impact_pct = None
+    if shap_meta is not None:
+        shap_base_pct = round(shap_meta["base_value"] * 100, 1)
+        impact_pct = round((client.score_churn - shap_meta["base_value"]) * 100, 1)
+
     today = timezone.now().date()
     Recommandation.objects.filter(
         client=client, echeance__lt=today, statut="active"
@@ -1014,6 +1050,8 @@ def fiche_client(request, client_id):
             "shap_features": shap_features,
             "shap_waterfall": shap_waterfall,
             "shap_meta": shap_meta,
+            "shap_base_pct": shap_base_pct,
+            "impact_pct": impact_pct,
             "shap_error": shap_error,
             "recommandations_actives": recommandations_actives,
             "recommandations_a_valider_completion": recommandations_a_valider_completion,
@@ -1038,28 +1076,44 @@ def fiche_client_pdf(request, client_id):
     from dashboard.models import AnalyseSession
 
     raw_shap = client.shap_valeurs.all().order_by("-importance")[:10]
-    
-    # Valeur de base par défaut (15%) si non trouvée
-    base_value = 0.15
-    
+
+    # Récupérer la base_value de la session d'analyse
+    last_session = (
+        AnalyseSession.objects.filter(agence=request.user.agence, supprimee=False)
+        .order_by("-date_analyse")
+        .first()
+    )
+    base_value = last_session.base_value if last_session else 0.15
+
     shap_meta = {"base_value": base_value}
     shap_features = []
-    
+
     if raw_shap.exists():
         import math
+
+        # Utiliser le même max que dans fiche_client pour la normalisation
         max_val = max([abs(s.valeur) for s in raw_shap] + [0.0001])
+        max_importance = max([s.importance for s in raw_shap] + [0.0001])
         for s in raw_shap:
-            shap_features.append({
-                "feature": s.feature,
-                "valeur": s.valeur,
-                "width_percent": min(100, (abs(s.valeur) / max_val) * 100)
-            })
+            shap_features.append(
+                {
+                    "feature": s.feature,
+                    "valeur": s.valeur,
+                    "importance": s.importance,
+                    "width_percent": min(100, (abs(s.valeur) / max_val) * 100),
+                    "importance_percent": min(
+                        100, (s.importance / max_importance) * 100
+                    ),
+                }
+            )
 
     context = {
         "client": client,
         "score_pct": score_pct,
         "risque_label": risque_label,
         "shap_meta": shap_meta,
+        "shap_base_pct": round(base_value * 100, 1),
+        "impact_pct": round((client.score_churn - base_value) * 100, 1),
         "shap_features": shap_features,
         "recommandations_actives": Recommandation.objects.filter(
             client=client, statut="active"
@@ -1073,15 +1127,29 @@ def fiche_client_pdf(request, client_id):
 
 @login_required
 def export_rapport_pdf(request):
-    from dashboard.models import Recommandation
+    from dashboard.models import Recommandation, AnalyseSession
     from learning.models import ClientChurn
     from django.utils import timezone
     from django.db.models import Avg
 
     agence = request.user.agence
-    clients = ClientChurn.objects.filter(dataset__agence=agence, dataset__actif=True)
-    if not clients.exists():
-        clients = ClientChurn.objects.filter(dataset__agence=agence)
+    analyse_id = request.GET.get("analyse_id")
+    analyse_session = None
+
+    if analyse_id:
+        analyse_session = AnalyseSession.objects.filter(
+            id=analyse_id, agence=agence
+        ).first()
+
+    if analyse_session and analyse_session.dataset:
+        clients = ClientChurn.objects.filter(dataset=analyse_session.dataset)
+    else:
+        clients = ClientChurn.objects.filter(
+            dataset__agence=agence, dataset__actif=True
+        )
+        if not clients.exists():
+            clients = ClientChurn.objects.filter(dataset__agence=agence)
+
     total = clients.count()
 
     context = {
@@ -1103,8 +1171,9 @@ def export_rapport_pdf(request):
             :10
         ],
         "recommandations": Recommandation.objects.filter(
-            client__dataset__agence=agence, statut="active"
+            client__in=clients, statut="active"
         )[:20],
+        "analyse_session": analyse_session,
     }
 
     html = render_to_string("dashboard/rapport_pdf.html", context)
@@ -1155,7 +1224,9 @@ def reinitialiser_dashboard(request):
 
     # Désactiver les datasets de l'agence (ce qui "vide" la liste clients active et l'accueil)
     # L'historique (AnalyseSession) reste intact et pourra toujours pointer vers ces données si besoin.
-    count = Dataset.objects.filter(agence=request.user.agence, actif=True).update(actif=False)
+    count = Dataset.objects.filter(agence=request.user.agence, actif=True).update(
+        actif=False
+    )
 
     return JsonResponse(
         {
@@ -1174,26 +1245,12 @@ def generer_mock(request):
 
     from core.mock_data import generer_mock_data
 
+    # La fonction generer_mock_data calcule maintenant les vrais scores ML et SHAP
     generer_mock_data(
         agence_id=request.user.agence.id, user_id=request.user.id, nb_clients=50
     )
 
-    # Calculer les scores basés sur les règles métier
-    clients = ClientChurn.objects.filter(
-        dataset__agence=request.user.agence,
-        dataset__actif=True,
-        dataset__methode="mock",
-    )
-    for client in clients:
-        # Score basé sur réclamations et retards de paiement (avec valeurs par défaut)
-        nb_reclamations = client.nb_reclamations or 0
-        retards_paiement = client.retards_paiement or 0
-        score = min(0.3 + (nb_reclamations * 0.1) + (retards_paiement * 0.15), 0.95)
-        client.score_churn = round(score, 2)
-        # Seuils alignés sur FastAPI (pfe_final/churn_api/app/config.py)
-        client.churn_predit = score >= 0.32
-        client.save(update_fields=["score_churn", "churn_predit"])
-
+    messages.success(request, "50 clients mock générés avec scores ML réels.")
     return redirect("dashboard:clients")
 
 
@@ -1322,7 +1379,7 @@ def historique_analyses_view(request):
     filter_type = request.GET.get("filter", "all")  # all, mock, real
 
     analyses = (
-        AnalyseSession.objects.filter(agence=request.user.agence, supprimee=False)
+        AnalyseSession.objects.filter(agence=request.user.agence)
         .select_related("lancee_par")
         .order_by("-date_analyse")
     )
@@ -1405,110 +1462,27 @@ def supprimer_definitivement_analyse(request, analyse_id):
     )
 
     analyse.delete()
-    messages.success(request, "Analyse supprimée définitivement.")
+    messages.success(request, "Analyse et données associées supprimées définitivement.")
 
-    return redirect("dashboard:corbeille_analyses")
+    return redirect("dashboard:historique_analyses")
 
 
 @login_required
 @require_POST
 def supprimer_analyses_mois(request, mois_cle):
     from django.contrib import messages
-    from django.utils import timezone
 
     analyses = AnalyseSession.objects.filter(
-        agence=request.user.agence, date_analyse__startswith=mois_cle, supprimee=False
+        agence=request.user.agence, date_analyse__startswith=mois_cle
     )
     count = analyses.count()
-    analyses.update(supprimee=True, date_suppression=timezone.now())
-    messages.success(request, f"{count} analyse(s) supprimée(s).")
-    return redirect("dashboard:historique_analyses")
-
-
-@login_required
-def corbeille_analyses(request):
-    analyses = AnalyseSession.objects.filter(
-        agence=request.user.agence, supprimee=True
-    ).order_by("-date_suppression")
-
-    mois_fr = {
-        1: "Janvier",
-        2: "Février",
-        3: "Mars",
-        4: "Avril",
-        5: "Mai",
-        6: "Juin",
-        7: "Juillet",
-        8: "Août",
-        9: "Septembre",
-        10: "Octobre",
-        11: "Novembre",
-        12: "Décembre",
-    }
-    groupes = {}
     for analyse in analyses:
-        dt = analyse.date_analyse
-        cle = dt.strftime("%Y-%m")
-        if cle not in groupes:
-            groupes[cle] = {
-                "label": f"{mois_fr[dt.month]} {dt.year}",
-                "analyses": [],
-            }
-        groupes[cle]["analyses"].append(analyse)
-
-    groupes = dict(sorted(groupes.items(), reverse=True))
-
-    context = {
-        "groupes": groupes,
-        "has_data": analyses.exists(),
-    }
-
-    return render(request, "dashboard/corbeille_analyses.html", context)
-
-
-@login_required
-@require_POST
-def restaurer_analyse(request, analyse_id):
-    from django.contrib import messages
-
-    analyse = get_object_or_404(
-        AnalyseSession, id=analyse_id, agence=request.user.agence, supprimee=True
-    )
-    analyse.supprimee = False
-    analyse.date_suppression = None
-    analyse.save()
-    messages.success(request, "Analyse restaurée.")
-    return redirect("dashboard:corbeille_analyses")
-
-
-@login_required
-@require_POST
-def bulk_restaurer_analyses(request):
-    from django.contrib import messages
-
-    analyse_ids = request.POST.getlist("analyse_ids")
-    count = 0
-    if analyse_ids:
-        count = AnalyseSession.objects.filter(
-            id__in=analyse_ids, agence=request.user.agence, supprimee=True
-        ).update(supprimee=False, date_suppression=None)
-    messages.success(request, f"{count} analyse(s) restaurée(s).")
-    return redirect("dashboard:corbeille_analyses")
-
-
-@login_required
-@require_POST
-def bulk_supprimer_definitivement_analyses(request):
-    from django.contrib import messages
-
-    analyse_ids = request.POST.getlist("analyse_ids")
-    count = 0
-    if analyse_ids:
-        count = AnalyseSession.objects.filter(
-            id__in=analyse_ids, agence=request.user.agence, supprimee=True
-        ).delete()[0]
-    messages.success(request, f"{count} analyse(s) supprimée(s) définitivement.")
-    return redirect("dashboard:corbeille_analyses")
+        if analyse.dataset:
+            analyse.dataset.delete() # Cascade delete clients and data
+        analyse.delete()
+        
+    messages.success(request, f"{count} analyse(s) et données associées supprimées définitivement.")
+    return redirect("dashboard:historique_analyses")
 
 
 @login_required
@@ -1651,10 +1625,7 @@ def completer_rec(request, rec_id):
         )
         return redirect(f"/clients/{rec.client.id}/#recommandations")
 
-    if (
-        request.user.role == "chef_agence"
-        and rec.type_recommandation != "technique"
-    ):
+    if request.user.role == "chef_agence" and rec.type_recommandation != "technique":
         messages.error(
             request,
             "En tant que chef d'agence, vous ne pouvez compléter directement que les recommandations de type 'technique'. Les autres doivent être complétées par les agents respectifs.",
@@ -2331,7 +2302,7 @@ def historique_agence_view(request, agence_id):
             return redirect("dashboard:administration")
 
     analyses = (
-        AnalyseSession.objects.filter(agence=agence, supprimee=False)
+        AnalyseSession.objects.filter(agence=agence)
         .select_related("lancee_par")
         .order_by("-date_analyse")
     )
@@ -2428,7 +2399,7 @@ def supprimer_ville(request, ville_id):
         except ProtectedError:
             messages.error(
                 request,
-                "Impossible de supprimer: des agences existent. Supprimez-les d'abord.",
+                "Impossible de supprimer cette ville : elle est encore liée à des agences ou à des comptes utilisateurs (Admins). Veuillez les détacher ou les supprimer d'abord.",
             )
         except Exception as e:
             messages.error(request, f"Erreur suppression ville: {e}")
@@ -2671,3 +2642,118 @@ def supprimer_utilisateur(request, user_id):
             messages.error(request, f"Erreur suppression utilisateur: {e}")
 
     return redirect("dashboard:administration")
+
+
+@login_required
+def recommandations_dashboard(request):
+    """
+    Vue pour le tableau de bord dédié aux recommandations de l'agence.
+    Permet de suivre, filtrer et valider les actions de rétention.
+    Accessible uniquement au Chef d'Agence et aux Agents (Marketing/Commercial).
+    """
+    from dashboard.models import Recommandation, RejetRecommandation
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+
+    # Vérification des droits d'accès
+    allowed_roles = ["chef_agence", "agent_marketing", "agent_commercial"]
+    if request.user.role not in allowed_roles and not request.user.is_superuser:
+        messages.error(
+            request, "Accès réservé au personnel de l'agence (Chef ou Agents)."
+        )
+        return redirect("dashboard:accueil")
+
+    is_chef = request.user.role == "chef_agence"
+    agence = request.user.agence
+
+    # Filtre de base par agence
+    base_qs = Recommandation.objects.filter(client__agence=agence)
+
+    # Filtrage par rôle si ce n'est pas un chef ou superadmin
+    if not is_chef and not request.user.is_superuser:
+        if request.user.role == "agent_marketing":
+            recs = base_qs.filter(type_recommandation="marketing")
+        elif request.user.role == "agent_commercial":
+            recs = base_qs.filter(type_recommandation="commercial")
+        else:
+            recs = base_qs
+    else:
+        recs = base_qs
+
+    # --- FILTRES RAPIDES ---
+    type_filter = request.GET.get("type")
+    urgent_filter = request.GET.get("urgent")
+    valeur_filter = request.GET.get("valeur")
+
+    actives = recs.filter(statut="active")
+
+    if type_filter in ["marketing", "commercial", "technique"]:
+        actives = actives.filter(type_recommandation=type_filter)
+
+    if urgent_filter == "1":
+        actives = actives.filter(contenu__icontains="URGENT")
+
+    if valeur_filter == "elevee":
+        actives = actives.filter(clv_estimee__gte=500)
+
+    actives = actives.order_by("-clv_estimee", "-date_creation")
+
+    # --- PAGINATION ---
+    paginator = Paginator(actives, 12)  # 12 par page (3 lignes de 4)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Pour le chef : ce qui demande validation
+    a_valider_creation = []
+    a_valider_completion = []
+    rejets_en_attente = []
+
+    if is_chef or request.user.is_superuser:
+        a_valider_creation = base_qs.filter(statut="en_attente_validation").order_by(
+            "-date_creation"
+        )
+        a_valider_completion = base_qs.filter(statut="completee_agent").order_by(
+            "-date_modification"
+        )
+        rejets_en_attente = RejetRecommandation.objects.filter(
+            recommandation__client__agence=agence, statut="en_attente"
+        ).order_by("-date_demande")
+
+    # Archivées
+    archivees = recs.filter(statut__in=["completee", "retiree", "expiree"]).order_by(
+        "-date_modification"
+    )[:50]
+
+    # Stats
+    stats = {
+        "total_actives": actives.count(),
+        "total_en_cours": 0,  # Supprimé selon demande précédente
+        "a_valider": 0,
+        "total_archivees": recs.filter(
+            statut__in=["completee", "retiree", "expiree"]
+        ).count(),
+    }
+    if is_chef or request.user.is_superuser:
+        stats["a_valider"] = (
+            a_valider_creation.count()
+            + a_valider_completion.count()
+            + rejets_en_attente.count()
+        )
+
+    context = {
+        "actives": page_obj,
+        "page_obj": page_obj,
+        "a_valider_creation": a_valider_creation,
+        "a_valider_completion": a_valider_completion,
+        "rejets_en_attente": rejets_en_attente,
+        "archivees": archivees,
+        "is_chef": is_chef or request.user.is_superuser,
+        "stats": stats,
+        "filters": {
+            "type": type_filter,
+            "urgent": urgent_filter,
+            "valeur": valeur_filter,
+        },
+    }
+
+    return render(request, "dashboard/recommandations.html", context)

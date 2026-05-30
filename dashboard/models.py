@@ -186,14 +186,14 @@ class Recommandation(models.Model):
 
         if jours < 0:
             return "critique"  # Échéance dépassée
-        elif jours <= 1:
-            return "critique"  # Moins de 24h
-        elif jours <= 3:
-            return "eleve"  # 1-3 jours
-        elif jours <= 7:
-            return "moyen"  # 4-7 jours
+        elif jours == 0:
+            return "critique"  # Aujourd'hui même
+        elif jours <= 2:
+            return "eleve"  # 1-2 jours
+        elif jours <= 5:
+            return "moyen"  # 3-5 jours
         else:
-            return "faible"  # Plus d'une semaine
+            return "faible"  # Plus de 5 jours
 
     @property
     def couleur_urgence(self) -> str:
@@ -286,6 +286,13 @@ class AnalyseSession(models.Model):
     agence = models.ForeignKey(
         "core.Agence", on_delete=models.CASCADE, related_name="analyses"
     )
+    dataset = models.ForeignKey(
+        "learning.Dataset",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="analyses",
+    )
     lancee_par = models.ForeignKey(
         "accounts.User",
         on_delete=models.SET_NULL,
@@ -303,6 +310,7 @@ class AnalyseSession(models.Model):
 
     # Métriques du modèle ML
     seuil_optimal = models.FloatField(default=0.25)
+    base_value = models.FloatField(default=0.15)
     auc_roc = models.FloatField(default=0.0)
     f1_score = models.FloatField(default=0.0)
     recall = models.FloatField(default=0.0)

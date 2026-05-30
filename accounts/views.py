@@ -231,6 +231,13 @@ def verify_otp_view(request):
     if not user_id:
         return redirect("accounts:login")
 
+    # Calculer le temps restant réel pour le timer
+    otp_obj = OTPCode.objects.filter(user_id=user_id).first()
+    remaining_seconds = 0
+    if otp_obj:
+        delta = otp_obj.expire_at - timezone.now()
+        remaining_seconds = max(0, int(delta.total_seconds()))
+
     if request.method == "POST":
         code_saisi = request.POST.get("code")
         try:
@@ -251,7 +258,9 @@ def verify_otp_view(request):
         except OTPCode.DoesNotExist:
             messages.error(request, "Code incorrect.")
 
-    return render(request, "accounts/verify_otp.html")
+    return render(
+        request, "accounts/verify_otp.html", {"remaining_seconds": remaining_seconds}
+    )
 
 
 def logout_view(request):
@@ -716,6 +725,11 @@ def action_compte_view(request, user_id):
             contenu=f'<p>Bonjour <strong>{user.get_full_name()}</strong>,</p><p>Votre compte a été <strong style="color:orange">suspendu</strong>.</p>',
         )
         messages.warning(request, f"Compte de {user.get_full_name()} suspendu.")
+
+    elif action == "supprimer":
+        nom_complet = user.get_full_name()
+        user.delete()
+        messages.success(request, f"Le compte de {nom_complet} a été supprimé définitivement de la base de données.")
 
     elif action == "debloquer":
         user.est_bloque = False

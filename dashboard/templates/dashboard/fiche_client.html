@@ -108,17 +108,33 @@
         }
 
         .shap-summary {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            flex-wrap: nowrap;
         }
 
         .shap-summary-item {
-            border: 1px solid var(--brand-light);
-            border-radius: 12px;
-            padding: 12px;
-            background: #fbfcff;
+            flex: 1;
+            min-width: 100px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .shap-summary-operator {
+            font-size: 20px;
+            color: #94a3b8;
+            font-weight: 300;
+            flex-shrink: 0;
         }
 
         .shap-item {
@@ -246,8 +262,58 @@
             border-left-color: #f59e0b;
         }
 
-        .badge-technique {
-            background: var(--danger);
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .card-grid .card-section {
+            min-height: 320px;
+        }
+
+        .card-section.h-100 {
+            height: 100%;
+        }
+
+        .card-header-small {
+            font-size: 14px;
+            font-weight: 700;
+            color: #082281;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-action-note {
+            color: #6c757d;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+
+        .card-grid .empty-state {
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border: 1px dashed #d3dce6;
+            color: #6c757d;
+        }
+
+        .rec-card {
+            background: var(--brand-light);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--brand);
+        }
+
+        .rec-card.commercial {
+            border-left-color: #ffa000;
         }
 
         .badge-facturation {
@@ -357,7 +423,21 @@
             }
 
             .shap-summary {
-                grid-template-columns: 1fr;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .shap-summary-item {
+                flex: 0 1 calc(50% - 20px);
+                min-width: 120px;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .card-grid .card-section {
+                min-height: auto;
             }
         }
     </style>
@@ -370,7 +450,8 @@
         {% if messages %}
         <div class="mb-3">
             {% for message in messages %}
-            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show" role="alert">
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show"
+                role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
             </div>
@@ -476,16 +557,28 @@
                         <div class="shap-summary mb-4">
                             <div class="shap-summary-item text-center">
                                 <div class="info-label" style="font-size:10px;">Risque moyen (Base)</div>
-                                <div style="font-size:18px; font-weight:800; color:var(--brand-dark);">{{ shap_meta.base_value|mul:100|floatformat:1 }}%</div>
+                                <div style="font-size:18px; font-weight:800; color:var(--gray-600);">{{ shap_base_pct }}%
+                                </div>
                             </div>
-                            <div class="shap-summary-item text-center" style="border-color:{{ score_color }};">
+                            <div class="shap-summary-operator">+</div>
+                            <div class="shap-summary-item text-center">
+                                <div class="info-label" style="font-size:10px;">Impact Client</div>
+                                <div id="shap-impact-total"
+                                    style="font-size:18px; font-weight:800; color:var(--brand-dark);">{% if impact_pct > 0 %}+{% endif %}{{ impact_pct }}%</div>
+                            </div>
+                            <div class="shap-summary-operator">=</div>
+                            <div class="shap-summary-item text-center"
+                                style="border-color:{{ score_color }}; background:{{ score_color }}10;">
                                 <div class="info-label" style="font-size:10px;">Score final</div>
-                                <div style="font-size:18px; font-weight:800; color:{{ score_color }};">{{ score_pct }}%</div>
+                                <div style="font-size:18px; font-weight:800; color:{{ score_color }};">{{ score_pct }}%
+                                </div>
                             </div>
                         </div>
                         <p class="text-muted mb-3" style="font-size:11px; line-height:1.4;">
-                            Les barres ci-dessous expliquent comment les caractéristiques du client font varier le risque par rapport à la moyenne. 
-                            <span class="text-danger">Rouge</span> = augmente le risque, <span class="text-success">Vert</span> = réduit le risque.
+                            L'IA part du risque moyen de l'agence (<strong>{{ shap_base_pct }} % </strong>), puis ajoute
+                            ou retire du risque selon les caractéristiques du client.
+                            <br><span class="text-danger">Rouge (+)</span> = augmente le risque, <span
+                                class="text-success">Vert (-)</span> = réduit le risque.
                         </p>
                         {% endif %}
 
@@ -496,226 +589,190 @@
                 </div>
             </div>
         </div>
-        </div>
+
+        {{ shap_features|json_script:"shap-features-data" }}
 
         <!-- ONGLET 2: GESTION -->
         <div id="tab-gestion" class="tab-content">
-            <div class="row g-3" style="--bs-gutter-x:16px;">
-                <div class="col-12 col-lg-6">
-                    <div class="card-section">
-                        <h5 class="mb-4" style="color:#082281; font-weight:700;">
-                            <i class="bi bi-lightbulb me-2"></i>Recommandations actives
-                        </h5>
-                        {% if recommandations_actives %}
-                        {% for rec in recommandations_actives %}
-                        {% with role=request.user.role %}
-                            {# Déterminer si l'utilisateur a le droit d'agir sur cette recommandation #}
-                            {% if role == 'agent_marketing' and rec.type_recommandation == 'marketing' %}
-                                {% with can_edit=True %}
-                                    {% include "dashboard/includes/rec_card_inner.html" %}
-                                {% endwith %}
-                            {% elif role == 'agent_commercial' and rec.type_recommandation == 'commercial' %}
-                                {% with can_edit=True %}
-                                    {% include "dashboard/includes/rec_card_inner.html" %}
-                                {% endwith %}
-                            {% elif role == 'chef_agence' and rec.type_recommandation == 'technique' %}
-                                {% with can_edit=True %}
-                                    {% include "dashboard/includes/rec_card_inner.html" %}
-                                {% endwith %}
-                            {% elif request.user.is_superuser %}
-                                {% with can_edit=True %}
-                                    {% include "dashboard/includes/rec_card_inner.html" %}
-                                {% endwith %}
-                            {% else %}
-                                {% with can_edit=False %}
-                                    {% include "dashboard/includes/rec_card_inner.html" %}
-                                {% endwith %}
-                            {% endif %}
-                        {% endwith %}
-                        {% endfor %}
-                        {% else %}
-                        <div class="text-center py-4" style="color:#888;">
-                            <i class="bi bi-check-circle"
-                                style="font-size:32px; display:block; margin-bottom:10px; color:#00b464;"></i>
-                            Aucune recommandation active
-                        </div>
-                        {% endif %}
+            <div class="card-grid">
+                <div class="card-section h-100">
+                    <div class="card-header-small">
+                        <i class="bi bi-lightning-charge-fill"></i>Actions prioritaires
                     </div>
+                    <p class="card-action-note">Regarde les recommandations à actionner en priorité pour ce client.</p>
+                    {% if recommandations_actives %}
+                    <div class="row g-3">
+                        {% for rec in recommandations_actives %}
+                        <div class="col-12">
+                            {% with role=request.user.role %}
+                                {% if role == 'agent_marketing' and rec.type_recommandation == 'marketing' %}
+                                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                                {% elif role == 'agent_commercial' and rec.type_recommandation == 'commercial' %}
+                                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                                {% elif role == 'chef_agence' and rec.type_recommandation == 'technique' %}
+                                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                                {% elif request.user.is_superuser %}
+                                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                                {% else %}
+                                    {% with can_edit=False %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">Aucune recommandation prioritaire pour ce client.</div>
+                    {% endif %}
                 </div>
-                <div class="col-12 col-lg-6">
-                    <div class="card-section">
-                        <h5 class="mb-4" style="color:#082281; font-weight:700;">
-                            <i class="bi bi-person-plus me-2"></i>Demandes de validation
-                        </h5>
-                        {% if recommandations_en_attente or rejets_en_attente %}
+
+                <div class="card-section h-100">
+                    <div class="card-header-small">
+                        <i class="bi bi-shield-lock-fill"></i>Décisions requises
+                    </div>
+                    <p class="card-action-note">Validation des propositions et demandes de rejet en attente.</p>
+                    {% if recommandations_en_attente or rejets_en_attente %}
                         {% for rec in recommandations_en_attente %}
                         <div class="rec-card {{ rec.type_recommandation }}">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:#666;">
-                                    Recommandation à valider
-                                </span>
-                                <span style="font-size:11px; color:#888;">
-                                    <i class="bi bi-calendar3 me-1"></i>{{ rec.echeance|date:"d/m/Y" }}
-                                </span>
+                                <span class="badge bg-info bg-opacity-10 text-info text-uppercase" style="font-size: 9px;">Proposition</span>
+                                <small class="text-muted" style="font-size: 10px;"><i class="bi bi-clock me-1"></i>{{ rec.date_creation|date:"d/m" }}</small>
                             </div>
-                            <p class="mb-2" style="font-size:14px; color:#082281;">{{ rec.contenu }}</p>
-                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <form method="post"
-                                    action="{% url 'dashboard:valider_creation_recommandation' rec.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="accepter">
-                                    <button type="submit" class="btn btn-sm btn-success"
-                                        style="font-size:11px; padding:4px 12px;">
-                                        <i class="bi bi-check"></i> Accepter
-                                    </button>
+                            <p class="small fw-bold mb-3" style="font-size: 12px; color: var(--brand-dark);">{{ rec.contenu }}</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <form method="post" action="{% url 'dashboard:valider_creation_recommandation' rec.id %}">
+                                    {% csrf_token %}<input type="hidden" name="action" value="accepter">
+                                    <button type="submit" class="btn btn-sm btn-success px-3 rounded-pill" style="font-size: 11px;">Approuver</button>
                                 </form>
-                                <form method="post"
-                                    action="{% url 'dashboard:valider_creation_recommandation' rec.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="refuser">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        style="font-size:11px; padding:4px 12px;">
-                                        <i class="bi bi-x"></i> Refuser
-                                    </button>
+                                <form method="post" action="{% url 'dashboard:valider_creation_recommandation' rec.id %}">
+                                    {% csrf_token %}<input type="hidden" name="action" value="refuser">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill" style="font-size: 11px;">Refuser</button>
                                 </form>
                             </div>
                         </div>
                         {% endfor %}
-
                         {% for rejet in rejets_en_attente %}
                         <div class="rec-card technique">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:#666;">
-                                    Rejet en attente
-                                </span>
-                                <span style="font-size:11px; color:#888;">
-                                    <i class="bi bi-calendar3 me-1"></i>{{ rejet.date_demande|date:"d/m/Y" }}
-                                </span>
+                                <span class="badge bg-danger bg-opacity-10 text-danger text-uppercase" style="font-size: 9px;">Rejet en attente</span>
                             </div>
-                            <p class="mb-2" style="font-size:14px; color:#082281;">{{ rejet.explication }}</p>
-                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <form method="post"
-                                    action="{% url 'dashboard:valider_rejet_recommandation' rejet.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="accepter">
-                                    <button type="submit" class="btn btn-sm btn-success"
-                                        style="font-size:11px; padding:4px 12px;">
-                                        <i class="bi bi-check"></i> Accepter le rejet
-                                    </button>
+                            <p class="mb-2 small text-muted italic" style="font-size: 11px;">"{{ rejet.explication }}"</p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <form method="post" action="{% url 'dashboard:valider_rejet_recommandation' rejet.id %}">
+                                    {% csrf_token %}<input type="hidden" name="action" value="accepter">
+                                    <button type="submit" class="btn btn-sm btn-danger px-3 rounded-pill" style="font-size: 11px;">Accepter</button>
                                 </form>
-                                <form method="post"
-                                    action="{% url 'dashboard:valider_rejet_recommandation' rejet.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="refuser">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        style="font-size:11px; padding:4px 12px;">
-                                        <i class="bi bi-x"></i> Refuser le rejet
-                                    </button>
+                                <form method="post" action="{% url 'dashboard:valider_rejet_recommandation' rejet.id %}">
+                                    {% csrf_token %}<input type="hidden" name="action" value="refuser">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary px-3 rounded-pill" style="font-size: 11px;">Maintenir</button>
                                 </form>
                             </div>
                         </div>
                         {% endfor %}
-                        {% else %}
-                        <div class="text-center py-4" style="color:#888;">
-                            <i class="bi bi-person-check"
-                                style="font-size:32px; display:block; margin-bottom:10px; color:#adb5bd;"></i>
-                            Aucune demande de validation
-                        </div>
-                        {% endif %}
-                    </div>
+                    {% else %}
+                    <div class="empty-state">Aucune décision requise actuellement.</div>
+                    {% endif %}
                 </div>
-            </div>
 
-            {% if request.user.role == 'chef_agence' or request.user.is_superuser %}
-            <div class="row g-3 mt-1" style="--bs-gutter-x:16px;">
-                <div class="col-12">
-                    <div class="card-section">
-                        <h5 class="mb-4" style="color:#082281; font-weight:700;">
-                            <i class="bi bi-person-check me-2"></i>Complétions à valider
-                        </h5>
-                        {% if recommandations_a_valider_completion %}
+                <div class="card-section h-100">
+                    <div class="card-header-small">
+                        <i class="bi bi-person-check"></i>Complétions à valider
+                    </div>
+                    <p class="card-action-note">Suivi des recommandations terminées et en attente de validation.</p>
+                    {% if recommandations_a_valider_completion %}
                         {% for rec in recommandations_a_valider_completion %}
                         <div class="rec-card {{ rec.type_recommandation }}">
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:#666;">
-                                    {{ rec.get_type_recommandation_display }}
-                                </span>
-                                <span style="font-size:11px; color:#888;">
-                                    <i class="bi bi-calendar3 me-1"></i>{{ rec.echeance|date:"d/m/Y" }}
-                                </span>
+                                <span style="font-size:12px; font-weight:700; text-transform:uppercase; color:#666;">{{ rec.get_type_recommandation_display }}</span>
+                                <span style="font-size:11px; color:#888;"><i class="bi bi-calendar3 me-1"></i>{{ rec.echeance|date:"d/m/Y" }}</span>
                             </div>
                             <p class="mb-2" style="font-size:14px; color:#082281;">{{ rec.contenu }}</p>
                             {% if rec.note_agent %}
-                            <p class="mb-2" style="font-size:12px; color:#666;">
-                                <i class="bi bi-chat-left-text me-1"></i>Note agent : {{ rec.note_agent }}
-                            </p>
+                            <p class="mb-2" style="font-size:12px; color:#666;"><i class="bi bi-chat-left-text me-1"></i>Note agent : {{ rec.note_agent }}</p>
                             {% endif %}
                             <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <form method="post"
-                                    action="{% url 'dashboard:valider_completion_recommandation' rec.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="accepter">
-                                    <button type="submit" class="btn btn-sm btn-success"
-                                        style="font-size:11px; padding:4px 12px;">
-                                        <i class="bi bi-check"></i> Valider la complétion
-                                    </button>
+                                <form method="post" action="{% url 'dashboard:valider_completion_recommandation' rec.id %}">
+                                    {% csrf_token %}<input type="hidden" name="action" value="accepter">
+                                    <button type="submit" class="btn btn-sm btn-success" style="font-size:11px; padding:4px 12px;">Valider</button>
                                 </form>
-                                <form method="post"
-                                    action="{% url 'dashboard:valider_completion_recommandation' rec.id %}">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="refuser">
-                                    <button type="submit" class="btn btn-sm btn-outline-warning"
-                                        style="font-size:11px; padding:4px 12px;">
-                                        <i class="bi bi-arrow-counterclockwise"></i> Refuser — reprendre
-                                    </button>
+                                <form method="post" action="{% url 'dashboard:valider_completion_recommandation' rec.id %}">
+                                    {% csrf_token %}<input type="hidden" name="action" value="refuser">
+                                    <button type="submit" class="btn btn-sm btn-outline-warning" style="font-size:11px; padding:4px 12px;">Refuser</button>
                                 </form>
                             </div>
                         </div>
                         {% endfor %}
-                        {% else %}
-                        <div class="text-center py-4" style="color:#888;">
-                            <i class="bi bi-check-circle"
-                                style="font-size:32px; display:block; margin-bottom:10px; color:#00b464;"></i>
-                            Aucune complétion en attente de validation
-                        </div>
-                        {% endif %}
+                    {% else %}
+                    <div class="empty-state">Aucune complétion à valider.</div>
+                    {% endif %}
+                </div>
+
+                <div class="card-section h-100">
+                    <div class="card-header-small">
+                        <i class="bi bi-plus-circle"></i>Créer une recommandation
                     </div>
+                    <p class="card-action-note">Ajoute une nouvelle recommandation sans quitter l’écran.</p>
+                    {% if request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' or request.user.role == 'chef_agence' or request.user.is_superuser %}
+                    <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" type="button" data-bs-toggle="collapse" data-bs-target="#createRecForm" aria-expanded="false" aria-controls="createRecForm" style="font-weight:700; padding: 12px;">
+                        <i class="bi bi-plus-lg me-2"></i>Ajouter une recommandation
+                    </button>
+                    <div class="collapse mt-4" id="createRecForm">
+                        <div class="card-section" style="background:#fbfbff; border-color:#cfe2ff; padding: 18px;">
+                            <form method="post" action="{% url 'dashboard:creer_recommandation' client.id %}">
+                                {% csrf_token %}
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label" style="font-size:12px; font-weight:700;">Type</label>
+                                        <select name="type_recommandation" class="form-select" style="font-size:13px; padding:10px;">
+                                            <option value="marketing" {% if request.user.role == 'agent_marketing' %}selected{% endif %}>Marketing</option>
+                                            <option value="commercial" {% if request.user.role == 'agent_commercial' %}selected{% endif %}>Commercial</option>
+                                            <option value="technique" {% if request.user.role == 'chef_agence' or request.user.is_superuser %}selected{% endif %}>Technique</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label" style="font-size:12px; font-weight:700;">Échéance</label>
+                                        <input type="date" name="echeance" class="form-control" style="font-size:13px; padding:10px;">
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <label class="form-label" style="font-size:12px; font-weight:700;">Contenu</label>
+                                    <textarea name="contenu" rows="3" class="form-control" placeholder="Décrivez la recommandation" style="font-size:13px; padding:10px;"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 mt-3" style="font-size:13px; padding:12px;">
+                                    <i class="bi bi-save me-1"></i> Soumettre
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">Vous n’êtes pas autorisé à créer une recommandation.</div>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
 
-            {% if request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' or request.user.role == 'chef_agence' or request.user.is_superuser %}
             <div class="card-section">
                 <h5 class="mb-4" style="color:#082281; font-weight:700;">
-                    <i class="bi bi-plus-circle me-2"></i>Créer une recommandation
+                    <i class="bi bi-clock-history me-2"></i>Historique des interventions
                 </h5>
-                <form method="post" action="{% url 'dashboard:creer_recommandation' client.id %}">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px; font-weight:700;">Type de
-                            recommandation</label>
-                        <select name="type_recommandation" class="form-select" style="font-size:13px; padding:10px;">
-                            <option value="marketing" {% if request.user.role == 'agent_marketing' %}selected{% endif %}>
-                                Marketing</option>
-                            <option value="commercial" {% if request.user.role == 'agent_commercial' %}selected{% endif %}>Commercial</option>
-                            <option value="technique" {% if request.user.role == 'chef_agence' or request.user.is_superuser %}selected{% endif %}>Technique</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px; font-weight:700;">Contenu</label>
-                        <textarea name="contenu" rows="3" class="form-control" placeholder="Décrivez la recommandation"
-                            style="font-size:13px; padding:10px;"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" style="font-size:12px; font-weight:700;">Échéance</label>
-                        <input type="date" name="echeance" class="form-control" style="font-size:13px; padding:10px;">
-                    </div>
-                    <button type="submit" class="btn btn-primary" style="font-size:12px; padding:8px 16px;">
-                        <i class="bi bi-save me-1"></i> Soumettre
-                    </button>
-                </form>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                        <thead class="bg-light">
+                            <tr><th class="px-3">Date</th><th>Action réalisée</th><th>Statut</th><th class="px-3">Agent</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in recommandations_archivees %}
+                            <tr>
+                                <td class="px-3 text-muted">{{ rec.date_modification|date:"d/m/y" }}</td>
+                                <td class="fw-medium">{{ rec.contenu|truncatechars:120 }}</td>
+                                <td><span class="badge {% if rec.statut == 'completee' %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if rec.statut == 'completee' %}text-success{% else %}text-secondary{% endif %}">{{ rec.get_statut_display }}</span></td>
+                                <td class="px-3">{{ rec.assignee_a.username|default:"Système" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center py-4 text-muted">Aucun historique disponible.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            {% endif %}
         </div>
     </main>
 
@@ -732,56 +789,60 @@
         }
 
         // Afficher les valeurs SHAP pour ce client
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const shapSection = document.getElementById('shap-section-fiche');
-            {% if shap_features %}
-            const shapFeatures = {{ shap_features|safe }};
-            const maxShap = Math.max(...shapFeatures.map(f => Math.abs(f.valeur))) || 1;
+            const impactTotalEl = document.getElementById('shap-impact-total');
 
-            shapSection.innerHTML = shapFeatures.map(feature => {
-                const isPositive = feature.valeur > 0;
-                // On normalise par rapport au max pour que la plus longue barre occupe tout son côté
-                const widthPercent = Math.min((Math.abs(feature.valeur) / maxShap) * 100, 100);
+            const shapDataEl = document.getElementById('shap-features-data');
+            if (!shapDataEl) return;
 
-                return `
-                <div style="margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px; border: 1px solid #e6f0ff;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <div style="font-size: 13px; font-weight: 600; color: #082281;">
-                            ${feature.description || feature.feature}
+            const shapFeatures = JSON.parse(shapDataEl.textContent);
+
+            if (shapFeatures && shapFeatures.length > 0) {
+                const maxShap = Math.max(...shapFeatures.map(f => Math.abs(f.valeur)), 0.0001);
+
+                // Calculer l'impact total cumulé des features affichées
+                const impactTotal = shapFeatures.reduce((acc, f) => acc + f.valeur, 0);
+                if (impactTotalEl) {
+                    const prefix = impactTotal > 0 ? '+' : '';
+                    impactTotalEl.textContent = `${prefix}${(impactTotal * 100).toFixed(1)}%`;
+                    impactTotalEl.style.color = impactTotal > 0 ? 'var(--danger)' : 'var(--success)';
+                }
+
+                shapSection.innerHTML = shapFeatures.map(feature => {
+                    const isPositive = feature.valeur > 0;
+                    const sidePercent = Math.min((Math.abs(feature.valeur) / maxShap) * 50, 50);
+
+                    return `
+                        <div style="margin-bottom: 12px; padding: 12px; background: #f8f9ff; border-radius: 8px; border: 1px solid #e6f0ff;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 12px; flex-wrap: wrap;">
+                                <div style="font-size: 13px; font-weight: 600; color: #082281; flex: 1; min-width: 120px;">
+                                    ${feature.description || feature.feature}
+                                </div>
+                                <div style="font-size: 13px; font-weight: 700; color: ${isPositive ? '#dc2626' : '#059669'}; white-space: nowrap;">
+                                    ${feature.valeur > 0 ? '+' : ''}${Number(feature.valeur).toFixed(4)}
+                                </div>
+                            </div>
+                            <div style="position: relative; height: 10px; background: #f0f0f0; border-radius: 999px; overflow: hidden;">
+                                <div style="position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #cbd5e1;"></div>
+                                ${isPositive ?
+                            `<div style="position: absolute; left: 50%; top: 0; bottom: 0; width: ${sidePercent}%; background: linear-gradient(90deg, #ef4444, #b91c1c); border-radius: 0 999px 999px 0;"></div>`
+                            : `<div style="position: absolute; right: 50%; top: 0; bottom: 0; width: ${sidePercent}%; background: linear-gradient(270deg, #34d399, #059669); border-radius: 999px 0 0 999px;"></div>`}
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; color: #6c757d; font-weight: 600;">
+                                <span>Réduit le risque</span>
+                                <span>Augmente le risque</span>
+                            </div>
                         </div>
-                        <div style="font-size: 13px; font-weight: 700; color: ${isPositive ? '#dc2626' : '#00b464'};">
-                            ${feature.valeur > 0 ? '+' : ''}${Number(feature.valeur).toFixed(4)}
-                        </div>
+                        `;
+                }).join('');
+            } else {
+                shapSection.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #888; font-size: 14px;">
+                        <i class="bi bi-info-circle me-2"></i> Aucune donnée SHAP disponible pour ce client.
                     </div>
-                    <!-- Barre avec axe central -->
-                    <div style="position: relative; height: 10px; background: #f0f0f0; border-radius: 5px; display: flex;">
-                        <!-- Côté Gauche (Rétention) -->
-                        <div style="flex: 1; position: relative; border-right: 1px solid #cbd5e1;">
-                            ${!isPositive ? 
-                                `<div style="position: absolute; right: 0; height: 100%; background: linear-gradient(270deg, #34d399, #059669); width: ${widthPercent}%; border-radius: 5px 0 0 5px;"></div>` 
-                                : ''}
-                        </div>
-                        <!-- Côté Droit (Churn) -->
-                        <div style="flex: 1; position: relative;">
-                            ${isPositive ? 
-                                `<div style="position: absolute; left: 0; height: 100%; background: linear-gradient(90deg, #ef4444, #b91c1c); width: ${widthPercent}%; border-radius: 0 5px 5px 0;"></div>` 
-                                : ''}
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: #6c757d; font-weight: 600;">
-                        <span>Rétention (Impact -)</span>
-                        <span>Churn (Impact +)</span>
-                    </div>
-                </div>
                 `;
-            }).join('');
-            {% else %}
-            shapSection.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #888; font-size: 14px;">
-                    <i class="bi bi-info-circle me-2"></i> Aucune donnée SHAP disponible pour ce client.
-                </div>
-            `;
-            {% endif %}
+            }
         });
     </script>
 </body>
