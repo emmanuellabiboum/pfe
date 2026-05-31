@@ -1,0 +1,412 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Pilotage Agence — Tunisie Telecom{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-wrap {
+        max-width: 1400px;
+        margin: 20px auto 40px;
+        padding: 0 20px;
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .kpi-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+
+    .kpi-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--brand-dark);
+        line-height: 1.2;
+    }
+
+    .kpi-label {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .management-section {
+        background: white;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--neutral);
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--brand-dark);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .table-custom {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .table-custom th {
+        background: white;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        padding: 16px 24px;
+        border-bottom: 2px solid var(--neutral);
+    }
+
+    .table-custom td {
+        padding: 16px 24px;
+        font-size: 14px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--neutral);
+    }
+
+    .table-custom tr:last-child td {
+        border-bottom: none;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+
+    .badge-pill {
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .status-active { background: var(--success-bg); color: var(--success); }
+    .status-inactive { background: var(--neutral-dark); color: var(--text-muted); }
+
+    .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: var(--text-faint);
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .alert-banner {
+        border-radius: 12px;
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrap">
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h1 class="h3 fw-800 mb-1" style="color: var(--brand-dark);">Pilotage de l'agence</h1>
+            <p class="text-muted mb-0">Gestion des ressources techniques et monitoring des données pour <strong>{{ agence.nom }}</strong>.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <form action="{% url 'dashboard:purger_notifications' %}" method="POST" onsubmit="return confirm('Purger toutes les notifications déjà lues ?')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-warning btn-sm fw-bold rounded-pill">
+                    <i class="bi bi-trash me-1"></i> Purger les notifications lues
+                </button>
+            </form>
+            <a href="{% url 'dashboard:accueil' %}" class="btn btn-primary btn-sm fw-bold rounded-pill">
+                <i class="bi bi-plus-lg me-1"></i> Nouvelle analyse
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs Techniques -->
+    <div class="kpi-grid">
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--brand-light); color: var(--brand);">
+                <i class="bi bi-database"></i>
+            </div>
+            <div class="kpi-value">{{ nb_datasets }}</div>
+            <div class="kpi-label">Jeux de données</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--accent-light); color: var(--accent);">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="kpi-value">{{ nb_analyses }}</div>
+            <div class="kpi-label">Analyses effectuées</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--success-bg); color: var(--success);">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+            <div class="kpi-value">{{ nb_recommandations_actives }}</div>
+            <div class="kpi-label">Recs. Prioritaires</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-icon" style="background: var(--danger-bg); color: var(--danger);">
+                <i class="bi bi-bell"></i>
+            </div>
+            <div class="kpi-value">{{ nb_notifications_non_lues }}</div>
+            <div class="kpi-label">Alertes en attente</div>
+        </div>
+    </div>
+
+    <!-- Gestion des Datasets -->
+    <div class="management-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="bi bi-folder-symlink"></i> Jeux de données (Datasets)</h2>
+            <span class="badge bg-light text-dark border">{{ datasets|length }} fichiers</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Nom du fichier</th>
+                        <th>Date d'import</th>
+                        <th>Méthode</th>
+                        <th>Clients</th>
+                        <th>Statut</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ds in datasets %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ ds.nom_fichier|default:"Sans nom" }}</div>
+                            <div class="text-muted x-small" style="font-size: 11px;">ID: {{ ds.id }}</div>
+                        </td>
+                        <td>{{ ds.date_chargement|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <span class="badge-pill {% if ds.methode == 'csv' %}status-active{% else %}status-inactive{% endif %}">
+                                {{ ds.get_methode_display }}
+                            </span>
+                        </td>
+                        <td><strong>{{ ds.clients.count }}</strong> clients</td>
+                        <td>
+                            {% if ds.actif %}
+                            <span class="badge bg-success" title="Utilisé pour les prédictions actuelles">Actif</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Archivé</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'dashboard:clients' %}?analyse_id={{ ds.analyses.first.id }}" class="btn btn-light btn-action">
+                                    <i class="bi bi-eye"></i> Voir
+                                </a>
+                                <form action="{% url 'dashboard:supprimer_dataset' ds.id %}" method="POST" onsubmit="return confirm('ATTENTION : La suppression de ce dataset entraînera la suppression de TOUS les clients et de TOUTES les recommandations associés. Continuer ?')">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-action">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            Aucun dataset importé pour le moment.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Dernières Analyses -->
+        <div class="col-lg-12">
+            <div class="management-section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="bi bi-clock-history"></i> Dernières sessions d'analyse (Comparatif)</h2>
+                    <span class="text-muted small">Les valeurs en couleur indiquent la différence par rapport à l'analyse précédente.</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Date & Heure</th>
+                                <th class="text-center">Clients</th>
+                                <th class="text-center">Churn</th>
+                                <th class="text-center">Score moy.</th>
+                                <th class="text-center">Recs.</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in analyses %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ item.analyse.date_analyse|date:"d/m/Y" }}</div>
+                                    <div class="text-muted x-small" style="font-size: 11px;">{{ item.analyse.date_analyse|date:"H:i" }}</div>
+                                </td>
+                                <td class="text-center">
+                                    <strong>{{ item.analyse.nb_clients_total }}</strong>
+                                    {% if item.diff %}
+                                    <br>
+                                    <span style="font-size: 11px; font-weight: 700;" class="{% if item.diff.clients_diff > 0 %}text-success{% elif item.diff.clients_diff < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        {% if item.diff.clients_diff > 0 %}+{% endif %}{{ item.diff.clients_diff }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <strong class="text-danger">{{ item.analyse.nb_clients_churn }}</strong>
+                                    {% if item.diff %}
+                                    <br>
+                                    <span style="font-size: 11px; font-weight: 700;" class="{% if item.diff.churn_diff > 0 %}text-danger{% elif item.diff.churn_diff < 0 %}text-success{% else %}text-muted{% endif %}">
+                                        {% if item.diff.churn_diff > 0 %}+{% endif %}{{ item.diff.churn_diff }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <strong>{{ item.analyse.score_churn_moyen }}%</strong>
+                                    {% if item.diff %}
+                                    <br>
+                                    <span style="font-size: 11px; font-weight: 700;" class="{% if item.diff.score_moyen_diff > 0 %}text-danger{% elif item.diff.score_moyen_diff < 0 %}text-success{% else %}text-muted{% endif %}">
+                                        {% if item.diff.score_moyen_diff > 0 %}+{% endif %}{{ item.diff.score_moyen_diff }}%
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <strong>{{ item.analyse.nb_recommandations_generees }}</strong>
+                                    {% if item.diff %}
+                                    <br>
+                                    <span style="font-size: 11px; font-weight: 700;" class="{% if item.diff.recommandations_diff > 0 %}text-success{% elif item.diff.recommandations_diff < 0 %}text-danger{% else %}text-muted{% endif %}">
+                                        {% if item.diff.recommandations_diff > 0 %}+{% endif %}{{ item.diff.recommandations_diff }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'dashboard:clients' %}?analyse_id={{ item.analyse.id }}" class="btn btn-light btn-sm">
+                                        <i class="bi bi-eye me-1"></i> Clients
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="empty-state">Aucune analyse trouvée.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monitoring Notifications (Full Width or Side) -->
+        <div class="col-lg-12">
+            <div class="management-section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="bi bi-bell-pulse"></i> État des notifications</h2>
+                </div>
+                <div class="p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center">
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3">
+                                        <div class="h4 fw-800 mb-0">{{ nb_notifications_non_lues }}</div>
+                                        <div class="text-muted small">Non lues</div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded-3">
+                                        <div class="h4 fw-800 mb-0">{{ nb_notifications_lues }}</div>
+                                        <div class="text-muted small">Lues</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="progress mb-3" style="height: 12px; border-radius: 10px;">
+                                {% widthratio nb_notifications_lues nb_notifications 100 as pct_lues %}
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ pct_lues }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <p class="text-muted small mb-0">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    {{ pct_lues }}% des notifications de l'agence ont été traitées.
+                                </p>
+                                <a href="{% url 'dashboard:notifications' %}" class="btn btn-outline-primary btn-sm fw-bold">
+                                    Ouvrir le centre de notifications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% load static %}
+<div class="card-section p-0 border-0 shadow-none bg-transparent">
+
+    <div class="row g-4">
+        <div class="col-12 col-lg-6">
+            <h5 class="d-flex align-items-center mb-4" style="color:#082281; font-weight:700;">
+                <span
+                    class="bg-primary bg-opacity-10 p-2 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                    style="width: 36px; height: 36px;">
+                    <i class="bi bi-lightning-charge-fill text-primary" style="font-size: 14px;"></i>
+                </span>
+                Actions prioritaires
+            </h5>
+
+            <div class="row g-3">
+                {% if recommandations_actives %}
+                {% for rec in recommandations_actives %}
+                <div class="col-12">
+                    {% with role=request.user.role %}
+                    {% if role == 'agent_marketing' and rec.type_recommandation == 'marketing' %}
+                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                    {% elif role == 'agent_commercial' and rec.type_recommandation == 'commercial' %}
+                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                    {% elif role == 'chef_agence' and rec.type_recommandation == 'technique' %}
+                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                    {% elif request.user.is_superuser %}
+                    {% with can_edit=True %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                    {% else %}
+                    {% with can_edit=False %}{% include "dashboard/includes/rec_card_inner.html" %}{% endwith %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-12 text-center py-4 bg-white rounded-3 border">
+                    <p class="text-muted small mb-0">Aucune action prioritaire.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- COLONNE DROITE: DÉCISIONS / VALIDATIONS (POUR LE CHEF) -->
+        <div class="col-12 col-lg-6">
+            <h5 class="d-flex align-items-center mb-4" style="color:#082281; font-weight:700;">
+                <span
+                    class="bg-warning bg-opacity-10 p-2 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                    style="width: 36px; height: 36px;">
+                    <i class="bi bi-shield-lock-fill text-warning" style="font-size: 14px;"></i>
+                </span>
+                Décisions requises
+            </h5>
+
+            <div class="row g-3">
+                {% if recommandations_en_attente or rejets_en_attente or recommandations_a_valider_completion %}
+
+                {# 1. Nouvelles créations #}
+                {% for rec in recommandations_en_attente %}
+                <div class="col-12">
+                    <div class="bg-white border-start border-4 border-info shadow-sm p-3 rounded-3 mb-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-info bg-opacity-10 text-info text-uppercase"
+                                style="font-size: 9px;">Proposition</span>
+                            <small class="text-muted" style="font-size: 10px;"><i class="bi bi-clock me-1"></i>{{
+                                rec.date_creation|date:"d/m" }}</small>
+                        </div>
+                        <p class="small fw-bold mb-3" style="font-size: 12px; color: var(--brand-dark);">{{ rec.contenu
+                            }}</p>
+                        <div class="d-flex gap-2">
+                            <form method="post" action="{% url 'dashboard:valider_creation_recommandation' rec.id %}">
+                                {% csrf_token %} <input type="hidden" name="action" value="accepter">
+                                <button type="submit" class="btn btn-sm btn-success px-3 rounded-pill"
+                                    style="font-size: 11px;">Approuver</button>
+                            </form>
+                            <form method="post" action="{% url 'dashboard:valider_creation_recommandation' rec.id %}">
+                                {% csrf_token %} <input type="hidden" name="action" value="refuser">
+                                <button type="submit" class="btn btn-sm btn-outline-danger px-3 rounded-pill"
+                                    style="font-size: 11px;">Refuser</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {# Complétions #}
+                {% for rec in recommandations_a_valider_completion %}
+                <div class="col-12">
+                    <div class="bg-white border-start border-4 border-success shadow-sm p-3 rounded-3 mb-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-success bg-opacity-10 text-success text-uppercase"
+                                style="font-size: 9px;">Réalisé par {{ rec.assignee_a.username }}</span>
+                        </div>
+                        <p class="mb-2 small fw-bold" style="font-size: 12px;">{{ rec.contenu }}</p>
+                        {% if rec.note_agent %}<p class="small italic text-muted mb-3 border-top pt-2"
+                            style="font-size: 11px;">"{{ rec.note_agent }}"</p>{% endif %}
+                        <div class="d-flex gap-2">
+                            <form method="post" action="{% url 'dashboard:valider_completion_recommandation' rec.id %}">
+                                {% csrf_token %} <input type="hidden" name="action" value="accepter">
+                                <button type="submit" class="btn btn-sm btn-success px-3 rounded-pill"
+                                    style="font-size: 11px;">Valider</button>
+                            </form>
+                            <button class="btn btn-sm btn-outline-warning px-3 rounded-pill" style="font-size: 11px;"
+                                data-bs-toggle="collapse" data-bs-target="#refus-fiche-{{rec.id}}">Renvoyer</button>
+                        </div>
+                        <div class="collapse mt-2" id="refus-fiche-{{rec.id}}">
+                            <form method="post" action="{% url 'dashboard:valider_completion_recommandation' rec.id %}"
+                                class="pt-2">
+                                {% csrf_token %} <input type="hidden" name="action" value="refuser">
+                                <textarea name="note" class="form-control form-control-sm mb-2"
+                                    placeholder="Motif du renvoi..." style="font-size: 11px;"></textarea>
+                                <button type="submit" class="btn btn-danger btn-sm w-100 rounded-pill"
+                                    style="font-size: 10px;">Confirmer renvoi</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {# Rejets #}
+                {% for rejet in rejets_en_attente %}
+                <div class="col-12">
+                    <div class="bg-white border-start border-4 border-danger shadow-sm p-3 rounded-3 mb-2">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge bg-danger bg-opacity-10 text-danger text-uppercase"
+                                style="font-size: 9px;">Demande de rejet ({{ rejet.demandeur.username }})</span>
+                        </div>
+                        <p class="mb-2 small text-muted italic" style="font-size: 11px;">"{{ rejet.explication }}"</p>
+                        <div class="d-flex gap-2">
+                            <form method="post" action="{% url 'dashboard:valider_rejet_recommandation' rejet.id %}">
+                                {% csrf_token %} <input type="hidden" name="action" value="accepter">
+                                <button type="submit" class="btn btn-sm btn-danger px-3 rounded-pill"
+                                    style="font-size: 11px;">Accepter</button>
+                            </form>
+                            <form method="post" action="{% url 'dashboard:valider_rejet_recommandation' rejet.id %}">
+                                {% csrf_token %} <input type="hidden" name="action" value="refuser">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3 rounded-pill"
+                                    style="font-size: 11px;">Maintenir</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% else %}
+                <div class="col-12 text-center py-4 bg-light rounded-3" style="border: 2px dashed #dee2e6;">
+                    <p class="text-muted small mb-0">Aucune décision en attente.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5 mb-3">
+        <h5 class="d-flex align-items-center mb-4" style="color:#6c757d; font-weight:700;">
+            <span
+                class="bg-secondary bg-opacity-10 p-2 rounded-circle me-3 d-flex align-items-center justify-content-center"
+                style="width: 36px; height: 36px;">
+                <i class="bi bi-clock-history text-secondary" style="font-size: 14px;"></i>
+            </span>
+            Historique des interventions
+        </h5>
+
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="font-size: 0.8rem;">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="px-3">Date</th>
+                            <th>Action réalisée</th>
+                            <th>Statut</th>
+                            <th class="px-3">Agent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rec in recommandations_archivees %}
+                        <tr>
+                            <td class="px-3 text-muted">{{ rec.date_modification|date:"d/m/y" }}</td>
+                            <td class="fw-medium">{{ rec.contenu|truncatechars:120 }}</td>
+                            <td><span
+                                    class="badge {% if rec.statut == 'completee' %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if rec.statut == 'completee' %}text-success{% else %}text-secondary{% endif %}">{{
+                                    rec.get_statut_display }}</span></td>
+                            <td class="px-3">{{ rec.assignee_a.username|default:"Système" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">Aucun historique disponible.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,17 +1,9 @@
+{% extends 'dashboard/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clients — Tunisie Telecom</title>
-    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="{% static 'css/common.css' %}" rel="stylesheet">
-    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+{% block title %}Clients — Tunisie Telecom{% endblock %}
+
+{% block extra_css %}
     <style>
         .card-section {
             background: white;
@@ -301,12 +293,9 @@
             font-weight: 600;
         }
     </style>
-</head>
+{% endblock %}
 
-<body>
-
-    {% include 'accounts/navbar.html' %}
-
+{% block content %}
     <div class="page-wrap">
 
         <!-- HEADER -->
@@ -416,6 +405,9 @@
             <div class="d-flex gap-1" id="pagination-btns"></div>
         </div>
     </div>
+{% endblock %}
+
+{% block extra_js %}
     <script>
         const FICHE_URL = "{% url 'dashboard:fiche_client' 0 %}".replace('/0/', '/PLACEHOLDER/');
 
@@ -438,18 +430,23 @@
 
         function updateKPIs(clients) {
             const churnCount = clients.filter(c => c.churn_predit).length;
-            document.getElementById('kpi-total').textContent = clients.length;
-            document.getElementById('kpi-churn').textContent = churnCount;
-            document.getElementById('kpi-non-churn').textContent = clients.length - churnCount;
+            const totalEl = document.getElementById('kpi-total');
+            const churnEl = document.getElementById('kpi-churn');
+            const nonChurnEl = document.getElementById('kpi-non-churn');
+            if (totalEl) totalEl.textContent = clients.length;
+            if (churnEl) churnEl.textContent = churnCount;
+            if (nonChurnEl) nonChurnEl.textContent = clients.length - churnCount;
         }
 
         function filtrer(risque) {
             filtreActif = risque;
             pageActuelle = 1;
             ['tous', 'churn', 'non-churn'].forEach(r => {
-                document.getElementById(`f-${r}`).classList.remove('active');
+                const el = document.getElementById(`f-${r}`);
+                if (el) el.classList.remove('active');
             });
-            document.getElementById(`f-${risque}`).classList.add('active');
+            const activeEl = document.getElementById(`f-${risque}`);
+            if (activeEl) activeEl.classList.add('active');
             afficher();
         }
 
@@ -482,6 +479,7 @@
             const page = clients.slice(debut, fin);
 
             const tbody = document.getElementById('table-body');
+            if (!tbody) return;
 
             if (page.length === 0) {
                 tbody.innerHTML = `
@@ -526,10 +524,13 @@
                 }).join('');
             }
 
-            document.getElementById('pagination-info').textContent =
-                `${Math.min(debut + 1, total)}–${Math.min(fin, total)} sur ${total} client${total > 1 ? 's' : ''}`;
+            const infoEl = document.getElementById('pagination-info');
+            if (infoEl) {
+                infoEl.textContent = `${Math.min(debut + 1, total)}–${Math.min(fin, total)} sur ${total} client${total > 1 ? 's' : ''}`;
+            }
 
             const paginationEl = document.getElementById('pagination-btns');
+            if (!paginationEl) return;
             paginationEl.innerHTML = '';
 
             const prevBtn = document.createElement('button');
@@ -564,10 +565,8 @@
             paginationEl.appendChild(nextBtn);
         }
 
-        afficher();
+        document.addEventListener('DOMContentLoaded', () => {
+            afficher();
+        });
     </script>
-
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-</body>
-
-</html>
+{% endblock %}

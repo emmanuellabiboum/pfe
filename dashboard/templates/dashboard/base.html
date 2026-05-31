@@ -4,32 +4,28 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Churn Detection System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Churn Detection System{% endblock %}</title>
     <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
 
     <style>
         :root {
-            /* Couleurs Tunisie Telecom */
             --brand: #004595;
-            /* Bleu TT */
             --brand-light: #e6f0ff;
             --brand-dark: #002d62;
             --accent: #ed1c24;
-            /* Rouge TT */
             --accent-purple: #92278f;
-            /* Violet TT */
             --accent-cyan: #00aeef;
-            /* Cyan TT */
             --success: #8cc63f;
-            /* Vert TT */
             --success-bg: #f4fae9;
             --danger: #dc2626;
             --danger-bg: #fef2f2;
             --warning: #f7941d;
-            /* Orange TT */
             --warning-bg: #fff8f0;
             --neutral: #f8f9fa;
             --neutral-dark: #e9ecef;
@@ -97,7 +93,7 @@
             position: relative;
             background: var(--neutral);
             border: 1px solid var(--border);
-            border-radius: var(--radius-pill);
+            border-radius: 50px;
             padding: 8px 16px;
             color: var(--brand);
             cursor: pointer;
@@ -106,7 +102,6 @@
             gap: 8px;
             font-size: 13px;
             font-weight: 700;
-            font-family: "Manrope", sans-serif;
             transition: all .2s;
             white-space: nowrap;
         }
@@ -115,10 +110,6 @@
             background: var(--brand);
             color: white;
             border-color: var(--brand);
-        }
-
-        .nav-btn i {
-            font-size: 15px;
         }
 
         .notif-badge {
@@ -200,7 +191,6 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-family: 'Manrope', sans-serif;
             padding: 0;
         }
 
@@ -367,11 +357,10 @@
         }
 
         .nav-spacer {
-            height: 60px;
+            height: 70px;
         }
     </style>
-
-    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
 </head>
 
 <body>
@@ -382,6 +371,7 @@
             <div class="nav-logo-text">Churn Detection <span>System</span></div>
         </a>
         <div class="nav-actions">
+            <!-- Notifications Dropdown -->
             <div class="nav-dropdown">
                 <button class="nav-btn" id="btn-notif" onclick="toggleDD('dd-notif')">
                     <i class="bi bi-bell-fill"></i>
@@ -394,14 +384,11 @@
                     <div class="dd-header">
                         <span class="dd-header-title">Notifications</span>
                         {% if nb_notifications > 0 %}
-                        <a href="{% url 'dashboard:marquer_lu' %}" class="dd-mark-read">
-                            Tout marquer lu
-                        </a>
+                        <a href="{% url 'dashboard:marquer_lu' %}" class="dd-mark-read">Tout marquer lu</a>
                         {% endif %}
                     </div>
 
                     {% regroup notifications_liste by type_notif as notifs_by_type %}
-
                     {% for type_group in notifs_by_type %}
                     <div class="dd-section">
                         <div class="dd-section-header">
@@ -419,20 +406,20 @@
                         {% for notif in type_group.list %}
                         <a href="{% url 'dashboard:notification_detail' notif.id %}"
                             class="dd-notif-item {% if not notif.lu %}non-lue{% endif %}">
-                            <div class="dd-notif-icon" style="background:
-                            {% if notif.type_notif == 'recommandation' %}rgba(200,50,255,.1)
-                            {% elif notif.type_notif == 'alerte_churn' %}rgba(220,53,69,.1)
-                            {% elif notif.type_notif == 'compte' %}rgba(0,180,100,.1)
-                            {% else %}rgba(255,160,0,.1){% endif %};">
-                                <i class="bi
-                                {% if notif.type_notif == 'recommandation' %}bi-lightbulb
-                                {% elif notif.type_notif == 'alerte_churn' %}bi-exclamation-triangle
-                                {% elif notif.type_notif == 'compte' %}bi-person-check
-                                {% else %}bi-bell{% endif %}" style="color:
-                                {% if notif.type_notif == 'recommandation' %}var(--accent)
-                                {% elif notif.type_notif == 'alerte_churn' %}var(--danger)
-                                {% elif notif.type_notif == 'compte' %}var(--success)
-                                {% else %}var(--warning){% endif %};">
+                            <div class="dd-notif-icon" style="background: 
+                                {% if notif.type_notif == 'recommandation' %}rgba(200,50,255,.1)
+                                {% elif notif.type_notif == 'alerte_churn' %}rgba(220,53,69,.1)
+                                {% elif notif.type_notif == 'compte' %}rgba(0,180,100,.1)
+                                {% else %}rgba(255,160,0,.1){% endif %};">
+                                <i class="bi 
+                                    {% if notif.type_notif == 'recommandation' %}bi-lightbulb
+                                    {% elif notif.type_notif == 'alerte_churn' %}bi-exclamation-triangle
+                                    {% elif notif.type_notif == 'compte' %}bi-person-check
+                                    {% else %}bi-bell{% endif %}" style="color: 
+                                    {% if notif.type_notif == 'recommandation' %}var(--accent)
+                                    {% elif notif.type_notif == 'alerte_churn' %}var(--danger)
+                                    {% elif notif.type_notif == 'compte' %}var(--success)
+                                    {% else %}var(--warning){% endif %};">
                                 </i>
                             </div>
                             <div style="flex:1; min-width:0;">
@@ -440,92 +427,85 @@
                                 <div class="dd-notif-body">{{ notif.contenu|truncatechars:55 }}</div>
                                 <div class="dd-notif-time">{{ notif.date_creation|timesince }}</div>
                             </div>
-                            {% if not notif.lu %}
-                            <div class="dd-unread-dot"></div>
-                            {% endif %}
+                            {% if not notif.lu %}<div class="dd-unread-dot"></div>{% endif %}
                         </a>
                         {% endfor %}
                     </div>
                     {% empty %}
-                    <div class="dd-empty">
-                        <i class="bi bi-bell-slash"></i>
-                        Aucune notification
-                    </div>
+                    <div class="dd-empty"><i class="bi bi-bell-slash"></i> Aucune notification</div>
                     {% endfor %}
 
                     <div class="dd-footer">
-                        <a href="{% url 'dashboard:notifications' %}">
-                            Voir toutes les notifications
-                        </a>
+                        <a href="{% url 'dashboard:notifications' %}">Voir toutes les notifications</a>
                     </div>
+                    {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
+                    <div class="nav-dropdown">
+                        <button class="nav-btn"
+                            onclick="window.location.href='{% url 'dashboard:recommandations_dashboard' %}'">
+                            <i class="bi bi-lightning-charge"></i>
+                            Recommandations
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
-            {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
-            <div class="nav-dropdown">
-                <button class="nav-btn" onclick="window.location.href='{% url 'dashboard:recommandations_dashboard' %}'">
-                    <i class="bi bi-lightning-charge"></i>
-                    Recommandations
-                </button>
-            </div>
-            {% endif %}
+
+            <!-- User Menu -->
             <div class="nav-dropdown">
                 <button class="nav-btn" onclick="toggleDD('dd-user')">
                     <i class="bi bi-person-circle"></i>
                     <span>{{ request.user.get_full_name|default:request.user.username }}</span>
                     <i class="bi bi-chevron-down" style="font-size:10px; opacity:.7;"></i>
                 </button>
-
                 <div class="dd-panel dd-menu" id="dd-user">
-                    <a href="{% url 'accounts:profile' %}" class="dd-menu-item">
-                        <i class="bi bi-person"></i> Profil
-                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="dd-menu-item"><i class="bi bi-person"></i> Profil</a>
                     <div class="dd-separator"></div>
-                    <a href="{% url 'accounts:login' %}" class="dd-menu-item danger">
-                        <i class="bi bi-box-arrow-right"></i> Déconnexion
-                    </a>
+                    <a href="{% url 'accounts:login' %}" class="dd-menu-item danger"><i
+                            class="bi bi-box-arrow-right"></i> Déconnexion</a>
                 </div>
             </div>
+
+            <!-- Main Menu -->
             <div class="nav-dropdown">
                 <button class="nav-btn" onclick="toggleDD('dd-menu')">
                     <i class="bi bi-list" style="font-size:18px;"></i>
                 </button>
-
                 <div class="dd-panel dd-menu" id="dd-menu">
                     {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
-                    <a href="{% url 'dashboard:accueil' %}" class="dd-menu-item">
-                        <i class="bi bi-house"></i> Accueil
-                    </a>
+                    <a href="{% url 'dashboard:accueil' %}" class="dd-menu-item"><i class="bi bi-house"></i> Accueil</a>
                     {% endif %}
+
                     {% if request.user.role == 'chef_agence' %}
-                    <a href="{% url 'dashboard:dashboard_global' %}" class="dd-menu-item">
-                        <i class="bi bi-speedometer2"></i> Dashboard
-                    </a>
+                    <a href="{% url 'dashboard:dashboard_global' %}" class="dd-menu-item"><i
+                            class="bi bi-speedometer2"></i> Dashboard</a>
+                    <a href="{% url 'dashboard:pilotage_agence' %}" class="dd-menu-item"><i class="bi bi-kanban"></i>
+                        Pilotage</a>
                     {% endif %}
+
                     {% if request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
-                    <a href="{% url 'dashboard:administration' %}" class="dd-menu-item">
-                        <i class="bi bi-gear"></i> Administration
-                    </a>
+                    <a href="{% url 'dashboard:administration' %}" class="dd-menu-item"><i class="bi bi-gear"></i>
+                        Administration</a>
                     {% endif %}
-                    {% if request.user.role == 'chef_agence' or request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
-                    <a href="{% url 'accounts:gestion_comptes' %}" class="dd-menu-item">
-                        <i class="bi bi-shield-lock"></i> Gestion des comptes
-                    </a>
-                    {% endif %}
+
                     {% if request.user.role == 'chef_agence' or request.user.role == 'agent_marketing' or request.user.role == 'agent_commercial' %}
-                    <a href="{% url 'dashboard:clients' %}" class="dd-menu-item">
-                        <i class="bi bi-people"></i> Clients
-                    </a>
-                    <a href="{% url 'dashboard:recommandations_dashboard' %}" class="dd-menu-item">
-                        <i class="bi bi-lightning-charge"></i> Recommandations
-                    </a>
+<a href="{% url 'dashboard:clients' %}" class="dd-menu-item"><i class="bi bi-people"></i> Clients</a>
+<a href="{% url 'dashboard:recommandations_dashboard' %}" class="dd-menu-item"><i class="bi bi-lightning-charge"></i> Recommandations</a>
+{% endif %}
+
+                    {% if request.user.role == 'chef_agence' or request.user.role == 'admin' or request.user.role == 'super_admin' or request.user.is_superuser %}
+                    <a href="{% url 'accounts:gestion_comptes' %}" class="dd-menu-item"><i
+                            class="bi bi-shield-lock"></i> Gestion des comptes</a>
                     {% endif %}
                 </div>
             </div>
+        </div>
     </nav>
 
     <div class="nav-spacer"></div>
 
-    {% block content %}{% endblock %}
+    <main>
+        {% block content %}{% endblock %}
+    </main>
 
     <script>
         function toggleDD(id) {
@@ -539,11 +519,9 @@
                 document.querySelectorAll('.dd-panel').forEach(p => p.classList.remove('open'));
             }
         });
-
-        let lastNotificationCount = {{ nb_notifications }};
     </script>
-
     <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 
 </html>

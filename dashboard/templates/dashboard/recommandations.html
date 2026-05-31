@@ -1,0 +1,290 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Centre de Recommandations — Tunisie Telecom{% endblock %}
+
+{% block extra_css %}
+    <style>
+        :root {
+            --brand: #082281;
+            --brand-light: #f4f6fa;
+            --success: #00b464;
+            --danger: #dc3545;
+            --text-main: #1a1f36;
+            --text-muted: #697386;
+        }
+
+        .page-wrap {
+            max-width: 1400px;
+            margin: 20px auto 40px;
+            padding: 0 20px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #e3e8ee;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .recommendation-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e3e8ee;
+            padding: 16px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+
+        .recommendation-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--brand);
+        }
+
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            margin-right: 8px;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--brand);
+            color: #fff;
+        }
+
+        .badge-type {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 4px 10px;
+            border-radius: 6px;
+        }
+
+        .clv-pill {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--brand);
+            background: #f0f4ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .filter-bar {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid #e3e8ee;
+            margin-bottom: 24px;
+        }
+
+        .pagination .page-link {
+            border-radius: 8px;
+            margin: 0 3px;
+            color: var(--brand);
+            border: 1px solid #e3e8ee;
+            font-weight: 600;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--brand);
+            border-color: var(--brand);
+        }
+
+        .table-custom th { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; padding: 12px 16px; }
+        .table-custom td { font-size: 13px; padding: 12px 16px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="page-wrap">
+        <div class="row g-3 align-items-center mb-4">
+            <div class="col-lg-6">
+                <h2 class="h4 fw-800 mb-1" style="color: var(--brand);">Actions de Rétention</h2>
+                <p class="text-muted small mb-0">Pilotez et validez les interventions commerciales.</p>
+            </div>
+            <div class="col-lg-6 text-end">
+                <div class="d-inline-flex gap-2">
+                    <div class="stat-card py-2">
+                        <div class="text-success me-2"><i class="bi bi-play-circle-fill"></i></div>
+                        <div><div class="small text-muted lh-1" style="font-size:9px;">Actions</div><div class="fw-bold">{{ stats.total_actives }}</div></div>
+                    </div>
+                    {% if is_chef %}
+                    <div class="stat-card py-2">
+                        <div class="text-danger me-2"><i class="bi bi-shield-check"></i></div>
+                        <div><div class="small text-muted lh-1" style="font-size:9px;">À valider</div><div class="fw-bold">{{ stats.a_valider }}</div></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <form method="get" class="filter-bar d-flex flex-wrap gap-3 align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <label class="small fw-bold text-muted text-uppercase" style="font-size: 10px;">Type :</label>
+                <select name="type" class="form-select form-select-sm border-0 bg-light rounded-pill px-3" style="width: 140px; font-size: 12px;" onchange="this.form.submit()">
+                    <option value="">Tous les types</option>
+                    <option value="marketing" {% if filters.type == 'marketing' %}selected{% endif %}>Marketing</option>
+                    <option value="commercial" {% if filters.type == 'commercial' %}selected{% endif %}>Commercial</option>
+                    <option value="technique" {% if filters.type == 'technique' %}selected{% endif %}>Technique</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <label class="small fw-bold text-muted text-uppercase" style="font-size: 10px;">Urgence :</label>
+                <select name="urgent" class="form-select form-select-sm border-0 bg-light rounded-pill px-3" style="width: 140px; font-size: 12px;" onchange="this.form.submit()">
+                    <option value="">Toutes</option>
+                    <option value="1" {% if filters.urgent == '1' %}selected{% endif %}>Retards/Urgences</option>
+                </select>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <label class="small fw-bold text-muted text-uppercase" style="font-size: 10px;">Valeur :</label>
+                <select name="valeur" class="form-select form-select-sm border-0 bg-light rounded-pill px-3" style="width: 140px; font-size: 12px;" onchange="this.form.submit()">
+                    <option value="">Toutes</option>
+                    <option value="elevee" {% if filters.valeur == 'elevee' %}selected{% endif %}>Élevée (>500 DT)</option>
+                </select>
+            </div>
+            {% if filters.type or filters.urgent or filters.valeur %}
+            <a href="?" class="btn btn-sm text-danger fw-bold" style="font-size: 11px;"><i class="bi bi-x-circle me-1"></i>Réinitialiser</a>
+            {% endif %}
+        </form>
+
+        <!-- Navigation Tabs -->
+        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+            <ul class="nav nav-pills" id="pills-tab" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-actives"><i class="bi bi-lightning me-1"></i>Prioritaires</button></li>
+                {% if is_chef %}<li class="nav-item"><button class="nav-link position-relative" data-bs-toggle="pill" data-bs-target="#pills-validation"><i class="bi bi-shield-lock me-1"></i>Validations</button></li>{% endif %}
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-archives"><i class="bi bi-clock-history me-1"></i>Historique</button></li>
+            </ul>
+        </div>
+
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="pills-actives">
+                <div class="row g-3">
+                    {% for rec in actives %}
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                        <div class="recommendation-card">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge-type {% if rec.type_recommandation == 'marketing' %}bg-info{% elif rec.type_recommandation == 'commercial' %}bg-primary{% else %}bg-secondary{% endif %} bg-opacity-10 {% if rec.type_recommandation == 'marketing' %}text-info{% elif rec.type_recommandation == 'commercial' %}text-primary{% else %}text-secondary{% endif %}">
+                                    {{ rec.get_type_recommandation_display }}
+                                </span>
+                                <span class="clv-pill">{% if rec.clv_estimee %}{{ rec.clv_estimee|floatformat:0 }} DT{% else %}Odt{% endif %}</span>
+                            </div>
+                            <h6 class="fw-800 mb-1">
+                                <a href="{% url 'dashboard:fiche_client' rec.client.id %}" class="text-decoration-none text-dark link-primary-hover">
+                                    {{ rec.client.nom|default:rec.client.client_id|truncatechars:18 }}
+                                </a>
+                            </h6>
+                            <p class="small text-muted mb-3 flex-grow-1" style="font-size: 11px; line-height: 1.4;">{{ rec.contenu|truncatechars:90 }}</p>
+                            <div class="pt-2 border-top d-flex align-items-center justify-content-between">
+                                <div class="small text-muted" style="font-size: 9px;"><i class="bi bi-calendar-event me-1"></i>{{ rec.echeance|date:"d M" }}</div>
+                                <a href="{% url 'dashboard:fiche_client' rec.client.id %}#recommandations" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-3" style="font-size: 10px; height: 24px; line-height: 22px;">Agir</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5"><p class="text-muted small">Aucune action ne correspond aux filtres.</p></div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav class="mt-5 d-flex justify-content-center">
+                    <ul class="pagination pagination-sm">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filters.type %}&type={{filters.type}}{% endif %}{% if filters.urgent %}&urgent={{filters.urgent}}{% endif %}{% if filters.valeur %}&valeur={{filters.valeur}}{% endif %}"><i class="bi bi-chevron-left"></i></a></li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if filters.type %}&type={{filters.type}}{% endif %}{% if filters.urgent %}&urgent={{filters.urgent}}{% endif %}{% if filters.valeur %}&valeur={{filters.valeur}}{% endif %}">{{ num }}</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filters.type %}&type={{filters.type}}{% endif %}{% if filters.urgent %}&urgent={{filters.urgent}}{% endif %}{% if filters.valeur %}&valeur={{filters.valeur}}{% endif %}"><i class="bi bi-chevron-right"></i></a></li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+
+            {% if is_chef %}
+            <div class="tab-pane fade" id="pills-validation">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0 align-middle">
+                            <thead class="bg-light">
+                                <tr><th>Client</th><th>Type</th><th>Agent</th><th>Action requise</th><th class="text-end">Actions</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in a_valider_completion %}
+                                <tr>
+                                    <td><div class="fw-bold">{{ rec.client.nom }}</div></td>
+                                    <td><span class="badge bg-success bg-opacity-10 text-success small">Complétion</span></td>
+                                    <td>{{ rec.assignee_a.username }}</td>
+                                    <td class="small">{{ rec.contenu|truncatechars:50 }}</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'dashboard:valider_completion_recommandation' rec.id %}" class="d-inline">
+                                            {% csrf_token %} <input type="hidden" name="action" value="accepter">
+                                            <button class="btn btn-sm btn-success rounded-circle p-1"><i class="bi bi-check"></i></button>
+                                        </form>
+                                        <button class="btn btn-sm btn-outline-danger rounded-circle p-1" data-bs-toggle="collapse" data-bs-target="#rej-{{rec.id}}"><i class="bi bi-x"></i></button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% for rej in rejets_en_attente %}
+                                <tr>
+                                    <td><div class="fw-bold">{{ rej.recommandation.client.nom }}</div></td>
+                                    <td><span class="badge bg-danger bg-opacity-10 text-danger small">Rejet IA</span></td>
+                                    <td>{{ rej.demandeur.username }}</td>
+                                    <td class="small italic">"{{ rej.explication|truncatechars:50 }}"</td>
+                                    <td class="text-end">
+                                        <form method="post" action="{% url 'dashboard:valider_rejet_recommandation' rej.id %}" class="d-inline">
+                                            {% csrf_token %} <input type="hidden" name="action" value="accepter">
+                                            <button class="btn btn-sm btn-danger rounded-circle p-1"><i class="bi bi-check"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="tab-pane fade" id="pills-archives">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-custom mb-0">
+                            <thead class="bg-light">
+                                <tr><th>Date</th><th>Client</th><th>Action</th><th>Statut</th><th>Agent</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for rec in archivees %}
+                                <tr>
+                                    <td>{{ rec.date_modification|date:"d/m/Y" }}</td>
+                                    <td class="fw-bold">{{ rec.client.nom }}</td>
+                                    <td class="small">{{ rec.contenu|truncatechars:60 }}</td>
+                                    <td><span class="badge {% if rec.statut == 'completee' %}bg-success{% else %}bg-secondary{% endif %} bg-opacity-10 {% if rec.statut == 'completee' %}text-success{% else %}text-secondary{% endif %}">{{ rec.get_statut_display }}</span></td>
+                                    <td>{{ rec.assignee_a.username|default:"Système" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+

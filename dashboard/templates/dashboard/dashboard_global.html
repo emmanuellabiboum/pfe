@@ -1,17 +1,9 @@
+{% extends 'dashboard/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard — Tunisie Telecom</title>
-    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
-    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+{% block title %}Dashboard — Tunisie Telecom{% endblock %}
+
+{% block extra_css %}
     <style>
         :root {
             /* Règle 60-30-10 : 60% neutre, 30% primaire, 10% accent */
@@ -39,17 +31,6 @@
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-        }
-
-        * {
-            font-family: 'Manrope', sans-serif;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(180deg, #eef2ff 0%, #f7f8ff 100%);
-            min-height: 100vh;
-            margin: 0;
         }
 
         /* GLASS CARD */
@@ -341,21 +322,6 @@
             background: var(--danger-light);
         }
 
-        /* PROGRESS BAR */
-        .progress-bar-bg {
-            height: 8px;
-            background: var(--gray-200);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            border-radius: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--purple));
-            transition: width 0.6s ease;
-        }
-
         /* SEGMENT TAG */
         .segment-tag {
             background: var(--primary-light);
@@ -419,13 +385,9 @@
             transform: translateY(-1px);
         }
     </style>
-    <link href="{% static 'css/common.css' %}" rel="stylesheet">
-</head>
+{% endblock %}
 
-<body>
-
-    {% include 'accounts/navbar.html' %}
-
+{% block content %}
     <div class="container-fluid p-4" style="max-width:1440px; margin:0 auto;">
 
         {% if empty %}
@@ -453,12 +415,11 @@
                 <p class="text-muted small mb-0">
                     <i class="bi bi-geo-alt me-1"></i>{{ agence.nom }} — {{ agence.ville.nom }}
                     <span class="ms-3">{{ today|date:"d M Y" }}</span>
+        
                 </p>
             </div>
             <div class="d-flex gap-2">
-                <a href="{% url 'dashboard:historique_analyses' %}" class="btn-retour">
-                    <i class="bi bi-clock-history"></i> Historique
-                </a>
+                
                 <a href="{% url 'dashboard:accueil' %}" class="btn-retour">
                     <i class="bi bi-arrow-left"></i> Accueil
                 </a>
@@ -719,8 +680,5 @@
 
         {% endif %}
     </div>
+{% endblock %}
 
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-</body>
-
-</html>

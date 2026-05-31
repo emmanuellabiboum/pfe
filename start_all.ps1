@@ -46,7 +46,7 @@ Set-Location '$fastapiDir';
 . '$venvActivate';
 `$env:DJANGO_SETTINGS_MODULE='config.settings';
 try {
-    & '$venvPython' -m uvicorn app.main:app --reload --port 8000
+    & '$venvPython' -m uvicorn app.main:app --reload --port 8001
 } catch {
     Write-Host "`nFastAPI Error: `$_" -ForegroundColor Red;
     Write-Host "`nPress any key to close...";
@@ -58,6 +58,7 @@ $djangoCommand = @"
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass;
 Set-Location '$projectRoot';
 . '$venvActivate';
+`$env:FASTAPI_BASE_URL='http://127.0.0.1:8001';
 `$env:DJANGO_SETTINGS_MODULE='config.settings';
 try {
     & '$venvPython' manage.py runserver $djangoPort
@@ -73,5 +74,5 @@ Start-Sleep -Seconds 1
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $djangoCommand
 
 Write-Host "`nServices demarres dans deux fenetres PowerShell:" -ForegroundColor Green
-Write-Host "- FastAPI: http://127.0.0.1:8000/docs" -ForegroundColor White
+Write-Host "- FastAPI: http://127.0.0.1:8001/docs" -ForegroundColor White
 Write-Host "- Django : http://127.0.0.1:$djangoPort/" -ForegroundColor White

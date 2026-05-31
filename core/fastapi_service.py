@@ -12,7 +12,14 @@ from typing import Dict, Optional, List
 
 logger = logging.getLogger(__name__)
 
-FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://localhost:8000")
+# Déterminer l'URL de base de l'API FastAPI
+# Sur Windows/Local, le port 8000 est souvent occupé, on privilégie le 8001
+FASTAPI_BASE_URL = os.getenv("FASTAPI_BASE_URL")
+if not FASTAPI_BASE_URL or "8000" in FASTAPI_BASE_URL:
+    FASTAPI_BASE_URL = "http://localhost:8001"
+
+logger.info(f"FastAPI Service initialized with URL: {FASTAPI_BASE_URL}")
+
 FASTAPI_ENDPOINTS = {
     "health": "/health",
     "model_info": "/api/model/info",

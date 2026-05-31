@@ -179,18 +179,32 @@ def login_view(request):
             user.tentatives_connexion = 0
             user.save()
 
-            code = str(random.randint(100000, 999999))
-            OTPCode.objects.filter(user=user).delete()
-            OTPCode.objects.create(
-                user=user, code=code, expire_at=timezone.now() + timedelta(minutes=5)
-            )
-            envoyer_email(
-                destinataire=user.email,
-                sujet="Code de vérification — Tunisie Telecom",
-                contenu=f"<p>Votre code de vérification est : <strong>{code}</strong></p><p>Valable 5 minutes.</p>",
-            )
-            request.session["otp_user_id"] = user.id
-            return redirect("accounts:verify_otp")
+            # OTP désactivé temporairement pour la soutenance
+            # code = str(random.randint(100000, 999999))
+            # OTPCode.objects.filter(user=user).delete()
+            # OTPCode.objects.create(
+            #     user=user, code=code, expire_at=timezone.now() + timedelta(minutes=5)
+            # )
+            # envoyer_email(
+            #     destinataire=user.email,
+            #     sujet="Code de vérification — Tunisie Telecom",
+            #     contenu=f"<p>Votre code de vérification est : <strong>{code}</strong></p><p>Valable 5 minutes.</p>",
+            # )
+            # request.session["otp_user_id"] = user.id
+            # return redirect("accounts:verify_otp")
+
+            # Connexion directe sans OTP
+            login(request, auth_user)
+            
+            # Redirection selon le rôle
+            if user.role == "admin" or user.role == "super_admin":
+                return redirect("dashboard:administration")
+            elif user.role == "chef_agence":
+                return redirect("dashboard:accueil")
+            elif user.role == "agent_marketing" or user.role == "agent_commercial":
+                return redirect("dashboard:accueil_agent")
+            else:
+                return redirect("dashboard:accueil")
 
         else:
             user.tentatives_connexion += 1

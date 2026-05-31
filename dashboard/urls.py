@@ -132,14 +132,9 @@ urlpatterns = [
         name="bulk_restore_notifications",
     ),
     path(
-        "notifications/bulk-hard-delete/",
+        "bulk-hard-delete/",
         views.bulk_hard_delete_notifications,
         name="bulk_hard_delete_notifications",
-    ),
-    path(
-        "historique-analyses/",
-        views.historique_analyses_view,
-        name="historique_analyses",
     ),
     path(
         "analyses/<int:analyse_id>/supprimer-definitivement/",
@@ -201,6 +196,9 @@ urlpatterns = [
         views.recommandations_dashboard,
         name="recommandations_dashboard",
     ),
+    path("pilotage/", views.pilotage_agence, name="pilotage_agence"),
+    path("pilotage/datasets/<int:dataset_id>/supprimer/", views.supprimer_dataset, name="supprimer_dataset"),
+    path("pilotage/notifications/purger/", views.purger_notifications, name="purger_notifications"),
 ]
 
 

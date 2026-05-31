@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI):
     initialiser_shap_matrix()
 
     print("\n" + "=" * 70)
-    print(f"  ✓ API PRÊTE — Swagger UI disponible sur http://localhost:8000/docs")
+    print(f"  ✓ API PRÊTE — Documentation interactive disponible sur /docs")
     print("=" * 70 + "\n")
 
     # ─────────────────────────────────────────────────────────────────────────

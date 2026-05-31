@@ -22,7 +22,7 @@ import pandas as pd
 
 from accounts.models import User, AdminVille
 from accounts.forms import AgenceForm
-from learning.models import ClientChurn
+from learning.models import ClientChurn, Dataset
 from learning.importers import create_dataset_from_dataframe
 from dashboard.models import Recommandation, Notification, AnalyseSession
 from core.mock_data import generer_mock_data
@@ -103,6 +103,8 @@ def accueil(request):
         clients_churn = clients.filter(churn_predit=True).count()
         clients_non_churn = clients.filter(churn_predit=False).count()
 
+        active_dataset = Dataset.objects.filter(agence=request.user.agence, actif=True).first()
+
         avg_prediction = clients.aggregate(Avg("score_churn"))["score_churn__avg"] or 0
         taux_churn = (
             round(clients_churn / total_clients * 100, 1) if total_clients else 0
@@ -115,6 +117,7 @@ def accueil(request):
             "avg_prediction": round(avg_prediction * 100, 1),
             "taux_churn": taux_churn,
             "has_data": total_clients > 0,
+            "active_dataset": active_dataset,
             "ml_models": ml_models,
             "has_session": False,  # Par défaut, sera mis à True si session existe
             "metadata_available": metadata_available,
@@ -314,6 +317,7 @@ def lancer_analyse(request):
             from core.fastapi_service import (
                 predict_batch_from_dataframe,
                 check_fastapi_health,
+                FASTAPI_BASE_URL,
             )
 
             # Seuils alignés sur pfe_final/churn_api/app/config.py
@@ -347,7 +351,7 @@ def lancer_analyse(request):
             if not fastapi_available:
                 # Alignement sur FastAPI : pas de fallback local (sinon incohérences entre pages)
                 msg = (
-                    "Le serveur FastAPI (localhost:8000) n'est pas disponible. "
+                    f"Le serveur FastAPI ({FASTAPI_BASE_URL}) n'est pas disponible. "
                     "Démarre l'API puis relance l'analyse."
                 )
                 logger.error(f"[lancer_analyse] {msg}")
@@ -1275,6 +1279,8 @@ def dashboard_global(request):
     non_churn = clients.filter(churn_predit=False).count()
     taux_churn = round(churn / total * 100, 1) if total else 0
 
+    active_dataset = Dataset.objects.filter(agence=agence, actif=True).first()
+
     # Recommandations
     recs = Recommandation.objects.filter(client__in=clients)
     recs_actives = recs.filter(statut="active").count()
@@ -1357,6 +1363,7 @@ def dashboard_global(request):
         "taux_churn": taux_churn,
         "churn": churn,
         "non_churn": non_churn,
+        "active_dataset": active_dataset,
         "recs_actives": recs_actives,
         "recs_completees": recs_completees,
         "taux_completion": taux_completion,
@@ -1372,71 +1379,6 @@ def dashboard_global(request):
     }
 
     return render(request, "dashboard/dashboard_global.html", context)
-
-
-@login_required
-def historique_analyses_view(request):
-    filter_type = request.GET.get("filter", "all")  # all, mock, real
-
-    analyses = (
-        AnalyseSession.objects.filter(agence=request.user.agence)
-        .select_related("lancee_par")
-        .order_by("-date_analyse")
-    )
-
-    # Filtrer par type
-    if filter_type == "mock":
-        analyses = analyses.filter(methode="mock")
-    elif filter_type == "real":
-        analyses = analyses.exclude(methode="mock")
-
-    analyses_with_diff = []
-    for analyse in analyses:
-        diff = analyse.get_differences_with_previous()
-        analyses_with_diff.append(
-            {
-                "analyse": analyse,
-                "diff": diff,
-            }
-        )
-
-    mois_fr = {
-        1: "Janvier",
-        2: "Février",
-        3: "Mars",
-        4: "Avril",
-        5: "Mai",
-        6: "Juin",
-        7: "Juillet",
-        8: "Août",
-        9: "Septembre",
-        10: "Octobre",
-        11: "Novembre",
-        12: "Décembre",
-    }
-    groupes = {}
-    for item in analyses_with_diff:
-        dt = item["analyse"].date_analyse
-        cle = dt.strftime("%Y-%m")
-        if cle not in groupes:
-            groupes[cle] = {
-                "label": f"{mois_fr[dt.month]} {dt.year}",
-                "analyses": [],
-            }
-        groupes[cle]["analyses"].append(item)
-
-    groupes = dict(sorted(groupes.items(), reverse=True))
-
-    last_analyse = analyses.first()
-
-    context = {
-        "groupes": groupes,
-        "last_analyse": last_analyse,
-        "has_data": analyses.exists(),
-        "filter_type": filter_type,
-    }
-
-    return render(request, "dashboard/historique_analyses.html", context)
 
 
 @login_required
@@ -2757,3 +2699,82 @@ def recommandations_dashboard(request):
     }
 
     return render(request, "dashboard/recommandations.html", context)
+
+
+@login_required
+def pilotage_agence(request):
+    if request.user.role != "chef_agence" and not request.user.is_superuser:
+        messages.error(request, "Accès restreint au Chef d'Agence.")
+        return redirect("dashboard:accueil")
+
+    agence = request.user.agence
+    if not agence:
+        messages.error(request, "Vous n'êtes rattaché à aucune agence.")
+        return redirect("dashboard:accueil")
+
+    # Statistiques
+    datasets = Dataset.objects.filter(agence=agence).order_by("-date_chargement")
+    analyses_raw = AnalyseSession.objects.filter(agence=agence).order_by("-date_analyse")
+    notifications = Notification.objects.filter(destinataire__agence=agence)
+    recommandations = Recommandation.objects.filter(client__agence=agence)
+
+    # Calculer les différences pour le tableau (comme dans l'ancienne page historique)
+    analyses_with_diff = []
+    for analyse in analyses_raw[:10]:  # On limite aux 10 dernières pour la page pilotage
+        diff = analyse.get_differences_with_previous()
+        analyses_with_diff.append({
+            "analyse": analyse,
+            "diff": diff
+        })
+
+    context = {
+        "agence": agence,
+        "datasets": datasets,
+        "nb_datasets": datasets.count(),
+        "analyses": analyses_with_diff,
+        "nb_analyses": analyses_raw.count(),
+        "nb_notifications": notifications.count(),
+        "nb_notifications_lues": notifications.filter(lu=True).count(),
+        "nb_notifications_non_lues": notifications.filter(lu=False).count(),
+        "nb_recommandations": recommandations.count(),
+        "nb_recommandations_actives": recommandations.filter(statut="active").count(),
+    }
+
+    return render(request, "dashboard/pilotage.html", context)
+
+
+@login_required
+@require_POST
+def supprimer_dataset(request, dataset_id):
+    if request.user.role != "chef_agence" and not request.user.is_superuser:
+        return JsonResponse({"success": False, "error": "Accès non autorisé"}, status=403)
+
+    dataset = get_object_or_404(Dataset, id=dataset_id, agence=request.user.agence)
+    
+    try:
+        # La suppression du dataset entraînera la suppression en cascade des clients
+        # et de leurs recommandations/notifications associées via les FK.
+        count_clients = dataset.clients.count()
+        dataset.delete()
+        messages.success(request, f"Dataset et {count_clients} clients associés supprimés.")
+        return redirect("dashboard:pilotage_agence")
+    except Exception as e:
+        messages.error(request, f"Erreur lors de la suppression : {str(e)}")
+        return redirect("dashboard:pilotage_agence")
+
+
+@login_required
+@require_POST
+def purger_notifications(request):
+    if request.user.role != "chef_agence" and not request.user.is_superuser:
+        return JsonResponse({"success": False, "error": "Accès non autorisé"}, status=403)
+
+    # Purger les notifications déjà lues de l'agence
+    count = Notification.objects.filter(
+        destinataire__agence=request.user.agence, 
+        lu=True
+    ).delete()[0]
+    
+    messages.success(request, f"{count} notification(s) lue(s) ont été purgées.")
+    return redirect("dashboard:pilotage_agence")
+

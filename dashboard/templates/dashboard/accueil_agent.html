@@ -1,12 +1,11 @@
+{% extends 'dashboard/base.html' %}
 {% load static %}
-{% include 'accounts/navbar.html' %}
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="{% static 'css/common.css' %}" rel="stylesheet">
 
-<div class="page-wrap">
+{% block title %}Accueil — Tunisie Telecom{% endblock %}
 
-    <div class="card" style="padding: 40px; text-align: center;">
-
+{% block content %}
+<div class="container py-5" style="max-width: 800px;">
+    <div class="card border-0 shadow-sm" style="padding: 40px; text-align: center; border-radius: 20px;">
         <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--warning-bg); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
             <i class="bi bi-info-circle" style="font-size: 40px; color: var(--warning);"></i>
         </div>
@@ -15,28 +14,27 @@
 
         <p style="font-size: 15px; color: var(--text-muted); margin: 0 0 24px; line-height: 1.6;">
             Vous êtes connecté en tant qu'<strong>{{ request.user.get_role_display }}</strong>.
-            Les fonctionnalités avancées du dashboard sont réservées aux <strong>chefs d'agence</strong>.
+            Les fonctionnalités avancées du dashboard (lancement d'analyses, KPIs globaux) sont réservées aux <strong>chefs d'agence</strong>.
         </p>
 
         <div style="background: var(--neutral); border-radius: var(--radius-md); padding: 20px; text-align: left; margin-bottom: 24px;">
-            <h3 style="font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 12px;">Vos permissions actuelles :</h3>
+            <h3 style="font-size: 14px; font-weight: 700; color: var(--brand); margin: 0 0 12px;">Vos fonctionnalités accessibles :</h3>
             <ul style="font-size: 13px; color: var(--text-muted); margin: 0; padding-left: 20px; line-height: 1.8;">
-                <li>Consulter la liste des clients</li>
-                <li>Voir vos notifications</li>
-                <li>Recevoir des recommandations</li>
-                <li>Exécuter les recommandations qui vous sont assignées</li>
+                <li><i class="bi bi-people me-2"></i> Consulter la liste des clients</li>
+                <li><i class="bi bi-bell me-2"></i> Voir vos notifications et alertes</li>
+                <li><i class="bi bi-lightning me-2"></i> Recevoir des recommandations de rétention</li>
+                <li><i class="bi bi-check2-circle me-2"></i> Exécuter les actions qui vous sont assignées</li>
             </ul>
         </div>
 
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-            <a href="{% url 'dashboard:clients' %}" class="btn-launch" style="display: inline-flex; align-items: center; gap: 8px;">
-                <i class="bi bi-people"></i> Voir les clients
+            <a href="{% url 'dashboard:clients' %}" class="btn btn-primary px-4 py-2 rounded-pill fw-bold">
+                <i class="bi bi-people me-1"></i> Voir les clients
             </a>
-            <a href="{% url 'dashboard:notifications' %}" style="background: var(--neutral); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 24px; font-size: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="bi bi-bell"></i> Voir mes notifications
+            <a href="{% url 'dashboard:notifications' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-bold">
+                <i class="bi bi-bell me-1"></i> Voir mes notifications
             </a>
         </div>
-
     </div>
-
 </div>
+{% endblock %}

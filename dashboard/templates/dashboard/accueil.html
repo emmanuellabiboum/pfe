@@ -1,59 +1,10 @@
-﻿{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
+﻿{% extends 'dashboard/base.html' %}
+{% load static %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analyse — Tunisie Telecom</title>
-    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="{% static 'css/responsive.css' %}" rel="stylesheet">
+{% block title %}Analyse — Tunisie Telecom{% endblock %}
 
+{% block extra_css %}
     <style>
-        :root {
-            --brand: #004595;
-            --brand-light: #e6f0ff;
-            --brand-dark: #002d62;
-            --accent: #ed1c24;
-            --accent-purple: #92278f;
-            --accent-cyan: #00aeef;
-            --success: #8cc63f;
-            --success-bg: #f4fae9;
-            --danger: #dc2626;
-            --danger-bg: #fef2f2;
-            --warning: #f7941d;
-            --warning-bg: #fff8f0;
-            --neutral: #f8f9fa;
-            --neutral-dark: #e9ecef;
-            --border: #dee2e6;
-            --text-main: #212529;
-            --text-muted: #6c757d;
-            --text-faint: #adb5bd;
-            --card-bg: #ffffff;
-            --radius-sm: 10px;
-            --radius-md: 18px;
-            --radius-lg: 30px;
-            --radius-pill: 50px;
-            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.08);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Manrope', sans-serif;
-            font-size: 15px;
-            line-height: 1.6;
-            background: linear-gradient(180deg, #eef2ff 0%, #f7f8ff 100%);
-            color: var(--text-main);
-            margin: 0;
-        }
-
         .page-wrap {
             max-width: 1100px;
             margin: 0 auto;
@@ -286,11 +237,10 @@
             background: linear-gradient(135deg, var(--brand), var(--accent-purple));
             color: white;
             border: none;
-            border-radius: var(--radius-pill);
+            border-radius: 50px;
             padding: 14px 30px;
             font-size: 15px;
             font-weight: 700;
-            font-family: "Manrope", sans-serif;
             cursor: pointer;
             flex: 1;
             display: flex;
@@ -337,7 +287,6 @@
             padding: 7px 14px;
             font-size: 12px;
             font-weight: 600;
-            font-family: 'Manrope', sans-serif;
             cursor: pointer;
         }
 
@@ -349,7 +298,6 @@
             padding: 12px 18px;
             font-size: 14px;
             font-weight: 700;
-            font-family: 'Manrope', sans-serif;
             cursor: pointer;
             width: 100%;
             display: none;
@@ -417,6 +365,10 @@
 
         .log-line.done {
             color: var(--success);
+        }
+
+        .log-line.danger {
+            color: var(--danger);
         }
 
         .log-line.active {
@@ -684,18 +636,20 @@
             }
         }
     </style>
+{% endblock %}
 
-    <link href="{% static 'css/common.css' %}" rel="stylesheet">
-</head>
-
-<body>
-
-    {% include 'accounts/navbar.html' %}
-
+{% block content %}
     <div class="page-wrap">
         <div class="page-header">
             <h1>Système d'Analyse Prédictive Churn</h1>
             <p>Chargez vos données, sélectionnez un algorithme et lancez l'analyse prédictive.</p>
+            {% if active_dataset %}
+            <div class="mt-2">
+                <span class="badge text-success border border-success" style="background:var(--success-bg); font-size: 11px; padding: 5px 12px; border-radius: 50px;">
+                    <i class="bi bi-database-check me-1"></i> Dataset actif : <strong>{{ active_dataset.nom_fichier }}</strong> ({{ total_clients }} clients)
+                </span>
+            </div>
+            {% endif %}
         </div>
 
         <div id="reset-message" class="alert alert-success" style="display:none; margin-bottom: 20px;">
@@ -882,7 +836,7 @@
                         </div>
                     </div>
 
-                    <a href="/clients/" id="btn-voir-clients" class="btn-voir">
+                    <a href="{% url 'dashboard:clients' %}" id="btn-voir-clients" class="btn-voir">
                         <i class="bi bi-table"></i> Voir les clients
                     </a>
                 </div>
@@ -926,7 +880,7 @@
                 </div>
             </div>
         </div>
-
+<p>ROLE: "{{ request.user.role }}"</p>
         <div class="kpi-section" id="kpi-section">
             <div class="section-divider mb-3">
                 <span><i class="bi bi-speedometer2 me-1"></i> Indicateurs clés</span>
@@ -964,6 +918,31 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalConfirmReset" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="fw-800 mb-3">Confirmer la réinitialisation ?</h5>
+                    <p class="text-muted small mb-4">
+                        Cette action va vider la liste des clients actifs et archiver les recommandations en cours. 
+                        Les historiques d'analyses seront conservés.
+                        <br><br>
+                        <strong>Cette opération est irréversible.</strong>
+                    </p>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light rounded-pill flex-grow-1 fw-bold" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-danger rounded-pill flex-grow-1 fw-bold" onclick="confirmResetExecution()">Réinitialiser</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
     <script>
         let dataReady = false;
         const clientsExist = {% if total_clients > 0 %}true{% else %} false{% endif %};
@@ -1128,28 +1107,36 @@
                 },
                 body: formData,
             }).then(async r => {
+                const contentType = r.headers.get('content-type') || '';
+                if (!contentType.includes('application/json')) {
+                    const text = await r.text();
+                    // On cherche à extraire le titre de l'erreur dans le HTML
+                    const titleMatch = text.match(/<title>(.*?)<\/title>/i);
+                    const errorTitle = titleMatch ? titleMatch[1] : 'Erreur serveur (HTML)';
+                    throw new Error(`${errorTitle} [${r.status}]`);
+                }
+
                 if (r.ok) {
                     return await r.json();
                 } else {
-                    const errorText = await r.text();
-                    try {
-                        const errorJson = JSON.parse(errorText);
-                        throw new Error(errorJson.error || `Erreur serveur: ${r.status}`);
-                    } catch (e) {
-                        if (errorText.includes('<!DOCTYPE html>')) {
-                            throw new Error('Erreur de communication : réponse HTML reçue au lieu de JSON');
-                        }
-                        throw new Error(`Erreur serveur (${r.status}): ${errorText.substring(0, 200)}`);
-                    }
+                    const errorJson = await r.json();
+                    throw new Error(errorJson.error || `Erreur serveur: ${r.status}`);
                 }
             }).catch(err => {
                 console.error('[Analyse] Erreur :', err);
-                log('Erreur : ' + err.message, 'pending');
+                log('Erreur : ' + err.message, 'danger');
                 return null;
             });
 
             for (let i = 0; i < 6; i++) {
-                await new Promise(r => setTimeout(r, 700));
+                // Si l'analyse a déjà échoué, on arrête l'animation
+                const currentPromiseStatus = await Promise.race([
+                    analysePromise.then(() => 'pending'),
+                    new Promise(resolve => setTimeout(() => resolve('running'), 100))
+                ]);
+                
+                // On continue l'animation fictive
+                await new Promise(r => setTimeout(r, 600));
 
                 if (i > 0) document.getElementById(`crisp-${i}`).classList.remove('active');
                 document.getElementById(`crisp-${i + 1}`).classList.add('active');
@@ -1164,7 +1151,9 @@
                 document.getElementById(`crisp-${i + 1}`).classList.add('done');
 
                 const lastLine = document.getElementById('console').lastElementChild;
-                if (lastLine) lastLine.className = 'log-line done';
+                if (lastLine && lastLine.innerText.includes(stepLabels[i])) {
+                    lastLine.className = 'log-line done';
+                }
 
                 if (i === 0) document.getElementById('kpi-total').textContent = nbClients;
                 if (i === 2) document.getElementById('kpi-churn').textContent = '…';
@@ -1173,13 +1162,13 @@
 
             const stats = await analysePromise;
             if (!stats) {
-                log('Analyse interrompue : aucune réponse exploitable du serveur.', 'pending');
+                log('Analyse interrompue : impossible de joindre l\'API ou erreur serveur.', 'danger');
                 document.getElementById('btn-lancer').disabled = false;
                 return;
             }
 
             const duration = ((Date.now() - start) / 1000).toFixed(1);
-            log(`Pipeline terminé en ${duration}s`, 'done');
+            log(`Système synchronisé avec succès`, 'done');
 
             document.getElementById('results-empty').style.display = 'none';
             document.getElementById('results-content').style.display = 'block';
@@ -1402,31 +1391,5 @@
             selectMethod('upload');
         });
     </script>
+{% endblock %}
 
-    <div class="modal fade" id="modalConfirmReset" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-                <div class="modal-body p-4 text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5 class="fw-800 mb-3">Confirmer la réinitialisation ?</h5>
-                    <p class="text-muted small mb-4">
-                        Cette action va vider la liste des clients actifs et archiver les recommandations en cours. 
-                        Les historiques d'analyses seront conservés.
-                        <br><br>
-                        <strong>Cette opération est irréversible.</strong>
-                    </p>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-light rounded-pill flex-grow-1 fw-bold" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-danger rounded-pill flex-grow-1 fw-bold" onclick="confirmResetExecution()">Réinitialiser</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-</body>
-
-</html>
