@@ -1,23 +1,5 @@
-# =============================================================================
-# app/schemas/prediction.py — Schémas de réponse pour les endpoints de prédiction
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# JUSTIFICATION :
-# Définir les réponses comme des modèles Pydantic présente trois avantages :
-#   1. FastAPI valide automatiquement la sortie (impossible de renvoyer
-#      un format incorrect par accident)
-#   2. Swagger UI affiche le format exact attendu pour chaque endpoint
-#   3. React peut générer un client TypeScript typé depuis OpenAPI (pratique
-#      pour Mehdi/Zied dans leur dashboard)
-
 from pydantic import BaseModel, Field
 from typing   import List, Literal
-
-
-# =============================================================================
-# RÉPONSE — Prédiction individuelle (POST /api/predict)
-# =============================================================================
 
 class FeatureExplicative(BaseModel):
     """
@@ -65,10 +47,6 @@ class PredictionResponse(BaseModel):
     version               : str   = Field(..., description="Version du modèle")
 
 
-# =============================================================================
-# RÉPONSE — Prédiction batch sur CSV (POST /api/predict/batch)
-# =============================================================================
-
 class PredictionBatchItem(BaseModel):
     """Une ligne de prédiction dans une réponse batch."""
     index             : int    = Field(..., description="Index de la ligne dans le CSV")
@@ -99,10 +77,6 @@ class PredictionBatchResponse(BaseModel):
     )
 
 
-# =============================================================================
-# RÉPONSE — Analyse complète du portefeuille (POST /api/analyse)
-# =============================================================================
-
 class AnalyseRapportResponse(BaseModel):
     """
     Rapport de segmentation du portefeuille en churn / non-churn.
@@ -123,10 +97,6 @@ class AnalyseRapportResponse(BaseModel):
         description     = "Transformations de modalités appliquées au CSV brut",
     )
 
-
-# =============================================================================
-# RÉPONSE — Explication SHAP par client (GET /api/shap/{client_id})
-# =============================================================================
 
 class ShapFeatureWaterfall(BaseModel):
     """Une feature dans le waterfall chart SHAP."""
@@ -155,10 +125,6 @@ class ShapWaterfallResponse(BaseModel):
         ..., description="Top features avec leur contribution SHAP"
     )
 
-
-# =============================================================================
-# RÉPONSE — Liste paginée des clients (GET /api/clients)
-# =============================================================================
 
 class ClientListItem(BaseModel):
     """Un client dans la liste paginée avec son score churn."""

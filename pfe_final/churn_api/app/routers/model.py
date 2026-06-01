@@ -1,12 +1,3 @@
-# =============================================================================
-# app/routers/model.py — Endpoints d'information sur le modèle
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# Ce routeur expose les métadonnées et métriques du modèle ML, utilisés par
-# le dashboard React pour afficher les KPIs (AUC, F1, Recall, etc.) et par
-# le frontend Django (compatibilité avec /ml/train-models/).
-
 from typing import Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, Body
@@ -20,16 +11,10 @@ from app.schemas         import (
 )
 from app.config          import MODEL_VERSION
 
-
 router = APIRouter(
     prefix = "/api",
     tags   = ["Modèle"],
 )
-
-
-# =============================================================================
-# GET /api/model/info — Métriques et informations du modèle
-# =============================================================================
 
 @router.get(
     "/model/info",
@@ -71,9 +56,7 @@ def get_model_info(
     )
 
 
-# =============================================================================
 # POST /api/train — Métriques du modèle (compatibilité Django)
-# =============================================================================
 
 @router.post(
     "/train",

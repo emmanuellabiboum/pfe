@@ -1,27 +1,3 @@
-# =============================================================================
-# app/ml/preprocessing.py — Encodage features brutes → features finales
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# VERSION ÉTAPE 8.2 — Avec nettoyage automatique des modalités.
-#
-# JUSTIFICATION ARCHITECTURALE :
-# Le notebook a appliqué un nettoyage des modalités catégorielles AVANT le
-# get_dummies (cf. tests_manuels/diagnostic_modalites.py — Étape 8). Ce
-# nettoyage transforme les modalités brutes en modalités canoniques :
-#
-#   "Offre Prépayée"          → "Offre Prepayee"          (NFD)
-#   "Offre à Facture"         → "Offre a Facture"         (NFD)
-#   "Forfait Illimité"        → "Forfait Illimite"        (NFD)
-#   "Forfait Mobile (Mixte)"  → "Forfait_Mobile_Mixte"    (parenthèses+espaces)
-#
-# Sans ce nettoyage, get_dummies génèrerait des colonnes différentes de
-# celles attendues par le modèle → prédictions silencieusement biaisées.
-#
-# Politique d'application :
-#   - pretraiter_client    : pas de nettoyage (Pydantic Enums déjà nettoyés)
-#   - pretraiter_dataframe : nettoyage automatique + LOG des transformations
-
 import unicodedata
 from typing import Any, Dict, List, Tuple
 
@@ -29,11 +5,6 @@ import numpy  as np
 import pandas as pd 
 
 from app.schemas import ClientFeatures
-
-
-# =============================================================================
-# [Étape 8.2] NETTOYAGE DES MODALITÉS CATÉGORIELLES
-# =============================================================================
 
 # Colonnes nominales qui subissent get_dummies dans le pipeline.
 # La colonne 'qualite_signal_dominante' n'en fait pas partie (encodage ordinal).
@@ -152,10 +123,6 @@ def nettoyer_modalites_dataframe(df: object) -> Tuple[object, List[str]]:
     return df_clean, log
 
 
-# =============================================================================
-# UTILITAIRES INTERNES (inchangés depuis l'Étape 3)
-# =============================================================================
-
 def _construire_nom_colonne_ohe(
     variable: str,
     modalite: str,
@@ -196,12 +163,6 @@ def _verifier_modalite(
             f"Attendu parmi : {modalites_valides}"
         )
 
-
-# =============================================================================
-# PIPELINE INDIVIDUEL — pour /api/predict (inchangé)
-# =============================================================================
-# Pas de nettoyage ici car les Enums Pydantic garantissent déjà des
-# modalités propres (sans accents, avec underscores).
 
 def pretraiter_client(client: ClientFeatures, params: Dict[str, Any]):
     """
@@ -275,14 +236,6 @@ def pretraiter_client(client: ClientFeatures, params: Dict[str, Any]):
     return pd.DataFrame([row], columns=feature_names_ordered)
 
 
-# =============================================================================
-# PIPELINE BATCH — pour /api/predict/batch et /api/analyse
-# =============================================================================
-# [Étape 8.2] Modifications :
-#   - Ajout du nettoyage automatique des modalités au début
-#   - Nouvelle signature : retourne aussi le log des transformations
-#   - L'ancienne signature reste accessible via pretraiter_dataframe_simple
-
 def pretraiter_dataframe(
     df_raw: Any,
     params: Dict[str, Any],
@@ -328,19 +281,19 @@ def pretraiter_dataframe(
 
     df = df_raw.copy()
 
-    # ── 0. [Étape 8.2] Nettoyage des modalités catégorielles ───────────────
+    # 0. Nettoyage des modalités catégorielles
     df, log_transformations = nettoyer_modalites_dataframe(df)
 
-    # ── 1. Suppression de la colonne cible si présente ─────────────────────
+    # 1. Suppression de la colonne cible si présente
     if "churn" in df.columns:
         df = df.drop(columns=["churn"])
 
-    # ── 2. Booléens → int ──────────────────────────────────────────────────
+    # 2. Booléens → int
     for col in ["consentement_marketing", "optout_marketing"]:
         if col in df.columns:
             df[col] = df[col].astype(float).astype(int)
 
-    # ── 3. Encodage ordinal ────────────────────────────────────────────────
+    # 3. Encodage ordinal
     if "qualite_signal_dominante" in df.columns:
         df["qualite_signal_dominante"] = (
             df["qualite_signal_dominante"]
@@ -349,7 +302,7 @@ def pretraiter_dataframe(
             .astype(int)
         )
 
-    # ── 4. OHE vectoriel ───────────────────────────────────────────────────
+    # 4. OHE vectoriel
     existing_nominal = [c for c in COLS_NOMINALES if c in df.columns]
     if existing_nominal:
         df = pd.get_dummies(df, columns=existing_nominal, drop_first=True, dtype=int)
@@ -359,7 +312,7 @@ def pretraiter_dataframe(
         if col not in df.columns:
             df[col] = 0
 
-    # ── 5. Imputation ──────────────────────────────────────────────────────
+    # 5. Imputation
     if "score_frustration" in df.columns:
         df["score_frustration"] = df["score_frustration"].fillna(0)
 

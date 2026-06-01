@@ -1,20 +1,3 @@
-# =============================================================================
-# app/routers/clients.py — Liste paginée des clients avec scores churn
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# Ce routeur expose /api/clients qui retourne la liste paginée des clients
-# du test set avec leur probabilité de churn et niveau de risque.
-#
-# Utilisé par le dashboard React (table de clients à actionner) et par le
-# frontend Django pour enrichir /clients/ avec les scores ML.
-#
-# JUSTIFICATION DU CALCUL DES PROBAS :
-# On utilise la propriété d'additivité de SHAP : pour un TreeExplainer,
-# proba_predite = base_value + sum(shap_values_features).
-# Cette propriété est exacte (à 1e-6 près) pour les modèles arborescents.
-# On évite ainsi de stocker un CSV supplémentaire de probabilités.
-
 from typing import List, Optional, Literal
 
 import numpy as np

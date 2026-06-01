@@ -1,50 +1,10 @@
-# =============================================================================
-# app/schemas/validators.py — Validateurs métier croisés
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# JUSTIFICATION ARCHITECTURALE :
-# Pydantic valide les CHAMPS individuels (types, bornes, modalités). Mais
-# il ne sait pas valider les RELATIONS ENTRE CHAMPS (ex : "si A=1 alors
-# B doit être 0"). Pour ça, on utilise les validateurs au niveau du modèle
-# (@model_validator) qui s'exécutent APRÈS la validation des champs.
-#
-# POLITIQUE DE STRICTNESS (calibrée sur le dataset réel — 300 obs) :
-#
-#   🔴 REJET 422 (incohérences strictement absurdes) :
-#     - flag_offre_data=0 mais data_moyenne_gb > 0 (0 cas dans le dataset)
-#     - flag_offre_voix=0 mais duree_appel > 0 (à vérifier)
-#     - satisfaction_manquante=1 mais satisfaction_client renseigné
-#
-#   ⚠️ WARNINGS (cas atypiques mais présents dans le dataset) :
-#     - plan_tarifaire incohérent avec flags d'offre
-#       (18 clients du dataset = 6%, on ne peut pas rejeter)
-#     - consentement_marketing=True ET optout_marketing=True simultanément
-#       (31 clients du dataset = 10%, cas RGPD légitime)
-#
-# Cette politique a été calibrée par le diagnostic du dataset (cf.
-# tests_manuels/diagnostic_dataset.py — Étape 8).
-
 from typing import Any, Dict, List, Optional
-
-
-# =============================================================================
-# RÈGLES MÉTIER — Mapping plan tarifaire ↔ flags d'offre (cas standard)
-# =============================================================================
-# Ces mappings sont les cas STANDARD attendus.
-# Le dataset contient des cas non standard (anomalies métier) qu'on ne
-# rejette pas mais qu'on signale via warnings.
 
 MAPPING_PLAN_FLAGS: Dict[str, Dict[str, int]] = {
     "Forfait Illimite":     {"flag_offre_data": 1, "flag_offre_voix": 0},
     "Offre Classique":      {"flag_offre_data": 0, "flag_offre_voix": 1},
     "Forfait_Mobile_Mixte": {"flag_offre_data": 1, "flag_offre_voix": 1},
 }
-
-
-# =============================================================================
-# VALIDATEURS STRICTS — Lèvent ValueError → 422
-# =============================================================================
 
 def valider_flag_data_vs_usage(data: Dict[str, Any]) -> Optional[str]:
     """
@@ -124,10 +84,6 @@ def valider_flags_manquantes(data: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-# =============================================================================
-# VALIDATEURS NON BLOQUANTS — Retournent un warning au lieu d'une erreur
-# =============================================================================
-
 def detecter_warning_plan_vs_flags(data: Dict[str, Any]) -> Optional[str]:
     """
     Vérifie que le plan tarifaire correspond au mapping standard.
@@ -186,10 +142,6 @@ def detecter_warning_marketing(data: Dict[str, Any]) -> Optional[str]:
         )
     return None
 
-
-# =============================================================================
-# FONCTION PRINCIPALE — orchestre tous les validateurs
-# =============================================================================
 
 def valider_coherence_metier(data: Dict[str, Any]) -> List[str]:
     """

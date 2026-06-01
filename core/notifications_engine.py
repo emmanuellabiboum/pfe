@@ -5,7 +5,7 @@ from core.model_config import estimate_clv
 ROLE_PAR_TYPE = {
     "marketing": "agent_marketing",
     "commercial": "agent_commercial",
-    "technique": "chef_agence",  # technique → chef directement
+    "technique": "chef_agence",  
 }
 
 REGLES = [
@@ -95,29 +95,15 @@ REGLES = [
 
 
 def generer_recommandations_et_notifs(client, agence, createur=None, force=False):
-    """
-    Génère les recommandations système pour un client et crée les notifications
-    correspondantes pour les agents concernés (sans validation chef).
-
-    Args:
-        client   : instance ClientChurn
-        agence   : instance Agence
-        createur : User à l'origine de l'appel (optionnel)
-        force    : si True, régénère même si des recs actives existent
-
-    Returns:
-        int : nombre de recommandations créées
-    """
+    
     from dashboard.models import Recommandation, Notification
 
     today = timezone.now().date()
 
-    # Expirer les recommandations passées
     Recommandation.objects.filter(
         client=client, echeance__lt=today, statut="active"
     ).update(statut="expiree")
 
-    # Ne pas régénérer si des recs actives existent déjà pour les mêmes règles
     if not force:
         regles_existantes = set(
             Recommandation.objects.filter(
@@ -130,7 +116,7 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
         if deja_actives:
             return 0
 
-    # Appliquer les règles
+   
     regles_matchees = [
         r
         for r in REGLES
@@ -140,13 +126,12 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
     if not regles_matchees:
         return 0
 
-    # Prioriser non seulement par priorité métier mais aussi par CLV estimée
     clv_estimee = estimate_clv(client)
     regles_matchees = sorted(
         regles_matchees, key=lambda r: (r["priorite"], -clv_estimee)
     )[
         :3
-    ]  # max 3 recommandations par client
+    ] 
 
     if not regles_matchees:
         return 0
@@ -155,7 +140,6 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
     for regle in regles_matchees:
         contenu_base = regle["contenu"](client)
         
-        # Vérifier si une recommandation identique a déjà expiré
         deja_expiree = Recommandation.objects.filter(
             client=client,
             contenu__icontains=contenu_base,
@@ -164,11 +148,10 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
 
         final_contenu = contenu_base
         if deja_expiree:
-            final_contenu = f"RAPPEL URGENT — RETARD : {contenu_base}"
-            # On remet à 1 jour comme initialement
+            final_contenu = f"RETARD : {contenu_base}"
             nouvelle_echeance = today + timezone.timedelta(days=1)
         else:
-            # On remet à 2 jours comme initialement
+            
             nouvelle_echeance = today + timezone.timedelta(days=2)
 
         rec = Recommandation.objects.create(
@@ -182,7 +165,6 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
         )
         recs_creees.append((rec, regle))
 
-    # Notifier directement les agents concernés
     for rec, regle in recs_creees:
         role_cible = ROLE_PAR_TYPE.get(rec.type_recommandation)
         if role_cible:
@@ -205,10 +187,7 @@ def generer_recommandations_et_notifs(client, agence, createur=None, force=False
 
 
 def valider_recommandation(rec, chef, accepte: bool, note: str = ""):
-    """
-    Le chef valide ou rejette une recommandation.
-    Si acceptée → notifier l'agent concerné.
-    """
+    
     from dashboard.models import Recommandation, Notification
 
     if accepte:
@@ -216,7 +195,6 @@ def valider_recommandation(rec, chef, accepte: bool, note: str = ""):
         rec.modifiee_par = chef
         rec.save()
 
-        # Notifier l'agent du bon service
         role_cible = ROLE_PAR_TYPE.get(rec.type_recommandation)
         if role_cible:
             agents = User.objects.filter(
@@ -245,11 +223,7 @@ def valider_recommandation(rec, chef, accepte: bool, note: str = ""):
 
 
 def confirmer_completion(rec, chef, accepte: bool, note: str = ""):
-    """
-    L'agent dit qu'il a terminé (statut → completee_agent).
-    Le chef doit ensuite confirmer ici.
-    Si accepté → statut completee. Sinon → retour en active.
-    """
+    
     from dashboard.models import Notification
 
     if accepte:
@@ -258,7 +232,6 @@ def confirmer_completion(rec, chef, accepte: bool, note: str = ""):
         rec.note_agent = note
         rec.save()
 
-        # Notifier l'agent que sa complétion est confirmée
         if rec.assignee_a:
             Notification.objects.create(
                 destinataire=rec.assignee_a,
@@ -271,7 +244,6 @@ def confirmer_completion(rec, chef, accepte: bool, note: str = ""):
                 lu=False,
             )
     else:
-        # Remettre en cours
         rec.statut = "active"
         rec.modifiee_par = chef
         rec.save()
@@ -290,10 +262,6 @@ def confirmer_completion(rec, chef, accepte: bool, note: str = ""):
 
 
 def notifier_alerte_churn(client, agence):
-    """
-    Crée une alerte churn critique pour le chef d'agence
-    (utilisée quand score > 0.90, en dehors des recommandations).
-    """
     from dashboard.models import Notification
 
     chefs = User.objects.filter(agence=agence, role="chef_agence", statut="actif")

@@ -1,21 +1,3 @@
-# =============================================================================
-# app/routers/shap.py — Endpoint d'explication SHAP par client du test set
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# Ce routeur expose l'endpoint /api/shap/{client_id} qui retourne les
-# explications SHAP pré-calculées d'un client précis du test set, formatées
-# pour un waterfall chart côté React.
-#
-# JUSTIFICATION ARCHITECTURALE :
-# Les SHAP values du test set ont été calculées en cellule C8 du notebook
-# et exportées dans shap_matrix_v1.csv. Cet endpoint les LIT (sans recalcul)
-# pour permettre au dashboard React d'afficher les explications de
-# n'importe quel client de référence, instantanément.
-#
-# Pour un NOUVEAU client (non présent dans le test set), il faut utiliser
-# /api/predict qui recalcule les SHAP en live via le TreeExplainer.
-
 import pandas as pd  
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Path, status
@@ -25,16 +7,10 @@ from app.ml.loader       import MLArtifacts
 from app.ml.predictor    import expliquer_client_test_set
 from app.schemas         import ShapWaterfallResponse
 
-
 router = APIRouter(
     prefix = "/api",
     tags   = ["Prédiction"],
 )
-
-
-# =============================================================================
-# GET /api/shap/{client_id} — Waterfall SHAP d'un client du test set
-# =============================================================================
 
 @router.get(
     "/shap/{client_id}",

@@ -7,19 +7,12 @@ from core.model_config import estimate_clv
 
 # Fonctions d'audit de qualité des données (RGS-90)
 def calculer_duree_appel_moyenne(duree_totale, nb_appels):
-    """
-    A — Calcule la durée moyenne avec protection division par zéro.
-    Si nb_appels = 0 → duree_appel_moyenne = 0 (par convention)
-    """
     if nb_appels and nb_appels > 0:
         return round(duree_totale / nb_appels, 2)
     return 0
 
 
 def definir_flags_offre(plan_tarifaire):
-    """
-    Retourne les flags structurels selon le plan tarifaire.
-    """
     offres_avec_data = [
         "Forfait Mobile Mixte",
         "Forfait Illimité",
@@ -35,9 +28,6 @@ def definir_flags_offre(plan_tarifaire):
 
 
 def definir_flags_missing(nb_reclamations, data_mois_m, data_mois_m1):
-    """
-    Crée les flags pour valeurs manquantes (stratégie NaN avec flags)
-    """
     return {
         "reclamation_manquante": 1 if nb_reclamations is None else 0,
         "data_mois_m_manquante": 1 if data_mois_m is None else 0,
@@ -51,7 +41,6 @@ _mock_mode_enabled = None
 
 
 def _check_mock_mode():
-    """Vérifie si le mode Mock est autorisé (DEBUG=True uniquement)."""
     global _mock_mode_enabled
     if _mock_mode_enabled is None:
         try:
@@ -64,7 +53,6 @@ def _check_mock_mode():
 
 
 def _ensure_mock_mode():
-    """Lève une exception si le mode Mock est utilisé en production."""
     if not _check_mock_mode():
         raise RuntimeError(
             "ERREUR CRITIQUE: Le mode Mock (generer_mock_data) est désactivé en production. "
@@ -165,12 +153,6 @@ ROLE_PAR_TYPE = {
 
 
 def generer_recommandations_client(client, agence, createur=None):
-    """
-    Génère des recommandations pour un client.
-
-    SECURITE: Cette fonction est bloquée en production (DEBUG=False).
-    """
-    # Vérification de sécurité: interdit en production
     _ensure_mock_mode()
 
     from dashboard.models import Recommandation, Notification
@@ -189,7 +171,6 @@ def generer_recommandations_client(client, agence, createur=None):
     recs_creees = []
 
     for regle in regles_a_creer:
-        # Créer la recommandation directement active
         clv = estimate_clv(client)
         rec = Recommandation.objects.create(
             client=client,
@@ -202,7 +183,6 @@ def generer_recommandations_client(client, agence, createur=None):
         )
         recs_creees.append(rec)
 
-    # Notifier directement les agents concernés
     if recs_creees:
         ROLE_PAR_TYPE = {
             "marketing": "agent_marketing",
@@ -233,15 +213,8 @@ def generer_recommandations_client(client, agence, createur=None):
 
 
 def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
-    """
-    Génère des données mock pour les tests.
-
-    SECURITE: Cette fonction est bloquée en production (DEBUG=False).
-    """
-    # Vérification de sécurité: interdit en production
     _ensure_mock_mode()
 
-    # Imports des modèles Django (faits ici pour éviter les imports circulaires)
     from learning.models import ClientChurn, EvenementCDR, Dataset
     from accounts.models import User
     from core.models import Agence
@@ -269,11 +242,8 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     if user and getattr(user, "agence", None):
         agence = user.agence
 
-    # Nettoyage — conserver les anciens datasets historiques,
-    # mais marquer toutes les anciennes versions comme inactives.
     Dataset.objects.filter(agence=agence, actif=True).update(actif=False)
 
-    # Créer un dataset mock pour l'agence
     dataset = Dataset.objects.create(
         nom=f"Mock dataset - {agence.nom} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         methode="mock",
@@ -282,8 +252,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
         nb_clients=nb_clients,
         actif=True,
     )
-
-    # Listes de données
     prenoms = [
         "Mohamed",
         "Fatma",
@@ -324,11 +292,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     ]
     qualites_signal = ["Excellent", "Bon", "Moyen", "Faible"]
 
-    # Distribution réaliste des scores (alignée sur les seuils FastAPI) :
-    # - faible : < 0.32
-    # - moyen  : 0.32–0.60
-    # - élevé  : >= 0.60
-    # dont quelques cas à > 0.95 pour tester la colorimétrie
     def score_realiste():
         r = random.random()
         if r < 0.30:
@@ -338,16 +301,12 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
         elif r < 0.90:
             return round(random.uniform(0.60, 0.94), 2)
         else:
-            # Cas critiques : 0.95 à 1.00
             return round(random.uniform(0.95, 1.00), 2)
 
-    # Helper functions pour les distributions selon le document
     def type_abonnement_realiste():
-        """85% prépayé, 15% postpayé"""
         return "postpaye" if random.random() < 0.15 else "prepaye"
 
     def plan_tarifaire_realiste():
-        """Offre Classique 70%, Mobile Mixte 20%, Illimité 10%"""
         r = random.random()
         if r < 0.70:
             return "Offre Classique"
@@ -357,7 +316,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
             return "Forfait Illimité"
 
     def moyen_paiement_realiste(type_abonnement):
-        """Recharges 75%, espèces 15%, prélèvement 10%"""
         if type_abonnement == "postpaye":
             return random.choice(["Espèces", "Prélèvement bancaire"])
         r = random.random()
@@ -369,7 +327,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
             return "Prélèvement bancaire"
 
     def facture_moyenne_realiste():
-        """Bas 5-25DT 70%, intermédiaire 30-60DT 20%, premium 70-160DT 10%"""
         r = random.random()
         if r < 0.70:
             return round(random.uniform(5, 25), 2)
@@ -379,38 +336,31 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
             return round(random.uniform(70, 160), 2)
 
     def consentement_marketing_realiste():
-        """60% True, 40% False"""
         return random.random() < 0.60
 
     def optout_realiste(consentement):
-        """20% des consentants se désinscrivent"""
         if not consentement:
             return False
         return random.random() < 0.20
 
     def statut_actif_realiste():
-        """70% True, 30% False"""
         return random.random() < 0.70
 
     def satisfaction_realiste(statut_actif):
-        """Score 1-5, corrélation avec statut_actif"""
         if not statut_actif:
             return random.choice([1, 2])
         return random.choice([3, 4, 5])
 
     def generate_cin():
-        """CIN tunisienne: 0 ou 1 suivi de 7 chiffres"""
         return f"{random.randint(0, 1)}{random.randint(1000000, 9999999)}"
 
     def generate_date_naissance(date_souscription):
-        """Générer une date de naissance pour avoir au moins 18 ans à la souscription"""
         min_age = 18
         max_age = 70
         age = random.randint(min_age, max_age)
         return date_souscription - timedelta(days=age * 365 + random.randint(0, 365))
 
     def generate_telephone():
-        """+216 suivi de 2,4,5,9 puis 7 chiffres"""
         indicatif = random.choice([2, 4, 5, 9])
         suffix = random.randint(1000000, 9999999)
         return f"+216 {indicatif}{suffix}"
@@ -419,13 +369,10 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     for i in range(nb_clients):
         score = score_realiste()
 
-        # client_id unique et lisible
         client_id = f"TT-{agence.code}-{1000 + i}"
 
-        # Règle métier : 10% des clients ont nb_reclamations = NaN (jamais contacté support)
         rec_manquante = random.random() < 0.10
 
-        # Cohérence : score élevé → plus de réclamations et retards
         if score >= 0.32:
             nb_rec = random.randint(3, 15) if not rec_manquante else None
             retards = random.randint(2, 8)
@@ -439,16 +386,11 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
             retards = random.randint(0, 2)
             anciennete = random.randint(12, 60)
 
-        # Règle RGS-90 : churn si recence_cdr_jours >= 90 jours
-        # On génère recence_cdr_jours cohérent avec le score de churn
         if score >= 0.32:
-            # Churné : inactivité >= 90 jours
             recence_cdr = random.randint(90, 365)
         else:
-            # Risque faible : inactivité < 30 jours
             recence_cdr = random.randint(0, 29)
 
-        # Données client selon les distributions du document
         genre = random.choice(genres)
         type_abo = type_abonnement_realiste()
         plan = plan_tarifaire_realiste()
@@ -459,7 +401,6 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
         satisfaction = satisfaction_realiste(statut_actif)
         cin = generate_cin()
 
-        # Dates
         date_debut = datetime(2020, 1, 1) + timedelta(days=random.randint(0, 365 * 4))
         date_naiss = generate_date_naissance(date_debut)
         date_consent = (
@@ -468,49 +409,36 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
             else None
         )
 
-        # Calcul tenure (aligné sur tenure_mois du CSV réel)
         date_extraction = datetime(2025, 1, 1)
         tenure_days = (date_extraction - date_debut).days
         tenure_months = int(tenure_days / 30.44)
-        # Aligner anciennete_mois = tenure_mois (comme le CSV réel)
         anciennete = tenure_months
 
-        # --- APPLICATION DES RÈGLES D'AUDIT RGS-90 ---
-
-        # A — Données CDR avec protection division par zéro
         nb_appels_gen = random.randint(0, 500)
         duree_totale_gen = random.randint(0, 10000)
-        # Calcul correct de la durée moyenne (règle A)
         duree_moyenne_calculee = calculer_duree_appel_moyenne(
             duree_totale_gen, nb_appels_gen
         )
 
-        # D — Correction incohérences plan tarifaire/data
-        # Offre Classique = pas de data (structurellement nul)
         if plan == "Offre Classique":
             data_totale_mb = 0
             data_m_m = None
             data_m1_m = None
         else:
-            # data_moyenne_gb du CSV -> converti en MB pour le modèle
             data_gb = round(random.uniform(0, 5), 2) if random.random() > 0.717 else 0
             data_totale_mb = data_gb * 1024
             data_m_m = random.choice([None, round(random.uniform(0, 3), 2)])
             data_m1_m = random.choice([None, round(random.uniform(0, 3), 2)])
 
-        # F — Flags structurels pour les offres
         flags_offre = definir_flags_offre(plan)
 
-        # C — Flags pour valeurs manquantes (stratégie NaN avec flags)
         flags_missing = definir_flags_missing(nb_rec, data_m_m, data_m1_m)
 
-        # Calcul tendance_data_pct (aligné sur le CSV réel)
         if data_m_m is not None and data_m1_m is not None and data_m1_m != 0:
             tendance_pct = round(((data_m_m - data_m1_m) / data_m1_m) * 100, 2)
         else:
             tendance_pct = round(random.uniform(-50, 50), 2)
 
-        # consommation_moyenne = data_totale_mb (aligné avec l'importer CSV)
         consommation_moy = data_totale_mb
 
         client = ClientChurn.objects.create(
@@ -524,63 +452,50 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
             adresse_physique=f"Adresse_{i}",
             identifiant_national=cin,
             segment=random.choice(segments),
-            # Dates et statut
             date_debut_abonnement=date_debut,
             statut_actif=statut_actif,
             date_consentement=date_consent,
             consentement_marketing=consentement,
             optout_marketing=optout,
-            # Tenure (aligné : tenure_mois = anciennete_mois)
             tenure_jours=tenure_days,
             tenure_mois=tenure_months,
-            # Profil contractuel
             type_abonnement=type_abo,
             plan_tarifaire=plan,
             facture_moyenne_mensuelle=facture_moyenne_realiste(),
             moyen_paiement=moyen_paiement,
-            # Usage télécom agrégé (CDR) — Règle A: calcul correct
             nb_appels=nb_appels_gen,
             duree_appel_totale_sec=duree_totale_gen,
             duree_appel_moyenne_sec=duree_moyenne_calculee,
             sms_total=random.randint(0, 1000),
-            # D — Data corrigée selon plan tarifaire (en MB, comme le modèle)
             data_totale_mb=data_totale_mb,
             nb_evenements_data_cdr=random.randint(0, 200),
-            # Tendance de consommation (alignée sur tendance_data_pct du CSV)
             data_mois_M=data_m_m,
             data_mois_M1=data_m1_m,
             tendance_data=tendance_pct,
-            # Engagement digital
             nb_sessions=random.randint(0, 50),
             duree_session_moyenne_sec=round(random.uniform(60, 600), 2),
             recence_session_jours=random.randint(1, 90),
             taux_cookies=round(random.uniform(0, 1), 2),
-            # Qualité de service et satisfaction
             zone_reseau_principale=random.choice(zones_reseau),
             qualite_signal_dominante=random.choice(qualites_signal),
             score_qualite_zone=round(random.uniform(1, 5), 2),
             satisfaction_client=satisfaction,
             score_frustration=round(random.uniform(0, 1), 2),
-            # Features ML existants
             anciennete_mois=anciennete,
             nb_reclamations=nb_rec,
             reclamation_manquante=rec_manquante,
-            # consommation_moyenne alignée avec data_totale_mb (comme l'importer)
             consommation_moyenne=consommation_moy,
             retards_paiement=retards,
             nb_services=random.randint(1, 6),
             score_churn=score,
             recence_cdr_jours=recence_cdr,
-            # F — Flags structurels RGS-90
             flag_offre_data=flags_offre["flag_offre_data"],
             flag_offre_voix=flags_offre["flag_offre_voix"],
-            # C — Flags valeurs manquantes
             data_mois_m_manquante=flags_missing["data_mois_m_manquante"],
             data_mois_m1_manquante=flags_missing["data_mois_m1_manquante"],
         )
         created.append(client)
 
-    # Générer les données détaillées pour chaque client
     total_events = 0
     total_interactions = 0
     total_geo = 0
@@ -590,24 +505,17 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
     from core.ml_service import predict_churn_score_from_client, get_shap_explanation
 
     for client in created:
-        # Événements CDR
         total_events += generer_evenements_cdr(client)
-        # Interactions digitales
         total_interactions += generer_interactions_digital(client)
-        # Données géospatiales
         total_geo += generer_geolocalisation(client)
-        # Réclamations historiques
         total_reclamations_hist += generer_reclamations(client)
         
-        # --- LOGIQUE ML RÉELLE ---
-        # 1. Obtenir le vrai score via le modèle ML
         score = predict_churn_score_from_client(client)
         if score is not None:
             client.score_churn = round(score, 4)
             client.churn_predit = score >= 0.32
             client.save(update_fields=["score_churn", "churn_predit"])
 
-        # 2. Générer les vraies valeurs SHAP
         try:
             shap_data = get_shap_explanation(client)
             if shap_data and shap_data.get("features"):
@@ -650,19 +558,10 @@ def generer_mock_data(agence_id=None, user_id=None, nb_clients=50):
 
 
 def generer_evenements_cdr(client):
-    """
-    Génère les événements CDR (Call Detail Records) pour un client.
-    Selon le document:
-    - Type: appel (40%), sms (30%), donnee_mobile (30%)
-    - Volume: loi de Poisson avec λ selon plan et statut actif
-    - Appels: durée ~ loi exponentielle(scale=180s)
-    - Data: volume ~ loi log-normale selon plan tarifaire
-    """
     import numpy as np
     from learning.models import EvenementCDR
     from datetime import datetime
 
-    # Déterminer λ (lambda) selon le plan tarifaire et statut actif
     plan_lambda = {
         "Offre Classique": 20,
         "Forfait Mobile Mixte": 30,
@@ -670,14 +569,11 @@ def generer_evenements_cdr(client):
     }
     lambda_base = plan_lambda.get(client.plan_tarifaire, 20)
 
-    # Si client inactif, λ réduit au cinquième
     if not client.statut_actif:
         lambda_base = lambda_base / 5
 
-    # Nombre d'événements selon loi de Poisson
     nb_evenements = np.random.poisson(lambda_base)
 
-    # Paramètres pour la loi log-normale de data selon le plan
     mu_data = {
         "Offre Classique": 1.5,
         "Forfait Mobile Mixte": 2.0,
@@ -691,12 +587,10 @@ def generer_evenements_cdr(client):
     date_extraction = datetime(2025, 1, 1)
 
     for _ in range(nb_evenements):
-        # Horodatage aléatoire entre date_debut et date_extraction
         delta = date_extraction - date_debut
         random_seconds = random.randint(0, int(delta.total_seconds()))
         date_heure = date_debut + timedelta(seconds=random_seconds)
 
-        # Type d'événement: appel (40%), sms (30%), donnee_mobile (30%)
         r = random.random()
         if r < 0.40:
             type_evt = "appel"
@@ -705,17 +599,14 @@ def generer_evenements_cdr(client):
         else:
             type_evt = "donnee_mobile"
 
-        # Initialiser les champs
         duree = 0
         sms = 0
         data = 0
         numero_dest = "INTERNET"
 
         if type_evt == "appel":
-            # Durée ~ loi exponentielle(scale=180s), moyenne 3 minutes
             duree = int(np.random.exponential(scale=180))
-            duree = max(1, duree)  # Au moins 1 seconde
-            # Numéro destination
+            duree = max(1, duree)
             indic = random.choice([2, 4, 5, 9])
             suffix = random.randint(1000000, 9999999)
             numero_dest = f"+216 {indic}{suffix}"
@@ -727,7 +618,6 @@ def generer_evenements_cdr(client):
             numero_dest = f"+216 {indic}{suffix}"
 
         elif type_evt == "donnee_mobile":
-            # Volume ~ loi log-normale
             data = np.random.lognormal(mean=mu, sigma=sigma)
             data = round(float(data), 2)
 
@@ -744,7 +634,6 @@ def generer_evenements_cdr(client):
             )
         )
 
-    # Création en bulk pour performance
     if evenements:
         EvenementCDR.objects.bulk_create(evenements)
 
@@ -752,10 +641,6 @@ def generer_evenements_cdr(client):
 
 
 def generer_interactions_digital(client):
-    """
-    Génère les interactions digitales du client.
-    Types: connexion app/web, recharge, modif profil, etc.
-    """
     from learning.models import InteractionDigital
 
     types_interaction = [
@@ -767,7 +652,6 @@ def generer_interactions_digital(client):
         "activation_option",
     ]
 
-    # Nombre d'interactions selon statut actif
     if client.statut_actif:
         nb_interactions = random.randint(5, 30)
     else:
@@ -813,13 +697,8 @@ def generer_interactions_digital(client):
 
 
 def generer_geolocalisation(client):
-    """
-    Génère les données géospatiales du client.
-    """
     from learning.models import DonneeGeospatiale
 
-    # Coordonnées pour Kairouan (approximatif)
-    # Latitude: 35.67, Longitude: 10.10
     lat = 35.67 + random.uniform(-0.5, 0.5)
     lon = 10.10 + random.uniform(-0.5, 0.5)
 
@@ -846,9 +725,6 @@ def generer_geolocalisation(client):
 
 
 def generer_reclamations(client):
-    """
-    Génère les réclamations historiques du client.
-    """
     from learning.models import Reclamation
 
     types_rec = {
@@ -859,7 +735,6 @@ def generer_reclamations(client):
         "couverture": ["Pas de réseau", "Zone blanche"],
     }
 
-    # Nombre de réclamations selon score churn
     if client.score_churn >= 0.60:
         nb_rec = random.randint(3, 8)
     elif client.score_churn >= 0.32:
@@ -868,7 +743,7 @@ def generer_reclamations(client):
         nb_rec = random.randint(0, 2)
 
     if client.reclamation_manquante:
-        nb_rec = 0  # Client jamais contacté le support
+        nb_rec = 0
 
     reclamations = []
     date_debut = client.date_debut_abonnement or datetime(2020, 1, 1)
@@ -912,13 +787,8 @@ def generer_reclamations(client):
 
 
 def generer_shap_valeurs(client):
-    """
-    Génère des valeurs SHAP de test pour un client.
-    Ces valeurs expliquent la contribution de chaque feature au score de churn.
-    """
     from learning.models import ShapValeur
 
-    # Features utilisées par le modèle ML (excluant statut_actif - RGS-90)
     features = [
         ("Anciennete", client.anciennete_mois),
         ("Reclamations", client.nb_reclamations or 0),
@@ -930,21 +800,16 @@ def generer_shap_valeurs(client):
         ("Data", client.data_totale_mb),
         ("Sessions", client.nb_sessions),
         ("Score qualite", client.score_qualite_zone),
-        # Flags structurels RGS-90
         ("Flag offre data", client.flag_offre_data),
         ("Flag offre voix", client.flag_offre_voix),
     ]
 
     shap_values = []
     for feature_name, feature_value in features:
-        # Générer une valeur SHAP cohérente avec le score de churn
-        # Si score élevé, plus de valeurs positives (risque)
-        # Si score faible, plus de valeurs négatives (rétention)
-        base_impact = (client.score_churn - 0.5) * 2  # -1 à 1
+        base_impact = (client.score_churn - 0.5) * 2
         noise = random.uniform(-0.3, 0.3)
         valeur = base_impact * random.uniform(0.5, 1.5) + noise
 
-        # Importance = valeur absolue (pour le tri)
         importance = abs(valeur)
 
         shap_values.append(

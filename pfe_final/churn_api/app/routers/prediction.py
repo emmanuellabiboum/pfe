@@ -1,21 +1,3 @@
-# =============================================================================
-# app/routers/prediction.py — Endpoints de prédiction
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# Ce routeur expose les 3 endpoints de prédiction :
-#   - POST /api/predict          : prédiction individuelle + SHAP
-#   - POST /api/predict/batch    : prédiction sur CSV
-#   - POST /api/analyse          : segmentation du portefeuille
-#
-# JUSTIFICATION ARCHITECTURALE :
-# Les routers ne contiennent QUE de la logique HTTP (validation upload,
-# codes de statut, transformations Pydantic). La logique ML est déléguée
-# au predictor.py. Cette séparation garantit :
-#   1. Testabilité du ML sans serveur HTTP
-#   2. Réutilisabilité (CLI, batch jobs...) sans dépendance FastAPI
-#   3. Maintenabilité (un bug ML se débogue dans predictor.py, pas ici)
-
 import io
 
 import logging
@@ -42,12 +24,6 @@ router = APIRouter(
     prefix="/api",
     tags=["Prédiction"],
 )
-
-
-# =============================================================================
-# POST /api/predict — Prédiction individuelle + SHAP
-# =============================================================================
-
 
 @router.post(
     "/predict",
@@ -88,11 +64,6 @@ def predict_single(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur de prédiction : {str(e)}",
         )
-
-
-# =============================================================================
-# POST /api/predict/batch — Prédiction batch sur CSV
-# =============================================================================
 
 
 @router.post(
@@ -171,11 +142,6 @@ async def predict_batch_csv(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erreur de traitement du fichier CSV : {str(e)}",
         )
-
-
-# =============================================================================
-# POST /api/analyse — Analyse complète du portefeuille
-# =============================================================================
 
 
 @router.post(

@@ -1,15 +1,5 @@
-# =============================================================================
-# app/schemas/model_info.py — Schémas pour les endpoints système et modèle
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-
 from pydantic import BaseModel, Field
 from typing   import List, Literal
-
-
-# =============================================================================
-# RÉPONSE — Health check (GET /health)
-# =============================================================================
 
 class HealthResponse(BaseModel):
     """
@@ -26,10 +16,6 @@ class HealthResponse(BaseModel):
     version : str = Field(..., description="Version de l'API")
     seuil   : float = Field(..., ge=0, le=1, description="Seuil de décision actif")
 
-
-# =============================================================================
-# RÉPONSE — Informations du modèle (GET /api/model/info)
-# =============================================================================
 
 class ModelInfoResponse(BaseModel):
     """
@@ -52,10 +38,6 @@ class ModelInfoResponse(BaseModel):
     n_features    : int   = Field(..., ge=0, description="Nombre de features finales (post-encodage)")
     feature_names : List[str] = Field(..., description="Liste ordonnée des features")
 
-
-# =============================================================================
-# RÉPONSE — Simulation entraînement (POST /api/train)
-# =============================================================================
 
 class TrainModeleInfo(BaseModel):
     """Métriques d'un modèle proposé par l'endpoint /api/train."""

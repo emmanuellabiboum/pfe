@@ -1,17 +1,3 @@
-# =============================================================================
-# app/schemas/client.py — Schéma d'entrée pour /api/predict
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# VERSION ÉTAPE 8 — Validateurs métier croisés + bornes calibrées sur le
-# dataset réel (cf. tests_manuels/diagnostic_dataset.py).
-#
-# DIFFÉRENCES VS ÉTAPE 2 :
-#   - Bornes élargies pour matcher les valeurs réellement observées
-#     (sinon on rejetterait des données légitimes)
-#   - Ajout du @model_validator pour validation croisée stricte
-#   - Stockage des warnings dans _warnings (privé)
-
 from pydantic import BaseModel, Field, model_validator
 from typing   import Optional
 from enum     import Enum
@@ -20,15 +6,6 @@ from app.schemas.validators import (
     valider_coherence_metier,
     detecter_warnings,
 )
-
-
-# =============================================================================
-# ENUMS — Modalités catégorielles (post-nettoyage)
-# =============================================================================
-# Ces valeurs correspondent aux modalités APRÈS nettoyage NFD + underscores.
-# Le dataset original contient des accents et parenthèses, mais le notebook
-# les nettoie avant get_dummies. L'API utilise les modalités nettoyées comme
-# format d'entrée canonique.
 
 class GenreClient(str, Enum):
     femme = "Femme"
@@ -66,10 +43,6 @@ class QualiteSignal(str, Enum):
     excellent = "Excellent"
 
 
-# =============================================================================
-# SCHÉMA D'ENTRÉE — Bornes calibrées sur le dataset réel
-# =============================================================================
-
 class ClientFeatures(BaseModel):
     """
     Features brutes d'un client. Bornes calibrées sur le dataset (300 obs)
@@ -85,7 +58,7 @@ class ClientFeatures(BaseModel):
       - consentement + optout simultanés (10% des cas du dataset)
     """
 
-    # ── Variables catégorielles (obligatoires) ──────────────────────────────
+    # Variables catégorielles (obligatoires)
     genre_client             : GenreClient   = Field(..., description="Genre du client")
     type_abonnement          : TypeAbonnement = Field(..., description="Type d'abonnement")
     plan_tarifaire           : PlanTarifaire = Field(..., description="Plan tarifaire")
@@ -93,7 +66,7 @@ class ClientFeatures(BaseModel):
     zone_reseau_principale   : ZoneReseau    = Field(..., description="Zone réseau")
     qualite_signal_dominante : QualiteSignal = Field(..., description="Qualité signal")
 
-    # ── Numériques obligatoires — bornes raisonnables ───────────────────────
+    # Numériques obligatoires — bornes raisonnables
     tenure_mois              : int   = Field(..., ge=0, le=600,
                                              description="Ancienneté en mois (0-600)")
     duree_appel_moyenne_sec  : float = Field(..., ge=0, le=3600,
@@ -118,16 +91,16 @@ class ClientFeatures(BaseModel):
     flag_offre_data          : int   = Field(..., ge=0, le=1)
     flag_offre_voix          : int   = Field(..., ge=0, le=1)
 
-    # ── Booléens ────────────────────────────────────────────────────────────
+    # Booléens
     consentement_marketing   : bool  = Field(...)
     optout_marketing         : bool  = Field(...)
 
-    # ── Flags de données manquantes ─────────────────────────────────────────
+    # Flags de données manquantes
     data_manquante           : int   = Field(0, ge=0, le=1)
     satisfaction_manquante   : int   = Field(0, ge=0, le=1)
     reclamation_manquante    : int   = Field(0, ge=0, le=1)
 
-    # ── Optionnels — bornes ÉLARGIES pour matcher le dataset réel ───────────
+    # Optionnels — bornes élargies pour matcher le dataset réel
     facture_moyenne_mensuelle: Optional[float] = Field(
         None, ge=0, le=10000,
         description="Facture moyenne (DT)"
@@ -152,9 +125,7 @@ class ClientFeatures(BaseModel):
         description="Score frustration (observé 0 à 65, marge 0 à 100)"
     )
 
-    # =========================================================================
     # VALIDATEUR MÉTIER CROISÉ
-    # =========================================================================
 
     @model_validator(mode="after")
     def valider_coherence_globale(self) -> "ClientFeatures":
@@ -166,12 +137,12 @@ class ClientFeatures(BaseModel):
         """
         data = self.model_dump()
 
-        # ── Validateurs stricts ─────────────────────────────────────────────
+        # Validateurs stricts
         erreurs = valider_coherence_metier(data)
         if erreurs:
             raise ValueError(" | ".join(erreurs))
 
-        # ── Warnings non bloquants ──────────────────────────────────────────
+        # Warnings non bloquants
         warnings = detecter_warnings(data)
         # On utilise object.__setattr__ pour stocker un attribut privé
         # sans qu'il apparaisse dans le schéma OpenAPI
@@ -179,7 +150,7 @@ class ClientFeatures(BaseModel):
 
         return self
 
-    # ── Configuration Pydantic ──────────────────────────────────────────────
+    # Configuration Pydantic
     model_config = {
         "use_enum_values": True,
         "extra": "ignore",

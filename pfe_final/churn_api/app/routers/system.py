@@ -1,14 +1,3 @@
-# =============================================================================
-# app/routers/system.py — Endpoints système (health check)
-# PFE — Prédiction du Churn — Tunisie Télécom Agence Kairouan
-# =============================================================================
-#
-# JUSTIFICATION :
-# Le health check est appelé par React au démarrage pour vérifier que le
-# backend est accessible. C'est aussi utilisé par les plateformes cloud
-# (Render, Railway) pour détecter si l'application est saine et la
-# redémarrer automatiquement en cas de plantage.
-
 from fastapi import APIRouter, Depends
 
 from app.ml.dependencies import get_artifacts
@@ -16,9 +5,6 @@ from app.ml.loader       import MLArtifacts
 from app.schemas         import HealthResponse
 from app.config          import API_VERSION
 
-
-# Le préfixe et les tags sont définis ici pour que tout les endpoints du
-# routeur partagent automatiquement la même métadonnée Swagger UI.
 router = APIRouter(
     tags = ["Système"],
 )
